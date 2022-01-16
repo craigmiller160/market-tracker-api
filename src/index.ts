@@ -1,9 +1,7 @@
 import express from 'express';
-// import { connect } from '@craigmiller160/covid-19-config-mongo';
 import mongoose from 'mongoose';
 import getConnectString from './connectString';
 const { Schema, model } = mongoose;
-// const getConnectString = require('./connectString')
 
 const dataSchema = new Schema({
     name: String,
@@ -16,15 +14,6 @@ app.get('/hello', (req, res) => {
     console.log('Hello request received');
     res.send('Hello World');
 });
-
-// app.get('/data', async (req, res) => {
-//     console.log('Received data request');
-//     const data = await connect(async (db) => {
-//         return await db.collection('data').find().toArray();
-//     });
-//     console.log('Sending data response', data);
-//     res.json(data);
-// });
 
 app.get('/mongooseData', async (req, res) => {
     console.log('Received request for Mongoose data');
