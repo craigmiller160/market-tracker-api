@@ -8,9 +8,11 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/data', async (req, res) => {
+    console.log('Received data request');
     const data = await connect(async (db) => {
         return await db.collection('data').find().toArray();
     });
+    console.log('Sending data response', data);
     res.json(data);
 });
 
