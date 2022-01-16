@@ -26,6 +26,11 @@ spec:
                 secretKeyRef:
                   name: mongodb-root-password
                   key: MONGO_ROOT_PASSWORD
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: market-tracker-api-client-secret
+                  key: client-secret
           livenessProbe:
             httpGet:
               path: /healthcheck

@@ -12,7 +12,6 @@ data:
   EXPRESS_PORT: "8080"
   AUTH_SERVER_HOST: https://sso-oauth2-server-service:8443
   CLIENT_KEY: 47655159-645a-4c53-9a9c-28bbc1bacd5c
-  CLIENT_SECRET: e8ea960f-0031-425b-8a52-2bf5e7a0085a
   CLIENT_NAME: market-tracker-api
   AUTH_CODE_REDIRECT_URI: "/market-tracker/api/oauth/authcode/code"
   AUTH_LOGIN_BASE_URI: "/market-tracker/oauth2"
