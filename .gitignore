@@ -7,3 +7,4 @@ yalc.lock
 yarn-error.log
 deploy/build
 coverage
+build
