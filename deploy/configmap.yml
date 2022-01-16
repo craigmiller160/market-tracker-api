@@ -7,8 +7,8 @@ data:
   MONGO_HOST: mongodb-service
   MONGO_AUTH_DB: admin
   MONGO_PORT: "27017"
-  ACTIVE_PROFILE: prod
-  MONGO_DATABASE: covid_19
+  ACTIVE_PROFILE: dev
+  MONGO_DATABASE: mongo_k8s_bug
   LOGGER_LEVEL: info
   USE_CONFIG_SERVER: "false"
   PORT: "3000"
