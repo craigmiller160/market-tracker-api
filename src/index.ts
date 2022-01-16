@@ -1,17 +1,20 @@
-import {app} from './old/express';
+import './processErrorHandling';
 import { connectToMongo } from './mongo';
-import {pipe} from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither'
+import { pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/TaskEither';
+import { startExpressServer } from './express';
+import { logError, logInfo } from './logger';
+import { loadTokenKey } from './auth/TokenKey';
+
+logInfo('Starting application')();
 
 pipe(
-    connectToMongo(),
-    TE.map(() => {
-        app.listen(8080, () => {
-            console.log('Express server running');
-        })
-    }),
-    TE.mapLeft((ex) => {
-        console.error('Critical error during startup');
-        console.error(ex);
-    })
-)()
+	loadTokenKey(),
+	TE.chainFirst(connectToMongo),
+	TE.chain(startExpressServer),
+	TE.mapLeft((_) => {
+		logError('Error starting application', _)();
+		process.exit(1);
+		return _;
+	})
+)();
