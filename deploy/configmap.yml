@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: mongo-k8s-bug-demo-config
 data:
-  NODE_ENV=production
+  NODE_ENV: production
   MONGO_USER: mongo_root
   # TODO delete the one below
   MONGO_HOST: mongodb-service
