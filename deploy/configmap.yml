@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mongo-k8s-bug-demo-config
+  name: market-tracker-api-config
 data:
   NODE_ENV: production
   MONGO_USER: mongo_root

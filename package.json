@@ -1,5 +1,5 @@
 {
-  "name": "@craigmiller160/mongo-k8s-bug-demo",
+  "name": "@craigmiller160/market-tracker-api",
   "version": "1.0.0-beta",
   "publishConfig": {
     "registry": "https://craigmiller160.ddns.net:30003/repository/npm-private/"

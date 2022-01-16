@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-k8s-bug-demo
+  name: market-tracker-api
 spec:
   replicas: 1
   selector:
@@ -10,16 +10,16 @@ spec:
   template:
     metadata:
       labels:
-        app: mongo-k8s-bug-demo
+        app: market-tracker-api
     spec:
       containers:
-        - name: mongo-k8s-bug-demo
-          image: craigmiller160.ddns.net:30004/mongo-k8s-bug-demo:${KUBE_IMG_VERSION}
+        - name: market-tracker-api
+          image: craigmiller160.ddns.net:30004/market-tracker-api:${KUBE_IMG_VERSION}
           ports:
             - containerPort: 8080
           envFrom:
             - configMapRef:
-                name: mongo-k8s-bug-demo-config
+                name: market-tracker-api-config
           env:
             - name: MONGO_PASSWORD
               valueFrom:
@@ -37,11 +37,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-k8s-bug-demo-service
+  name: market-tracker-api-service
 spec:
   type: NodePort
   selector:
-    app: mongo-k8s-bug-demo
+    app: market-tracker-api
   ports:
     - port: 8080
       targetPort: 8080
