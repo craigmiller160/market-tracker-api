@@ -1,5 +1,12 @@
 const express = require('express');
 const { connect } = require('@craigmiller160/covid-19-config-mongo');
+const { Schema, model } = require('mongoose');
+
+const dataSchema = new Schema({
+    name: String,
+    age: Number
+});
+const DataModel = model('data', dataSchema);
 
 const app = express();
 app.get('/hello', (req, res) => {
@@ -15,6 +22,13 @@ app.get('/data', async (req, res) => {
     console.log('Sending data response', data);
     res.json(data);
 });
+
+app.get('/mongooseData', async (req, res) => {
+    console.log('Received request for Mongoose data');
+    const data = await DataModel.find().exec();
+    console.log('Sending mongoose data response', data);
+    res.json(data);
+})
 
 app.listen(8080, () => {
     console.log('Express server running');
