@@ -1,4 +1,11 @@
+const handleMongoPassword = () => {
+    if (!process.env.MONGO_PASSWORD) {
+        process.env.MONGO_PASSWORD = process.env.MONGO_ROOT_PASSWORD;
+    }
+}
+
 const getConfig = async () => {
+    handleMongoPassword();
     const mongoUser = process.env.MONGO_USER;
     const mongoPass = process.env.MONGO_PASSWORD;
     const mongoAuthDb = process.env.MONGO_AUTH_DB;
