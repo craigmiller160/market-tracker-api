@@ -38,4 +38,4 @@ const buildMongoConnectionString = async () => {
     return `mongodb://${credsString}${coreConnectString}${tlsString}`;
 };
 
-module.exports = buildMongoConnectionString;
+export default buildMongoConnectionString;
