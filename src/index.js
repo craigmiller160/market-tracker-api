@@ -8,7 +8,7 @@ const dataSchema = new Schema({
     name: String,
     age: Number
 });
-const DataModel = model('data', dataSchema);
+const DataModel = model('mongo_k8s_bug_dev', dataSchema);
 
 const app = express();
 app.get('/hello', (req, res) => {
