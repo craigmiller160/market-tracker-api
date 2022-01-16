@@ -5,21 +5,18 @@ metadata:
 data:
   NODE_ENV: production
   MONGO_USER: mongo_root
-  # TODO delete the one below
-  MONGO_HOST: mongodb-service
   MONGO_HOSTNAME: mongodb-service
   MONGO_AUTH_DB: admin
   MONGO_PORT: "27017"
-  # TODO delete this below
-  ACTIVE_PROFILE: dev
-  # TODO delete the one below
-  MONGO_DATABASE: mongo_k8s_bug
   MONGO_DB: market_tracker_prod
-  # TODO delete this below
-  LOGGER_LEVEL: info
-  # TODO delete this below
-  USE_CONFIG_SERVER: "false"
-  # TODO delete this below
-  PORT: "3000"
   EXPRESS_PORT: "8080"
   AUTH_SERVER_HOST: https://sso-oauth2-server-service:8443
+  CLIENT_KEY: 47655159-645a-4c53-9a9c-28bbc1bacd5c
+  CLIENT_SECRET: e8ea960f-0031-425b-8a52-2bf5e7a0085a
+  CLIENT_NAME: market-tracker-api
+  AUTH_CODE_REDIRECT_URI: /market-tracker/api/oauth/authcode/code
+  AUTH_LOGIN_BASE_URI: /market-tracker/oauth2
+  COOKIE_NAME: market-tracker-token
+  COOKIE_MAX_AGE_SECS: 86400
+  COOKIE_PATH: /market-tracker
+  POST_AUTH_REDIRECT: /market-tracker
