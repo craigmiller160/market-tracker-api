@@ -21,7 +21,7 @@ const getConfig = async () => {
     };
 };
 
-const buildMongoConnectionString = async () => {
+export const buildMongoConnectionString = async () => {
     const {
         mongoUser,
         mongoPass,
@@ -44,5 +44,3 @@ const buildMongoConnectionString = async () => {
 
     return `mongodb://${credsString}${coreConnectString}${tlsString}`;
 };
-
-export default buildMongoConnectionString;
