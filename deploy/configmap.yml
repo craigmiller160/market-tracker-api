@@ -17,6 +17,6 @@ data:
   AUTH_CODE_REDIRECT_URI: "/market-tracker/api/oauth/authcode/code"
   AUTH_LOGIN_BASE_URI: "/market-tracker/oauth2"
   COOKIE_NAME: market-tracker-token
-  COOKIE_MAX_AGE_SECS: 86400
+  COOKIE_MAX_AGE_SECS: "86400"
   COOKIE_PATH: "/market-tracker"
   POST_AUTH_REDIRECT: "/market-tracker"
