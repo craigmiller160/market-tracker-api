@@ -9,6 +9,7 @@ data:
   MONGO_HOSTNAME: mongodb-service
   MONGO_AUTH_DB: admin
   MONGO_PORT: "27017"
+  # TODO delete this below
   ACTIVE_PROFILE: dev
   # TODO delete the one below
   MONGO_DATABASE: mongo_k8s_bug
