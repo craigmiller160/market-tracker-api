@@ -8,7 +8,7 @@ const dataSchema = new Schema({
     name: String,
     age: Number
 });
-const DataModel = model('mongo_k8s_bug_dev', dataSchema);
+const DataModel = model('data', dataSchema, 'data');
 
 const app = express();
 app.get('/hello', (req, res) => {
@@ -32,9 +32,11 @@ app.get('/mongooseData', async (req, res) => {
     res.json(data);
 });
 
+mongoose.set('debug', true);
+
 getConnectString()
     .then((connectionString) => {
-        console.log('Connecting to Mongoose')
+        console.log('Connecting to Mongoose', connectionString)
         return mongoose.connect(connectionString);
     })
     .then(() => {
