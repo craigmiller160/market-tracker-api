@@ -1,8 +1,13 @@
 {
   "name": "MongoK8sBugDemo",
   "version": "1.0.0",
+  "files": [
+    "src"
+  ],
   "scripts": {
-    "start": "env-cmd node src"
+    "start": "env-cmd node src",
+    "start:prod": "node src",
+    "build": "echo 'no build needed'"
   },
   "dependencies": {
     "@craigmiller160/covid-19-config-mongo": "^1.3.0",
