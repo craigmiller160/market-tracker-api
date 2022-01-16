@@ -1,0 +1,9 @@
+.DS_Store
+.idea
+*.iml
+node_modules
+.yalc
+yalc.lock
+yarn-error.log
+deploy/build
+coverage
