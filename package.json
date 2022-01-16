@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "start": "env-cmd ts-node src",
-    "build": "yarn forceBuild",
+    "build": "yarn lint && yarn forceBuild",
     "start:prod": "node build",
     "lint": "craig-lint",
     "test": "craig-test --runInBand",
