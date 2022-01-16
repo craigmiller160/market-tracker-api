@@ -30,13 +30,13 @@ const logConnectionStringInDev = (connectionString: string): string => {
 // 	.otherwise(() => connectionString);
 
 const envToMongoEnv = ([
-						   hostname,
-						   port,
-						   user,
-						   password,
-						   adminDb,
-						   db
-					   ]: readonly string[]): MongoEnv => ({
+	hostname,
+	port,
+	user,
+	password,
+	adminDb,
+	db
+]: readonly string[]): MongoEnv => ({
 	hostname,
 	port,
 	user,
@@ -46,13 +46,13 @@ const envToMongoEnv = ([
 });
 
 const nullableEnvToMongoEnv = ([
-								   hostname,
-								   port,
-								   user,
-								   password,
-								   adminDb,
-								   db
-							   ]: ReadonlyArray<string | undefined>): Partial<MongoEnv> => ({
+	hostname,
+	port,
+	user,
+	password,
+	adminDb,
+	db
+]: ReadonlyArray<string | undefined>): Partial<MongoEnv> => ({
 	hostname,
 	port,
 	user,
