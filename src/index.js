@@ -1,6 +1,8 @@
 const express = require('express');
 const { connect } = require('@craigmiller160/covid-19-config-mongo');
-const { Schema, model } = require('mongoose');
+const mongoose = require('mongoose');
+const { Schema, model } = mongoose;
+const getConnectString = require('./connectString')
 
 const dataSchema = new Schema({
     name: String,
@@ -28,8 +30,19 @@ app.get('/mongooseData', async (req, res) => {
     const data = await DataModel.find().exec();
     console.log('Sending mongoose data response', data);
     res.json(data);
-})
+});
 
-app.listen(8080, () => {
-    console.log('Express server running');
-})
+getConnectString()
+    .then((connectionString) => {
+        console.log('Connecting to Mongoose')
+        return mongoose.connect(connectionString);
+    })
+    .then(() => {
+        app.listen(8080, () => {
+            console.log('Express server running');
+        })
+    })
+    .catch((ex) => {
+        console.error('Critical error during startup');
+        console.error(ex);
+    })
