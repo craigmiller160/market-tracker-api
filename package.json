@@ -6,7 +6,8 @@
   },
   "author": "craigmiller160",
   "files": [
-    "src"
+    "build",
+    "yarn.lock"
   ],
   "scripts": {
     "start": "env-cmd node src",
@@ -18,5 +19,8 @@
     "env-cmd": "^10.1.0",
     "express": "^4.17.2",
     "mongoose": "^6.1.6"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.4"
   }
 }
