@@ -13,6 +13,11 @@ data:
   # TODO delete the one below
   MONGO_DATABASE: mongo_k8s_bug
   MONGO_DB: market_tracker_prod
+  # TODO delete this below
   LOGGER_LEVEL: info
+  # TODO delete this below
   USE_CONFIG_SERVER: "false"
+  # TODO delete this below
   PORT: "3000"
+  EXPRESS_PORT: "8080"
+  AUTH_SERVER_HOST: https://sso-oauth2-server-service:8443
