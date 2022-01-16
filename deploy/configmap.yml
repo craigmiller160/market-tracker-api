@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-k8s-bug-demo-config
+data:
+  MONGO_USER: mongo_root
+  MONGO_HOST: mongodb-service
+  MONGO_AUTH_DB: admin
+  MONGO_PORT: "27017"
+  ACTIVE_PROFILE: prod
+  MONGO_DATABASE: covid_19
+  LOGGER_LEVEL: info
+  USE_CONFIG_SERVER: "false"
+  PORT: "3000"
