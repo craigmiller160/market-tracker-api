@@ -5,7 +5,7 @@ import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';
 import * as TEU from '../function/TaskEitherUtils';
 import { restClient } from '../services/RestClient';
-import * as EU from '../function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { logDebug, logInfo } from '../logger';
 
 export interface TokenKey {
@@ -38,7 +38,7 @@ const getJwkSetFromAuthServer = (
 
 const convertJwkToPem = (jwkSet: JwkSet): TE.TaskEither<Error, TokenKey> =>
 	pipe(
-		EU.tryCatch(() => jwkToPem(jwkSet.keys[0])),
+		Try.tryCatch(() => jwkToPem(jwkSet.keys[0])),
 		E.map(
 			(_): TokenKey => ({
 				key: _

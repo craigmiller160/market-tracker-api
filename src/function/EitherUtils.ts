@@ -1,9 +1,5 @@
 import * as E from 'fp-ts/Either';
-import { unknownToError } from './unknownToError';
 import { pipe } from 'fp-ts/function';
-
-export const tryCatch = <T>(fn: () => T): Either<T> =>
-	E.tryCatch(fn, unknownToError);
 
 export type Either<T> = E.Either<Error, T>;
 

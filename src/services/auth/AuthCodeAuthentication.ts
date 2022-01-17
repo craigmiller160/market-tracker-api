@@ -10,7 +10,7 @@ import * as TE from 'fp-ts/TaskEither';
 import { restClient } from '../RestClient';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as A from 'fp-ts/Array';
-import * as EU from '../../function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
@@ -151,7 +151,7 @@ const createBasicAuth = (
 	clientKey: string,
 	clientSecret: string
 ): E.Either<Error, string> =>
-	EU.tryCatch(() =>
+	Try.tryCatch(() =>
 		Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')
 	);
 
@@ -234,7 +234,7 @@ const getCodeAndState = (req: Request): E.Either<Error, [string, number]> => {
 		),
 		E.bindTo('parts'),
 		E.bind('state', ({ parts: [, stateString] }) =>
-			EU.tryCatch(() => parseInt(stateString))
+			Try.tryCatch(() => parseInt(stateString))
 		),
 		E.map(({ parts: [code], state }) => [code, state])
 	);
