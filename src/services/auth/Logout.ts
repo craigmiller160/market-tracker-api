@@ -4,14 +4,14 @@ import { AccessToken } from '../../express/TokenValidation';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';
-import * as TEU from '../../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { getEmptyCookie } from './Cookie';
 
 const deleteRefreshToken = (
 	token: AccessToken
 ): TE.TaskEither<Error, unknown> =>
-	TEU.tryCatch(() =>
+	TaskTry.tryCatch(() =>
 		AppRefreshTokenModel.deleteOne({ tokenId: token.jti }).exec()
 	);
 

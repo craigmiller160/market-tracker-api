@@ -1,10 +1,10 @@
 import { Server } from 'http';
-import * as TEU from '../../src/function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 
-export const stopExpressServer = (server: Server): TEU.TaskEither<string> =>
-	TEU.tryCatch(
+export const stopExpressServer = (server: Server): TaskTry.TaskTry<string> =>
+	TaskTry.tryCatch(
 		() =>
 			new Promise((resolve, reject) => {
 				server.close((err?: Error) => {

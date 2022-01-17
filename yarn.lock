@@ -342,6 +342,11 @@
   dependencies:
     prettier "^2.5.1"
 
+"@craigmiller160/ts-functions@^1.0.0-beta.6":
+  version "1.0.0-beta.6"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.0.0-beta.6.tgz#6fda646391d69d9796b817f8fed857843df93717"
+  integrity sha512-kodbNk/1n+hR4UGZ4xNgyNxa63cYGkbKALC7gEhUhq+zE6zaIHdf9byZ2o1TTwoyTZBY7Qc6nNFd3JgpANIk/w==
+
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
   resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@cspotcode/source-map-consumer/-/source-map-consumer-0.8.0.tgz#33bf4b7b39c178821606f669bbc447a6a629786b"

@@ -1,6 +1,6 @@
 import { ec } from 'elliptic';
 import * as E from 'fp-ts/Either';
-import * as EU from '../../src/function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import KeyEncoder from 'key-encoder';
 import { pipe } from 'fp-ts/function';
 
@@ -16,7 +16,7 @@ export interface TokenKeyPair {
 
 export const createKeyPair = (): E.Either<Error, TokenKeyPair> =>
 	pipe(
-		EU.tryCatch(() => ecInstance.genKeyPair()),
+		Try.tryCatch(() => ecInstance.genKeyPair()),
 		E.map((keyPair) => ({
 			keyPair,
 			publicKey: keyEncoder.encodePublic(

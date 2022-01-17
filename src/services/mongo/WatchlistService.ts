@@ -1,4 +1,4 @@
-import * as TEU from '../../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as A from 'fp-ts/Array';
 import * as TE from 'fp-ts/TaskEither';
 import {
@@ -12,8 +12,8 @@ import { logger } from '../../logger';
 
 export const findWatchlistsForUser = (
 	userId: number
-): TEU.TaskEither<Watchlist[]> =>
-	TEU.tryCatch(() => WatchlistModel.find({ userId }).exec());
+): TaskTry.TaskTry<Watchlist[]> =>
+	TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
 
 const replaceWatchlistsForUser = async (
 	userId: number,
@@ -26,7 +26,7 @@ const replaceWatchlistsForUser = async (
 export const saveWatchlistsForUser = (
 	userId: number,
 	watchlists: Watchlist[]
-): TEU.TaskEither<unknown> => {
+): TaskTry.TaskTry<unknown> => {
 	const watchlistModels = pipe(
 		watchlists,
 		A.map((_) =>
@@ -37,12 +37,12 @@ export const saveWatchlistsForUser = (
 		)
 	);
 
-	const sessionTE = TEU.tryCatch(() => WatchlistModel.startSession());
+	const sessionTE = TaskTry.tryCatch(() => WatchlistModel.startSession());
 
 	const postTxnTE = pipe(
 		sessionTE,
 		TE.chainFirst((session) =>
-			TEU.tryCatch(() =>
+			TaskTry.tryCatch(() =>
 				session.withTransaction(() =>
 					replaceWatchlistsForUser(userId, watchlistModels)
 				)
@@ -52,7 +52,7 @@ export const saveWatchlistsForUser = (
 
 	pipe(
 		sessionTE,
-		TE.chain((session) => TEU.tryCatch(() => session.endSession())),
+		TE.chain((session) => TaskTry.tryCatch(() => session.endSession())),
 		TE.mapLeft((ex) => {
 			logger.error('Error closing session');
 			logger.error(ex);

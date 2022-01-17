@@ -5,16 +5,16 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as IO from 'fp-ts/IO';
 import * as IOE from 'fp-ts/IOEither';
-import * as TEU from '../../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TE from 'fp-ts/TaskEither';
 import { restClient } from '../RestClient';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as A from 'fp-ts/Array';
-import * as EU from '../../function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
-import { compareAsc, parse } from '../../function/DateFns';
+import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { logError } from '../../logger';
@@ -58,7 +58,11 @@ const validateState = (
 };
 
 const parseAndValidateNotExpired = (stateExpString: string): boolean =>
-	pipe(stateExpString, parse(STATE_EXP_FORMAT), compareAsc(new Date())) <= 0;
+	pipe(
+		stateExpString,
+		Time.parse(STATE_EXP_FORMAT),
+		Time.compare(new Date())
+	) <= 0;
 
 const validateStateExpiration = (req: Request): E.Either<Error, string> => {
 	const { stateExpiration } = getMarketTrackerSession(req);
@@ -117,7 +121,7 @@ const sendTokenRequest = (
 	authServerHost: string
 ): TE.TaskEither<Error, TokenResponse> =>
 	pipe(
-		TEU.tryCatch(() =>
+		TaskTry.tryCatch(() =>
 			restClient.post<TokenResponse>(
 				`${authServerHost}${TOKEN_PATH}`,
 				qs.stringify(requestBody),
@@ -147,7 +151,7 @@ const createBasicAuth = (
 	clientKey: string,
 	clientSecret: string
 ): E.Either<Error, string> =>
-	EU.tryCatch(() =>
+	Try.tryCatch(() =>
 		Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')
 	);
 
@@ -230,7 +234,7 @@ const getCodeAndState = (req: Request): E.Either<Error, [string, number]> => {
 		),
 		E.bindTo('parts'),
 		E.bind('state', ({ parts: [, stateString] }) =>
-			EU.tryCatch(() => parseInt(stateString))
+			Try.tryCatch(() => parseInt(stateString))
 		),
 		E.map(({ parts: [code], state }) => [code, state])
 	);

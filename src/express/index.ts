@@ -1,7 +1,7 @@
 import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import * as TE from 'fp-ts/TaskEither';
-import * as TEU from '../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 
 import bodyParer from 'body-parser';
 import { logError, logger, logInfo } from '../logger';
@@ -33,8 +33,8 @@ const safeParseInt = (text: string): O.Option<number> =>
 		O.fromEither
 	);
 
-const expressListen = (app: Express, port: number): TEU.TaskEither<Server> =>
-	TEU.tryCatch(
+const expressListen = (app: Express, port: number): TaskTry.TaskTry<Server> =>
+	TaskTry.tryCatch(
 		() =>
 			new Promise((resolve, reject) => {
 				const server = https
@@ -84,7 +84,7 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 
 export const startExpressServer = (
 	tokenKey: TokenKey
-): TEU.TaskEither<ExpressServer> => {
+): TaskTry.TaskTry<ExpressServer> => {
 	const port = pipe(
 		O.fromNullable(process.env.EXPRESS_PORT),
 		O.chain(safeParseInt),

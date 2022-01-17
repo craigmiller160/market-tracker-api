@@ -3,9 +3,9 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';
-import * as TEU from '../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { restClient } from '../services/RestClient';
-import * as EU from '../function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { logDebug, logInfo } from '../logger';
 
 export interface TokenKey {
@@ -30,7 +30,7 @@ const getJwkSetFromAuthServer = (
 	authServerHost: string
 ): TE.TaskEither<Error, JwkSet> =>
 	pipe(
-		TEU.tryCatch(() =>
+		TaskTry.tryCatch(() =>
 			restClient.get<JwkSet>(`${authServerHost}${JWK_URI}`)
 		),
 		TE.map((_) => _.data)
@@ -38,7 +38,7 @@ const getJwkSetFromAuthServer = (
 
 const convertJwkToPem = (jwkSet: JwkSet): TE.TaskEither<Error, TokenKey> =>
 	pipe(
-		EU.tryCatch(() => jwkToPem(jwkSet.keys[0])),
+		Try.tryCatch(() => jwkToPem(jwkSet.keys[0])),
 		E.map(
 			(_): TokenKey => ({
 				key: _

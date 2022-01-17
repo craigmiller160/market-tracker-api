@@ -1,9 +1,10 @@
-import * as EU from '../function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import { logDebug } from '../logger';
 import * as A from 'fp-ts/Array';
+import { match } from 'ts-pattern';
 
 interface MongoEnv {
 	readonly hostname: string;
@@ -17,17 +18,13 @@ interface MongoEnv {
 const createConnectionString = (env: MongoEnv): string =>
 	`mongodb://${env.user}:${env.password}@${env.hostname}:${env.port}/${env.db}?authSource=${env.adminDb}&tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true`;
 
-const logConnectionStringInDev = (connectionString: string): string => {
-	logDebug(`Mongo Connection String: ${connectionString}`)();
-	return connectionString;
-};
-// TODO eventually restore below
-// match(process.env.NODE_ENV)
-// 	.with('production', () => {
-// 		logDebug(`Mongo Connection String: ${connectionString}`)();
-// 		return connectionString;
-// 	})
-// 	.otherwise(() => connectionString);
+const logConnectionStringInDev = (connectionString: string): string =>
+	match(process.env.NODE_ENV)
+		.with('development', () => {
+			logDebug(`Mongo Connection String: ${connectionString}`)();
+			return connectionString;
+		})
+		.otherwise(() => connectionString);
 
 const envToMongoEnv = ([
 	hostname,
@@ -67,7 +64,7 @@ const getMongoPasswordEnv = (): string | undefined =>
 		O.getOrElse(() => process.env.MONGO_ROOT_PASSWORD)
 	);
 
-export const getConnectionString = (): EU.Either<string> => {
+export const getConnectionString = (): Try.Try<string> => {
 	const nullableEnvArray: Array<string | undefined> = [
 		process.env.MONGO_HOSTNAME,
 		process.env.MONGO_PORT,

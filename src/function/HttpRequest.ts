@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import * as O from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
-import * as EU from './EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 
 export interface MarketTrackerSession {
 	state?: number;
@@ -11,7 +11,7 @@ export interface MarketTrackerSession {
 
 export const getHeader = (req: Request, key: string): O.Option<string> =>
 	pipe(
-		EU.tryCatch(() => O.fromNullable(req.header(key))),
+		Try.tryCatch(() => O.fromNullable(req.header(key))),
 		O.fromEither,
 		O.flatten
 	);
