@@ -7,6 +7,7 @@ export const tryCatch = <T>(fn: () => T): Either<T> =>
 
 export type Either<T> = E.Either<Error, T>;
 
+// TODO replace with version from craig-build
 export const throwIfLeft = <T>(e: Either<T>): T =>
 	pipe(
 		e,
