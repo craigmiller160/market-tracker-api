@@ -8,12 +8,13 @@ import {
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as TEU from '../../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { logger } from '../../logger';
 
 export const findPortfoliosForUser = (
 	userId: number
 ): TEU.TaskEither<Portfolio[]> =>
-	TEU.tryCatch(() => PortfolioModel.find({ userId }).exec());
+	TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec());
 
 const replacePortfoliosForUser = async (
 	userId: number,
@@ -37,12 +38,12 @@ export const savePortfoliosForUser = (
 		)
 	);
 
-	const sessionTE = TEU.tryCatch(() => PortfolioModel.startSession());
+	const sessionTE = TaskTry.tryCatch(() => PortfolioModel.startSession());
 
 	const postTxnTE = pipe(
 		sessionTE,
 		TE.chainFirst((session) =>
-			TEU.tryCatch(() =>
+			TaskTry.tryCatch(() =>
 				session.withTransaction(() =>
 					replacePortfoliosForUser(userId, portfolioModels)
 				)
@@ -52,7 +53,7 @@ export const savePortfoliosForUser = (
 
 	pipe(
 		sessionTE,
-		TE.chain((session) => TEU.tryCatch(() => session.endSession())),
+		TE.chain((session) => TaskTry.tryCatch(() => session.endSession())),
 		TE.mapLeft((ex) => {
 			logger.error('Error closing session');
 			logger.error(ex);

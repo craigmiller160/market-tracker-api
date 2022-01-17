@@ -2,6 +2,7 @@ import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import * as TE from 'fp-ts/TaskEither';
 import * as TEU from '../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 
 import bodyParer from 'body-parser';
 import { logError, logger, logInfo } from '../logger';
@@ -34,7 +35,7 @@ const safeParseInt = (text: string): O.Option<number> =>
 	);
 
 const expressListen = (app: Express, port: number): TEU.TaskEither<Server> =>
-	TEU.tryCatch(
+	TaskTry.tryCatch(
 		() =>
 			new Promise((resolve, reject) => {
 				const server = https

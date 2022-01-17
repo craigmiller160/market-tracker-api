@@ -3,7 +3,7 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';
-import * as TEU from '../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { restClient } from '../services/RestClient';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { logDebug, logInfo } from '../logger';
@@ -30,7 +30,7 @@ const getJwkSetFromAuthServer = (
 	authServerHost: string
 ): TE.TaskEither<Error, JwkSet> =>
 	pipe(
-		TEU.tryCatch(() =>
+		TaskTry.tryCatch(() =>
 			restClient.get<JwkSet>(`${authServerHost}${JWK_URI}`)
 		),
 		TE.map((_) => _.data)

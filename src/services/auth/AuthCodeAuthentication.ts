@@ -5,7 +5,7 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as IO from 'fp-ts/IO';
 import * as IOE from 'fp-ts/IOEither';
-import * as TEU from '../../function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TE from 'fp-ts/TaskEither';
 import { restClient } from '../RestClient';
 import { TokenResponse } from '../../types/TokenResponse';
@@ -121,7 +121,7 @@ const sendTokenRequest = (
 	authServerHost: string
 ): TE.TaskEither<Error, TokenResponse> =>
 	pipe(
-		TEU.tryCatch(() =>
+		TaskTry.tryCatch(() =>
 			restClient.post<TokenResponse>(
 				`${authServerHost}${TOKEN_PATH}`,
 				qs.stringify(requestBody),
