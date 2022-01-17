@@ -1,6 +1,7 @@
 import * as E from 'fp-ts/Either';
 import { match, when } from 'ts-pattern';
 
+// TODO replace with lib version
 export const captureFromRegex = <T>(
 	regex: RegExp | string,
 	text: string
