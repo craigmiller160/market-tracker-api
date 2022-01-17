@@ -7,7 +7,7 @@ import {
 import request from 'supertest';
 import { createKeyPair } from '../testutils/keyPair';
 import { pipe } from 'fp-ts/function';
-import * as EU from '../../src/function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from '../../src/services/auth/Cookie';
 
 const clearEnv = () => {
@@ -49,7 +49,7 @@ describe('TokenValidation', () => {
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
 		const token = createAccessToken(fullTestServer.keyPair.privateKey);
-		const tokenCookie = pipe(createTokenCookie(token), EU.throwIfLeft);
+		const tokenCookie = pipe(createTokenCookie(token), Try.getOrThrow);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
@@ -76,7 +76,7 @@ describe('TokenValidation', () => {
 	});
 
 	it('access token has invalid signature', async () => {
-		const newKeyPair = pipe(createKeyPair(), EU.throwIfLeft);
+		const newKeyPair = pipe(createKeyPair(), Try.getOrThrow);
 		const token = createAccessToken(newKeyPair.privateKey);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
