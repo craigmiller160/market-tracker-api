@@ -8,7 +8,7 @@ import * as IO from 'fp-ts/IO';
 import * as IOE from 'fp-ts/IOEither';
 import { encodeForUri } from '../../function/UriEncoding';
 import { getHeader, getMarketTrackerSession } from '../../function/HttpRequest';
-import { addMinutes, format } from '../../function/DateFns';
+import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 
@@ -34,8 +34,8 @@ const storeAuthCodeLoginSessionValues =
 		session.origin = origin;
 		session.stateExpiration = pipe(
 			new Date(),
-			addMinutes(10),
-			format(STATE_EXP_FORMAT)
+			Time.addMinutes(10),
+			Time.format(STATE_EXP_FORMAT)
 		);
 	};
 

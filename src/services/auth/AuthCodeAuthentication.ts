@@ -14,7 +14,7 @@ import * as EU from '../../function/EitherUtils';
 import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
-import { compareAsc, parse } from '../../function/DateFns';
+import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { logError } from '../../logger';
@@ -58,7 +58,11 @@ const validateState = (
 };
 
 const parseAndValidateNotExpired = (stateExpString: string): boolean =>
-	pipe(stateExpString, parse(STATE_EXP_FORMAT), compareAsc(new Date())) <= 0;
+	pipe(
+		stateExpString,
+		Time.parse(STATE_EXP_FORMAT),
+		Time.compare(new Date())
+	) <= 0;
 
 const validateStateExpiration = (req: Request): E.Either<Error, string> => {
 	const { stateExpiration } = getMarketTrackerSession(req);
