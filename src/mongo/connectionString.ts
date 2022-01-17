@@ -20,7 +20,7 @@ const createConnectionString = (env: MongoEnv): string =>
 
 const logConnectionStringInDev = (connectionString: string): string =>
 	match(process.env.NODE_ENV)
-		.with('production', () => {
+		.with('development', () => {
 			logDebug(`Mongo Connection String: ${connectionString}`)();
 			return connectionString;
 		})
