@@ -6,7 +6,7 @@ import {
 } from './mongoServer';
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
-import * as TEU from '../../src/function/TaskEitherUtils';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { stopExpressServer } from './expressServer';
 import { createKeyPair, TokenKeyPair } from './keyPair';
 import { TokenKey } from '../../src/auth/TokenKey';
@@ -62,7 +62,7 @@ export const createFullTestServer = (): Promise<FullTestServer> =>
 			createSessionRoute(fullTestServer.expressServer.app);
 			return fullTestServer;
 		}),
-		TEU.throwIfLeft
+		TaskTry.getOrThrow
 	)();
 
 export const stopFullTestServer = (
@@ -71,5 +71,5 @@ export const stopFullTestServer = (
 	pipe(
 		stopMongoTestServer(fullTestServer.mongoServer),
 		TE.chain(() => stopExpressServer(fullTestServer.expressServer.server)),
-		TEU.throwIfLeft
+		TaskTry.getOrThrow
 	)();
