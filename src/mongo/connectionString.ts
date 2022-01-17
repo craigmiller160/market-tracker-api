@@ -1,4 +1,4 @@
-import * as EU from '../function/EitherUtils';
+import * as Try from '@craigmiller160/ts-functions/Try';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
@@ -67,7 +67,7 @@ const getMongoPasswordEnv = (): string | undefined =>
 		O.getOrElse(() => process.env.MONGO_ROOT_PASSWORD)
 	);
 
-export const getConnectionString = (): EU.Either<string> => {
+export const getConnectionString = (): Try.Try<string> => {
 	const nullableEnvArray: Array<string | undefined> = [
 		process.env.MONGO_HOSTNAME,
 		process.env.MONGO_PORT,
