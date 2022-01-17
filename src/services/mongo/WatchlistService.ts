@@ -1,4 +1,3 @@
-import * as TEU from '../../function/TaskEitherUtils';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as A from 'fp-ts/Array';
 import * as TE from 'fp-ts/TaskEither';
@@ -13,7 +12,7 @@ import { logger } from '../../logger';
 
 export const findWatchlistsForUser = (
 	userId: number
-): TEU.TaskEither<Watchlist[]> =>
+): TaskTry.TaskTry<Watchlist[]> =>
 	TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
 
 const replaceWatchlistsForUser = async (
@@ -27,7 +26,7 @@ const replaceWatchlistsForUser = async (
 export const saveWatchlistsForUser = (
 	userId: number,
 	watchlists: Watchlist[]
-): TEU.TaskEither<unknown> => {
+): TaskTry.TaskTry<unknown> => {
 	const watchlistModels = pipe(
 		watchlists,
 		A.map((_) =>

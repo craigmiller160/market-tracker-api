@@ -1,5 +1,4 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import * as TEU from '../../src/function/TaskEitherUtils';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import mongoose, { Mongoose } from 'mongoose';
 
@@ -8,7 +7,7 @@ export interface MongoTestServer {
 	readonly mongooseInstance: Mongoose;
 }
 
-export const createMongoTestServer = (): TEU.TaskEither<MongoTestServer> =>
+export const createMongoTestServer = (): TaskTry.TaskTry<MongoTestServer> =>
 	TaskTry.tryCatch(async () => {
 		const mongoServer: MongoMemoryServer = await MongoMemoryServer.create();
 		const mongooseInstance: Mongoose = await mongoose.connect(
@@ -22,7 +21,7 @@ export const createMongoTestServer = (): TEU.TaskEither<MongoTestServer> =>
 
 export const stopMongoTestServer = (
 	mongoTestServer: MongoTestServer
-): TEU.TaskEither<void> =>
+): TaskTry.TaskTry<void> =>
 	TaskTry.tryCatch(async () => {
 		await mongoTestServer.mongooseInstance.disconnect();
 		await mongoTestServer.mongoServer.stop();

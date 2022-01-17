@@ -7,13 +7,12 @@ import {
 } from '../../mongo/models/PortfolioModel';
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
-import * as TEU from '../../function/TaskEitherUtils';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { logger } from '../../logger';
 
 export const findPortfoliosForUser = (
 	userId: number
-): TEU.TaskEither<Portfolio[]> =>
+): TaskTry.TaskTry<Portfolio[]> =>
 	TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec());
 
 const replacePortfoliosForUser = async (
@@ -27,7 +26,7 @@ const replacePortfoliosForUser = async (
 export const savePortfoliosForUser = (
 	userId: number,
 	portfolios: Portfolio[]
-): TEU.TaskEither<unknown> => {
+): TaskTry.TaskTry<unknown> => {
 	const portfolioModels = pipe(
 		portfolios,
 		A.map((_) =>
