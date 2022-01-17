@@ -6,7 +6,7 @@ import { randomInt } from 'crypto';
 import * as A from 'fp-ts/Array';
 import * as IO from 'fp-ts/IO';
 import * as IOE from 'fp-ts/IOEither';
-import { encodeForUri } from '../../function/UriEncoding';
+import * as Uri from '@craigmiller160/ts-functions/Uri';
 import { getHeader, getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
@@ -50,9 +50,9 @@ const createUrl = (
 
 	return pipe(
 		E.sequenceArray([
-			encodeForUri(clientKey),
-			encodeForUri(fullRedirectUri),
-			encodeForUri(state)
+			Uri.encode(clientKey),
+			Uri.encode(fullRedirectUri),
+			Uri.encode(state)
 		]),
 		E.map(
 			([encodedClientKey, encodedRedirectUri, encodedState]) =>
