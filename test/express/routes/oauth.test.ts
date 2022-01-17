@@ -11,7 +11,7 @@ import { restClient } from '../../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
 import { MarketTrackerSession } from '../../../src/function/HttpRequest';
 import { pipe } from 'fp-ts/function';
-import { addMinutes, format } from '../../../src/function/DateFns';
+import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from '../../../src/services/auth/constants';
 import { TokenResponse } from '../../../src/types/TokenResponse';
 import { AuthenticateBody } from '../../../src/services/auth/AuthCodeAuthentication';
@@ -103,7 +103,7 @@ const mockTokenRequest = (code: string, responseStatus = 200) => {
 };
 
 const createStateExp = (mins: number): string =>
-	pipe(new Date(), addMinutes(mins), format(STATE_EXP_FORMAT));
+	pipe(new Date(), Time.addMinutes(mins), Time.format(STATE_EXP_FORMAT));
 
 describe('oauth routes', () => {
 	let fullTestServer: FullTestServer;
