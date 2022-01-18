@@ -1,4 +1,5 @@
 import {
+	accessToken,
 	createAccessToken,
 	createFullTestServer,
 	FullTestServer,
@@ -14,6 +15,8 @@ const clearEnv = () => {
 	delete process.env.COOKIE_NAME;
 	delete process.env.COOKIE_MAX_AGE_SECS;
 	delete process.env.COOKIE_PATH;
+	delete process.env.CLIENT_NAME;
+	delete process.env.CLIENT_KEY;
 };
 
 describe('TokenValidation', () => {
@@ -28,6 +31,8 @@ describe('TokenValidation', () => {
 
 	beforeEach(() => {
 		clearEnv();
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_NAME = accessToken.clientName;
 	});
 
 	afterEach(() => {
@@ -94,6 +99,42 @@ describe('TokenValidation', () => {
 	it('has no access token', async () => {
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
+			.timeout(2000)
+			.expect(401);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				status: 401,
+				message: 'Unauthorized'
+			})
+		);
+	});
+
+	it('has access token with invalid clientKey', async () => {
+		process.env.CLIENT_KEY = 'abc';
+		const accessToken = createAccessToken(
+			fullTestServer.keyPair.privateKey
+		);
+		const res = await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.set('Authorization', `Bearer ${accessToken}`)
+			.timeout(2000)
+			.expect(401);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				status: 401,
+				message: 'Unauthorized'
+			})
+		);
+	});
+
+	it('has access token with invalid clientName', async () => {
+		process.env.CLIENT_NAME = 'abc';
+		const accessToken = createAccessToken(
+			fullTestServer.keyPair.privateKey
+		);
+		const res = await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.set('Authorization', `Bearer ${accessToken}`)
 			.timeout(2000)
 			.expect(401);
 		expect(res.body).toEqual(
