@@ -103,4 +103,12 @@ describe('TokenValidation', () => {
 			})
 		);
 	});
+
+	it('has access token with invalid clientKey', async () => {
+		throw new Error();
+	});
+
+	it('has access token with invalid clientName', async () => {
+		throw new Error();
+	});
 });
