@@ -50,8 +50,10 @@ const createExpressServerWithKey = (
 	return startExpressServer(tokenKey);
 };
 
-export const createFullTestServer = (): Promise<FullTestServer> =>
-	pipe(
+export const createFullTestServer = (): Promise<FullTestServer> => {
+	process.env.CLIENT_KEY = accessToken.clientKey;
+	process.env.CLIENT_NAME = accessToken.clientName;
+	return pipe(
 		createKeyPair(),
 		TE.fromEither,
 		TE.bindTo('keyPair'),
@@ -65,12 +67,16 @@ export const createFullTestServer = (): Promise<FullTestServer> =>
 		}),
 		TaskTry.getOrThrow
 	)();
+};
 
 export const stopFullTestServer = (
 	fullTestServer: FullTestServer
-): Promise<unknown> =>
-	pipe(
+): Promise<unknown> => {
+	delete process.env.CLIENT_KEY;
+	delete process.env.CLIENT_NAME;
+	return pipe(
 		stopMongoTestServer(fullTestServer.mongoServer),
 		TE.chain(() => stopExpressServer(fullTestServer.expressServer.server)),
 		TaskTry.getOrThrow
 	)();
+};
