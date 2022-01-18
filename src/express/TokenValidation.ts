@@ -10,7 +10,12 @@ import { logger } from '../logger';
 import { NextFunction, Request, Response } from 'express';
 import { errorHandler } from './errorHandler';
 import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
+import * as Option from 'fp-ts/Option';
+import * as Try from '@craigmiller160/ts-functions/Try';
+import * as Either from 'fp-ts/Either';
+import * as RArr from 'fp-ts/ReadonlyArray';
+import { UnauthorizedError } from '../error/UnauthorizedError';
+import * as Pred from 'fp-ts/Predicate';
 
 export interface AccessToken {
 	readonly sub: string;
@@ -24,6 +29,11 @@ export interface AccessToken {
 	readonly jti: string;
 }
 
+interface ClientKeyName {
+	readonly clientKey: string;
+	readonly clientName: string;
+}
+
 type Route = (req: Request, res: Response, next: NextFunction) => void;
 
 const secureCallback =
@@ -34,10 +44,10 @@ const secureCallback =
 		tokenError: Error | undefined
 	) => {
 		pipe(
-			O.fromNullable(error),
-			O.getOrElse(() => tokenError),
-			O.fromNullable,
-			O.fold(
+			Option.fromNullable(error),
+			Option.getOrElse(() => tokenError),
+			Option.fromNullable,
+			Option.fold(
 				() => {
 					req.user = user as AccessToken;
 					fn(req, res, next);
@@ -57,16 +67,49 @@ export const secure =
 		)(req, res, next);
 	};
 
-const getJwtFromCookie = (req: Request): O.Option<string> =>
+const getJwtFromCookie = (req: Request): Option.Option<string> =>
 	pipe(
-		O.fromNullable(process.env.COOKIE_NAME),
-		O.chain((_) => O.fromNullable(req.cookies[_]))
+		Option.fromNullable(process.env.COOKIE_NAME),
+		Option.chain((_) => Option.fromNullable(req.cookies[_]))
 	);
 
 const jwtFromRequest: JwtFromRequestFunction = (req) =>
 	pipe(
 		getJwtFromCookie(req),
-		O.getOrElse(() => ExtractJwt.fromAuthHeaderAsBearerToken()(req))
+		Option.getOrElse(() => ExtractJwt.fromAuthHeaderAsBearerToken()(req))
+	);
+
+const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
+	const envArray: ReadonlyArray<string | undefined> = [
+		process.env.CLIENT_KEY,
+		process.env.CLIENT_NAME
+	];
+
+	return pipe(
+		envArray,
+		RArr.map(Option.fromNullable),
+		Option.sequenceArray,
+		Option.map(
+			([clientKey, clientName]): ClientKeyName => ({
+				clientKey,
+				clientName
+			})
+		),
+		Either.fromOption(
+			() =>
+				new UnauthorizedError(
+					`Missing required environment variables for token property validation: ${envArray}`
+				)
+		)
+	);
+};
+
+// TODO modify try to extend Error, not require it
+
+const validatePayload = (token: AccessToken): Pred.Predicate<ClientKeyName> =>
+	pipe(
+		(keyAndName: ClientKeyName) => keyAndName.clientKey === token.clientKey,
+		Pred.and((keyAndName) => keyAndName.clientName === token.clientName)
 	);
 
 export const createPassportValidation = (tokenKey: TokenKey) => {
@@ -77,8 +120,19 @@ export const createPassportValidation = (tokenKey: TokenKey) => {
 	};
 
 	passport.use(
-		new JwtStrategy(options, (payload, done) => {
-			done(null, payload);
+		new JwtStrategy(options, (payload: AccessToken, done) => {
+			const doValidatePayload = validatePayload(payload);
+			pipe(
+				getClientKeyAndName(),
+				Either.filterOrElse(
+					doValidatePayload,
+					() => new Error('Fix this error type')
+				),
+				Either.fold(
+					(ex) => done(ex, null),
+					() => done(null, payload)
+				)
+			);
 		})
 	);
 };
