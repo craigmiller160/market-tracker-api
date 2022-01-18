@@ -14,6 +14,8 @@ const clearEnv = () => {
 	delete process.env.COOKIE_NAME;
 	delete process.env.COOKIE_MAX_AGE_SECS;
 	delete process.env.COOKIE_PATH;
+	delete process.env.CLIENT_NAME;
+	delete process.env.CLIENT_KEY;
 };
 
 describe('TokenValidation', () => {

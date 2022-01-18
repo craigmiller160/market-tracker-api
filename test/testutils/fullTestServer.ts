@@ -27,6 +27,7 @@ export const accessToken: AccessToken = {
 	lastName: 'Saget',
 	roles: [],
 	sub: 'bob@gmail.com',
+	clientKey: 'clientKey',
 	clientName: 'the-app',
 	jti: 'tokenId'
 };
