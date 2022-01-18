@@ -124,7 +124,10 @@ export const createPassportValidation = (tokenKey: TokenKey) => {
 				getClientKeyAndName(),
 				Either.filterOrElse<ClientKeyName, Error>(
 					doValidatePayload,
-					() => new UnauthorizedError('Fix this error type')
+					() =>
+						new UnauthorizedError(
+							'Invalid token payload attributes'
+						)
 				),
 				Either.fold(
 					(ex) => done(ex, null),
