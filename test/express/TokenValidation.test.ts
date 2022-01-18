@@ -30,6 +30,8 @@ describe('TokenValidation', () => {
 
 	beforeEach(() => {
 		clearEnv();
+		process.env.CLIENT_KEY = 'clientKey';
+		process.env.CLIENT_NAME = 'clientName';
 	});
 
 	afterEach(() => {
@@ -107,10 +109,38 @@ describe('TokenValidation', () => {
 	});
 
 	it('has access token with invalid clientKey', async () => {
-		throw new Error();
+		process.env.CLIENT_KEY = 'abc';
+		const accessToken = createAccessToken(
+			fullTestServer.keyPair.privateKey
+		);
+		const res = await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.set('Authorization', `Bearer ${accessToken}`)
+			.timeout(2000)
+			.expect(401);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				status: 401,
+				message: 'Unauthorized'
+			})
+		);
 	});
 
 	it('has access token with invalid clientName', async () => {
-		throw new Error();
+		process.env.CLIENT_NAME = 'abc';
+		const accessToken = createAccessToken(
+			fullTestServer.keyPair.privateKey
+		);
+		const res = await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.set('Authorization', `Bearer ${accessToken}`)
+			.timeout(2000)
+			.expect(401);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				status: 401,
+				message: 'Unauthorized'
+			})
+		);
 	});
 });
