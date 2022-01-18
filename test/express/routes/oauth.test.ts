@@ -135,6 +135,9 @@ describe('oauth routes', () => {
 	});
 
 	describe('get user details', () => {
+		beforeEach(() => {
+			process.env.CLIENT_KEY = 'clientKey';
+		});
 		it('gets details for authenticated user', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			const res = await request(fullTestServer.expressServer.server)
@@ -144,6 +147,7 @@ describe('oauth routes', () => {
 				.expect(200);
 			const expectedBody: Partial<AccessToken> = {
 				...accessToken,
+				clientKey: undefined,
 				jti: undefined
 			};
 			expect(res.body).toEqual(expectedBody);
