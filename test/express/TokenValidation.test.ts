@@ -1,4 +1,5 @@
 import {
+	accessToken,
 	createAccessToken,
 	createFullTestServer,
 	FullTestServer,
@@ -30,8 +31,8 @@ describe('TokenValidation', () => {
 
 	beforeEach(() => {
 		clearEnv();
-		process.env.CLIENT_KEY = 'clientKey';
-		process.env.CLIENT_NAME = 'clientName';
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_NAME = accessToken.clientName;
 	});
 
 	afterEach(() => {
