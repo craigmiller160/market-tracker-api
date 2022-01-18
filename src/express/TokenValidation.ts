@@ -104,8 +104,6 @@ const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
 	);
 };
 
-// TODO modify try to extend Error, not require it
-
 const validatePayload = (token: AccessToken): Pred.Predicate<ClientKeyName> =>
 	pipe(
 		(keyAndName: ClientKeyName) => keyAndName.clientKey === token.clientKey,
@@ -124,9 +122,9 @@ export const createPassportValidation = (tokenKey: TokenKey) => {
 			const doValidatePayload = validatePayload(payload);
 			pipe(
 				getClientKeyAndName(),
-				Either.filterOrElse(
+				Either.filterOrElse<ClientKeyName, Error>(
 					doValidatePayload,
-					() => new Error('Fix this error type')
+					() => new UnauthorizedError('Fix this error type')
 				),
 				Either.fold(
 					(ex) => done(ex, null),
