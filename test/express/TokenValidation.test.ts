@@ -144,4 +144,16 @@ describe('TokenValidation', () => {
 			})
 		);
 	});
+
+	it('refreshes expired token', async () => {
+		throw new Error()
+	})
+
+	it('refresh request rejected', async () => {
+		throw new Error()
+	})
+
+	it('token returned from refresh invalid', async () => {
+		throw new Error()
+	})
 });
