@@ -17,6 +17,7 @@ import * as RArr from 'fp-ts/ReadonlyArray';
 import { UnauthorizedError } from '../error/UnauthorizedError';
 import * as Pred from 'fp-ts/Predicate';
 import { match } from 'ts-pattern';
+import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
 
 export interface AccessToken {
 	readonly sub: string;
@@ -65,10 +66,9 @@ const handleTokenError = (
 	next: NextFunction
 ): void =>
 	match(error)
-		.with({ name: 'TokenExpiredError' }, () => {
-			// TODO figure this out
-			throw new Error('Figure this out');
-		})
+		.with({ name: 'TokenExpiredError' }, () =>
+			refreshExpiredToken(jwtFromRequest(req))
+		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
 export const secure =

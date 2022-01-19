@@ -1,4 +1,3 @@
-
-export const refreshExpiredToken = () => {
-    throw new Error();
-}
+export const refreshExpiredToken = (token: string | null) => {
+	throw new Error();
+};
