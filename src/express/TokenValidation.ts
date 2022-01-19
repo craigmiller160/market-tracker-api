@@ -8,7 +8,7 @@ import { TokenKey } from '../auth/TokenKey';
 import passport from 'passport';
 import { logger } from '../logger';
 import { NextFunction, Request, Response } from 'express';
-import { errorHandler } from './errorHandler';
+import { expressErrorHandler } from './expressErrorHandler';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Try from '@craigmiller160/ts-functions/Try';
@@ -16,6 +16,7 @@ import * as Either from 'fp-ts/Either';
 import * as RArr from 'fp-ts/ReadonlyArray';
 import { UnauthorizedError } from '../error/UnauthorizedError';
 import * as Pred from 'fp-ts/Predicate';
+import { match } from 'ts-pattern';
 
 export interface AccessToken {
 	readonly sub: string;
@@ -52,10 +53,23 @@ const secureCallback =
 					req.user = user as AccessToken;
 					fn(req, res, next);
 				},
-				(realError) => errorHandler(realError, req, res, next)
+				(realError) => handleTokenError(realError, req, res, next)
 			)
 		);
 	};
+
+const handleTokenError = (
+	error: Error,
+	req: Request,
+	res: Response,
+	next: NextFunction
+): void =>
+	match(error)
+		.with({ name: 'TokenExpiredError' }, () => {
+			// TODO figure this out
+			throw new Error('Figure this out');
+		})
+		.otherwise(() => expressErrorHandler(error, req, res, next));
 
 export const secure =
 	(fn: Route): Route =>

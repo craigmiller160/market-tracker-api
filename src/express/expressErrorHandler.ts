@@ -53,7 +53,7 @@ const createErrorResponse = (
 	};
 };
 
-export const errorHandler = (
+export const expressErrorHandler = (
 	err: Error,
 	req: Request,
 	res: Response,
@@ -71,5 +71,5 @@ export const errorHandler = (
 
 export const setupErrorHandler = (app: Express) =>
 	app.use((err: Error, req: Request, res: Response, next: NextFunction) =>
-		errorHandler(err, req, res, next)
+		expressErrorHandler(err, req, res, next)
 	);

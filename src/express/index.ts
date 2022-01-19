@@ -9,7 +9,7 @@ import { pipe } from 'fp-ts/function';
 import express, { Express } from 'express';
 import { Server } from 'http';
 import { createRoutes } from './routes';
-import { setupErrorHandler } from './errorHandler';
+import { setupErrorHandler } from './expressErrorHandler';
 import https from 'https';
 import { httpsOptions } from './tls';
 import { setupRequestLogging } from './requestLogging';
