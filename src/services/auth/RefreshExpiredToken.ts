@@ -12,12 +12,15 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 const decodeToken = (token: string): Try.Try<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
 
+const getTokenId = (token: AccessToken): string => token.jti;
+
 // TODO consider using flow
 export const refreshExpiredToken = (token: string | null) => {
 	pipe(
 		Option.fromNullable(token),
 		Either.fromOption(() => new UnauthorizedError('No token to refresh')),
 		Either.chain(decodeToken),
+		Either.map(getTokenId),
 		TaskEither.fromEither
 	);
 };
