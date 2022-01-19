@@ -3,6 +3,7 @@ import { AccessToken } from '../../express/TokenValidation';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
+import TaskEither from 'fp-ts/TaskEither';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 
@@ -16,6 +17,7 @@ export const refreshExpiredToken = (token: string | null) => {
 	pipe(
 		Option.fromNullable(token),
 		Either.fromOption(() => new UnauthorizedError('No token to refresh')),
-		Either.chain(decodeToken)
+		Either.chain(decodeToken),
+		TaskEither.fromEither
 	);
 };
