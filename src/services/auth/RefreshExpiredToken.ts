@@ -13,8 +13,6 @@ import {
 	AppRefreshTokenModel
 } from '../../mongo/models/AppRefreshTokenModel';
 
-// TODO I want to re-use the same token validation logic that passport uses, rather than have two different operations
-
 const decodeToken = (token: string): Try.Try<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
 
