@@ -12,6 +12,7 @@ import {
 	AppRefreshToken,
 	AppRefreshTokenModel
 } from '../../mongo/models/AppRefreshTokenModel';
+import { restClient } from '../RestClient';
 
 const decodeToken = (token: string): Try.Try<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
@@ -20,7 +21,7 @@ const getTokenId = (token: AccessToken): string => token.jti;
 
 const findRefreshTokenById = (
 	tokenId: string
-): TaskTry.TaskTry<AppRefreshToken> =>
+): TaskTry.TaskTry<AppRefreshToken> => {
 	pipe(
 		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
 		TaskEither.map(RArr.head),
@@ -34,6 +35,11 @@ const findRefreshTokenById = (
 			)
 		)
 	);
+}
+
+const sendRefreshRequest = (refreshToken: AppRefreshToken) => {
+	throw new Error()
+}
 
 // TODO consider using flow
 export const refreshExpiredToken = (token: string | null) => {
