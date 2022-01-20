@@ -22,16 +22,16 @@ const getTokenId = (token: AccessToken): string => token.jti;
 const findRefreshTokenById = (
 	tokenId: string
 ): TaskTry.TaskTry<AppRefreshToken> => {
-	pipe(
+	return pipe(
 		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
-			Option.fold(
+			Option.fold<AppRefreshToken,TaskTry.TaskTry<AppRefreshToken>>(
 				() =>
-					TaskEither.left(
+					TaskEither.left<UnauthorizedError,AppRefreshToken>(
 						new UnauthorizedError('Unable to find refresh token')
 					),
-				(_) => TaskEither.right(_)
+				(_) => TaskEither.right<UnauthorizedError,AppRefreshToken>(_)
 			)
 		)
 	);
