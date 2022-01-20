@@ -26,7 +26,7 @@ const findRefreshTokenById = (
 		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
-			Option.fold<AppRefreshToken,TaskTry.TaskTry<AppRefreshToken>>(
+			Option.fold<AppRefreshToken, TaskTry.TaskTry<AppRefreshToken>>(
 				() =>
 					TaskEither.left(
 						new UnauthorizedError('Unable to find refresh token')
@@ -35,11 +35,11 @@ const findRefreshTokenById = (
 			)
 		)
 	);
-}
+};
 
 const sendRefreshRequest = (refreshToken: AppRefreshToken) => {
-	throw new Error()
-}
+	throw new Error();
+};
 
 // TODO consider using flow
 export const refreshExpiredToken = (token: string | null) => {
