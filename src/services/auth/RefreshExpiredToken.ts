@@ -28,10 +28,10 @@ const findRefreshTokenById = (
 		TaskEither.chain(
 			Option.fold<AppRefreshToken,TaskTry.TaskTry<AppRefreshToken>>(
 				() =>
-					TaskEither.left<UnauthorizedError,AppRefreshToken>(
+					TaskEither.left(
 						new UnauthorizedError('Unable to find refresh token')
 					),
-				(_) => TaskEither.right<UnauthorizedError,AppRefreshToken>(_)
+				(_) => TaskEither.right(_)
 			)
 		)
 	);
