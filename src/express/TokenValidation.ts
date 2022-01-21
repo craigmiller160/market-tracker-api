@@ -19,6 +19,7 @@ import * as Pred from 'fp-ts/Predicate';
 import { match } from 'ts-pattern';
 import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
 import * as TaskEither from 'fp-ts/TaskEither';
+import * as Task from 'fp-ts/Task';
 
 export interface AccessToken {
 	readonly sub: string;
@@ -69,16 +70,29 @@ const handleTokenError = (
 	match({ error, shouldRefresh: isJwtInCookie(req) })
 		.with(
 			{ error: { name: 'TokenExpiredError' }, shouldRefresh: true },
-			pipe(
-				refreshExpiredToken(jwtFromRequest(req)),
-				TaskEither.map(setResponseCookie(res))
-			)
+			tryToRefreshExpiredToken(req, res, next)
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
-const setResponseCookie = (res: Response) => (cookie: string) => {
-	res.setHeader('Set-Cookie', cookie);
-};
+const tryToRefreshExpiredToken = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): Task.Task<unknown> =>
+	pipe(
+		refreshExpiredToken(jwtFromRequest(req)),
+		TaskEither.fold(
+			(ex) => {
+				next(ex);
+				return Task.of('');
+			},
+			(cookie) => {
+				res.setHeader('Set-Cookie', cookie);
+				res.end();
+				return Task.of('');
+			}
+		)
+	);
 
 export const secure =
 	(fn: Route): Route =>

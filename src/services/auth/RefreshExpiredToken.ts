@@ -16,6 +16,7 @@ import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
+import { logDebug } from '../../logger';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -69,14 +70,18 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 	refresh_token: refreshToken
 });
 
-export const refreshExpiredToken: (
+export const refreshExpiredToken = (
 	token: string | null
-) => TaskTry.TaskTry<string> = flow(
-	getRefreshToken,
-	TaskEither.map(getRefreshBody),
-	TaskEither.chain(sendTokenRequest),
-	TaskEither.chainFirst(handleRefreshToken),
-	TaskEither.chain((_) =>
-		TaskEither.fromEither(createTokenCookie(_.accessToken))
-	)
-);
+): TaskTry.TaskTry<string> => {
+	return pipe(
+		logDebug('Attempting to refresh expired token'), // TODO do I want the log here, or elsewhere?
+		TaskEither.fromIO,
+		TaskEither.chain(() => getRefreshToken(token)),
+		TaskEither.map(getRefreshBody),
+		TaskEither.chain(sendTokenRequest),
+		TaskEither.chainFirst(handleRefreshToken),
+		TaskEither.chain((_) =>
+			TaskEither.fromEither(createTokenCookie(_.accessToken))
+		)
+	);
+};
