@@ -12,7 +12,6 @@ import {
 	AppRefreshToken,
 	AppRefreshTokenModel
 } from '../../mongo/models/AppRefreshTokenModel';
-import { restClient } from '../RestClient';
 
 const decodeToken = (token: string): Try.Try<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
@@ -35,10 +34,6 @@ const findRefreshTokenById = (
 			)
 		)
 	);
-};
-
-const sendRefreshRequest = (refreshToken: AppRefreshToken) => {
-	throw new Error();
 };
 
 // TODO consider using flow
