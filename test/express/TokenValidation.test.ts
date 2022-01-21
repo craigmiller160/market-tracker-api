@@ -63,7 +63,7 @@ describe('TokenValidation', () => {
 		expect(res.body).toEqual([]);
 	});
 
-	it('access token is expired', async () => {
+	it('access token is expired and refresh is rejected', async () => {
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
@@ -146,14 +146,6 @@ describe('TokenValidation', () => {
 	});
 
 	it('refreshes expired token', async () => {
-		throw new Error();
-	});
-
-	it('refresh request rejected', async () => {
-		throw new Error();
-	});
-
-	it('token returned from refresh invalid', async () => {
 		throw new Error();
 	});
 });
