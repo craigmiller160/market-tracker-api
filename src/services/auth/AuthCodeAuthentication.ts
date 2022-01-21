@@ -37,7 +37,7 @@ interface CodeAndOrigin {
 	readonly origin: string;
 }
 
-const TOKEN_PATH = '/oauth/token';
+const TOKEN_PATH = '/oauth/token'; // TODO delete this
 
 const validateState = (
 	req: Request,
