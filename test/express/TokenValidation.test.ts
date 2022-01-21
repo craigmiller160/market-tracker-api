@@ -171,20 +171,43 @@ describe('TokenValidation', () => {
 	});
 
 	it('token is expired, but it refreshes expired token', async () => {
+		process.env.COOKIE_NAME = 'cookieName';
+		process.env.COOKIE_MAX_AGE_SECS = '8600';
+		process.env.COOKIE_PATH = '/cookie-path';
 		mockRestClient
 			.onPost(
 				'http://auth-server/oauth/token',
 				`grant_type=refresh_token&refresh_token=${refreshToken.refreshToken}`
 			)
 			.reply(200, tokenResponse);
-		throw new Error();
+		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
+			expiresIn: '-10m'
+		});
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		const res = await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.timeout(2000)
+			.set('Cookie', tokenCookie)
+			.expect(401);
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				status: 401,
+				message: 'Unauthorized'
+			})
+		);
 	});
 
 	it('token is expired, and no refresh token available', async () => {
+		process.env.COOKIE_NAME = 'cookieName';
+		process.env.COOKIE_MAX_AGE_SECS = '8600';
+		process.env.COOKIE_PATH = '/cookie-path';
 		throw new Error();
 	});
 
 	it('token is expired, and refresh request is rejected', async () => {
+		process.env.COOKIE_NAME = 'cookieName';
+		process.env.COOKIE_MAX_AGE_SECS = '8600';
+		process.env.COOKIE_PATH = '/cookie-path';
 		throw new Error();
 	});
 });
