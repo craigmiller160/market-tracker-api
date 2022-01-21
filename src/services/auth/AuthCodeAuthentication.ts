@@ -1,12 +1,12 @@
 import { Request } from 'express';
 import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as O from 'fp-ts/Option';
-import * as E from 'fp-ts/Either';
+import * as Either from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as IO from 'fp-ts/IO';
-import * as IOE from 'fp-ts/IOEither';
+import * as IOEither from 'fp-ts/IOEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import * as TE from 'fp-ts/TaskEither';
+import * as TaskEither from 'fp-ts/TaskEither';
 import { restClient } from '../RestClient';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as A from 'fp-ts/Array';
@@ -42,15 +42,15 @@ const TOKEN_PATH = '/oauth/token'; // TODO delete this
 const validateState = (
 	req: Request,
 	providedState: number
-): E.Either<Error, number> => {
+): Either.Either<Error, number> => {
 	const { state } = getMarketTrackerSession(req);
 	return pipe(
 		O.fromNullable(state),
-		E.fromOption(
+		Either.fromOption(
 			() =>
 				new UnauthorizedError('Cannot find auth code state in session')
 		),
-		E.filterOrElse(
+		Either.filterOrElse(
 			(_) => _ === providedState,
 			() => new UnauthorizedError('Invalid auth code state')
 		)
@@ -64,28 +64,30 @@ const parseAndValidateNotExpired = (stateExpString: string): boolean =>
 		Time.compare(new Date())
 	) <= 0;
 
-const validateStateExpiration = (req: Request): E.Either<Error, string> => {
+const validateStateExpiration = (
+	req: Request
+): Either.Either<Error, string> => {
 	const { stateExpiration } = getMarketTrackerSession(req);
 	return pipe(
 		O.fromNullable(stateExpiration),
-		E.fromOption(
+		Either.fromOption(
 			() =>
 				new UnauthorizedError(
 					'Cannot find auth code state expiration in session'
 				)
 		),
-		E.filterOrElse(
+		Either.filterOrElse(
 			parseAndValidateNotExpired,
 			() => new UnauthorizedError('Auth code state has expired')
 		)
 	);
 };
 
-const getAndValidateOrigin = (req: Request): E.Either<Error, string> => {
+const getAndValidateOrigin = (req: Request): Either.Either<Error, string> => {
 	const { origin } = getMarketTrackerSession(req);
 	return pipe(
 		O.fromNullable(origin),
-		E.fromOption(
+		Either.fromOption(
 			() => new UnauthorizedError('Cannot find origin in session')
 		)
 	);
@@ -119,7 +121,7 @@ const sendTokenRequest = (
 	requestBody: AuthenticateBody,
 	basicAuth: string,
 	authServerHost: string
-): TE.TaskEither<Error, TokenResponse> =>
+): TaskEither.TaskEither<Error, TokenResponse> =>
 	pipe(
 		TaskTry.tryCatch(() =>
 			restClient.post<TokenResponse>(
@@ -133,8 +135,8 @@ const sendTokenRequest = (
 				}
 			)
 		),
-		TE.map((_) => _.data),
-		TE.mapLeft((_) =>
+		TaskEither.map((_) => _.data),
+		TaskEither.mapLeft((_) =>
 			pipe(
 				logError('Auth server returned error response', _),
 				IO.map(
@@ -150,7 +152,7 @@ const sendTokenRequest = (
 const createBasicAuth = (
 	clientKey: string,
 	clientSecret: string
-): E.Either<Error, string> =>
+): Either.Either<Error, string> =>
 	Try.tryCatch(() =>
 		Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')
 	);
@@ -158,7 +160,7 @@ const createBasicAuth = (
 const authenticateCode = (
 	origin: string,
 	code: string
-): TE.TaskEither<Error, TokenResponse> => {
+): TaskEither.TaskEither<Error, TokenResponse> => {
 	const nullableEnvArray: Array<string | undefined> = [
 		process.env.CLIENT_KEY,
 		process.env.CLIENT_SECRET,
@@ -171,21 +173,23 @@ const authenticateCode = (
 		A.map(O.fromNullable),
 		O.sequenceArray,
 		O.map((_) => _ as string[]),
-		E.fromOption(
+		Either.fromOption(
 			() =>
 				new UnauthorizedError(
 					`Missing environment variables to authenticate auth code: ${nullableEnvArray}`
 				)
 		),
-		E.bindTo('envVariables'),
-		E.bind('requestBody', ({ envVariables }) =>
-			E.right(createAuthenticateBody(origin, code, envVariables))
+		Either.bindTo('envVariables'),
+		Either.bind('requestBody', ({ envVariables }) =>
+			Either.right(createAuthenticateBody(origin, code, envVariables))
 		),
-		E.bind('basicAuth', ({ envVariables: [clientKey, clientSecret] }) =>
-			createBasicAuth(clientKey, clientSecret)
+		Either.bind(
+			'basicAuth',
+			({ envVariables: [clientKey, clientSecret] }) =>
+				createBasicAuth(clientKey, clientSecret)
 		),
-		TE.fromEither,
-		TE.chain(
+		TaskEither.fromEither,
+		TaskEither.chain(
 			({
 				requestBody,
 				basicAuth,
@@ -197,7 +201,7 @@ const authenticateCode = (
 
 const handleRefreshToken = (
 	tokenResponse: TokenResponse
-): TE.TaskEither<Error, unknown> => {
+): TaskEither.TaskEither<Error, unknown> => {
 	const refreshToken: AppRefreshToken = {
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
@@ -205,10 +209,10 @@ const handleRefreshToken = (
 	return saveRefreshToken(refreshToken);
 };
 
-const prepareRedirect = (): E.Either<Error, string> =>
+const prepareRedirect = (): Either.Either<Error, string> =>
 	pipe(
 		O.fromNullable(process.env.POST_AUTH_REDIRECT),
-		E.fromOption(
+		Either.fromOption(
 			() =>
 				new UnauthorizedError(
 					'No post-auth redirect available for auth code login'
@@ -216,7 +220,9 @@ const prepareRedirect = (): E.Either<Error, string> =>
 		)
 	);
 
-const getCodeAndState = (req: Request): E.Either<Error, [string, number]> => {
+const getCodeAndState = (
+	req: Request
+): Either.Either<Error, [string, number]> => {
 	const nullableQueryArray: Array<string | undefined> = [
 		req.query.code as string | undefined,
 		req.query.state as string | undefined
@@ -226,42 +232,53 @@ const getCodeAndState = (req: Request): E.Either<Error, [string, number]> => {
 		nullableQueryArray,
 		A.map(O.fromNullable),
 		O.sequenceArray,
-		E.fromOption(
+		Either.fromOption(
 			() =>
 				new UnauthorizedError(
 					`Missing required query params for authentication: ${nullableQueryArray}`
 				)
 		),
-		E.bindTo('parts'),
-		E.bind('state', ({ parts: [, stateString] }) =>
+		Either.bindTo('parts'),
+		Either.bind('state', ({ parts: [, stateString] }) =>
 			Try.tryCatch(() => parseInt(stateString))
 		),
-		E.map(({ parts: [code], state }) => [code, state])
+		Either.map(({ parts: [code], state }) => [code, state])
 	);
 };
 
 export const authenticateWithAuthCode = (
 	req: Request
-): TE.TaskEither<Error, AuthCodeSuccess> =>
+): TaskTry.TaskTry<AuthCodeSuccess> => {
 	pipe(
 		getCodeAndState(req),
-		E.bindTo('codeAndState'),
-		E.chainFirst(({ codeAndState: [, state] }) =>
+		Either.bindTo('codeAndState'),
+		Either.chainFirst(({ codeAndState: [, state] }) =>
 			validateState(req, state)
 		),
-		E.chainFirst(() => validateStateExpiration(req)),
-		E.bind('origin', () => getAndValidateOrigin(req)),
-		E.map(
+		Either.chainFirst(() => validateStateExpiration(req)),
+		Either.bind('origin', () => getAndValidateOrigin(req)),
+		Either.map(
 			({ codeAndState: [code], origin }): CodeAndOrigin => ({
 				code,
 				origin
 			})
 		),
-		E.chainFirst(IOE.fromIO(removeAuthCodeSessionAttributes(req))),
-		TE.fromEither,
-		TE.chain(({ code, origin }) => authenticateCode(origin, code)),
-		TE.chainFirst(handleRefreshToken),
-		TE.chain((_) => TE.fromEither(createTokenCookie(_.accessToken))),
-		TE.bindTo('cookie'),
-		TE.bind('postAuthRedirect', () => TE.fromEither(prepareRedirect()))
+		Either.chainFirst(
+			IOEither.fromIO(removeAuthCodeSessionAttributes(req))
+		),
+		TaskEither.fromEither,
+		TaskEither.chain(({ code, origin }) => authenticateCode(origin, code)),
+		TaskEither.chainFirst(handleRefreshToken),
+		TaskEither.chain((_) =>
+			TaskEither.fromEither(createTokenCookie(_.accessToken))
+		),
+		TaskEither.bindTo('cookie'),
+		TaskEither.bind('postAuthRedirect', () =>
+			TaskEither.fromEither(prepareRedirect())
+		)
 	);
+
+	pipe(getCodeAndState(req), Either.bindTo('CodeAndState'));
+
+	throw new Error();
+};
