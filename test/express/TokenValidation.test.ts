@@ -10,6 +10,13 @@ import { createKeyPair } from '../testutils/keyPair';
 import { pipe } from 'fp-ts/function';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from '../../src/services/auth/Cookie';
+import {
+	AppRefreshToken,
+	AppRefreshTokenModel,
+	appRefreshTokenToModel
+} from '../../src/mongo/models/AppRefreshTokenModel';
+import { restClient } from '../../src/services/RestClient';
+import MockAdapter from 'axios-mock-adapter';
 
 const clearEnv = () => {
 	delete process.env.COOKIE_NAME;
@@ -18,6 +25,13 @@ const clearEnv = () => {
 	delete process.env.CLIENT_NAME;
 	delete process.env.CLIENT_KEY;
 };
+
+const refreshToken: AppRefreshToken = {
+	tokenId: accessToken.jti,
+	refreshToken: 'refreshToken'
+};
+
+const mockRestClient = new MockAdapter(restClient);
 
 describe('TokenValidation', () => {
 	let fullTestServer: FullTestServer;
@@ -29,14 +43,17 @@ describe('TokenValidation', () => {
 		await stopFullTestServer(fullTestServer);
 	});
 
-	beforeEach(() => {
+	beforeEach(async () => {
+		mockRestClient.reset();
 		clearEnv();
 		process.env.CLIENT_KEY = accessToken.clientKey;
 		process.env.CLIENT_NAME = accessToken.clientName;
+		await appRefreshTokenToModel(refreshToken).save();
 	});
 
-	afterEach(() => {
+	afterEach(async () => {
 		clearEnv();
+		await AppRefreshTokenModel.deleteMany().exec();
 	});
 
 	it('has valid access token', async () => {
