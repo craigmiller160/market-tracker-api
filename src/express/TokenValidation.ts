@@ -4,7 +4,7 @@ import {
 	StrategyOptions,
 	JwtFromRequestFunction
 } from 'passport-jwt';
-import { TokenKey } from '../auth/TokenKey';
+import { TokenKey } from '../services/auth/TokenKey';
 import passport from 'passport';
 import { logger } from '../logger';
 import { NextFunction, Request, Response } from 'express';

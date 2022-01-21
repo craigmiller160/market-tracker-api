@@ -26,7 +26,6 @@ const findRefreshTokenById = (
 		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
-			// TODO see if tweaking Try's generic type will fix this
 			Option.fold<AppRefreshToken, TaskTry.TaskTry<AppRefreshToken>>(
 				() =>
 					TaskEither.left(

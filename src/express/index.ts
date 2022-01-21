@@ -14,7 +14,7 @@ import https from 'https';
 import { httpsOptions } from './tls';
 import { setupRequestLogging } from './requestLogging';
 import nocache from 'nocache';
-import { TokenKey } from '../auth/TokenKey';
+import { TokenKey } from '../services/auth/TokenKey';
 import passport from 'passport';
 import { createPassportValidation } from './TokenValidation';
 import session from 'express-session';

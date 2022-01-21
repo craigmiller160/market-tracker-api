@@ -2,7 +2,7 @@ import { restClient } from '../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
 import '@relmify/jest-fp-ts';
 import jwkToPem from 'jwk-to-pem';
-import { JwkSet, loadTokenKey } from '../../src/auth/TokenKey';
+import { JwkSet, loadTokenKey } from '../../src/services/auth/TokenKey';
 
 const mockRestClient = new MockAdapter(restClient);
 
