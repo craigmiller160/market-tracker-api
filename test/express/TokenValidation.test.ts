@@ -17,6 +17,7 @@ import {
 } from '../../src/mongo/models/AppRefreshTokenModel';
 import { restClient } from '../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
+import { TokenResponse } from '../../src/types/TokenResponse';
 
 const clearEnv = () => {
 	delete process.env.COOKIE_NAME;
@@ -24,6 +25,12 @@ const clearEnv = () => {
 	delete process.env.COOKIE_PATH;
 	delete process.env.CLIENT_NAME;
 	delete process.env.CLIENT_KEY;
+};
+
+const tokenResponse: TokenResponse = {
+	accessToken: 'accessToken2',
+	refreshToken: 'refreshToken2',
+	tokenId: 'tokenId2'
 };
 
 const refreshToken: AppRefreshToken = {
@@ -48,6 +55,7 @@ describe('TokenValidation', () => {
 		clearEnv();
 		process.env.CLIENT_KEY = accessToken.clientKey;
 		process.env.CLIENT_NAME = accessToken.clientName;
+		process.env.AUTH_SERVER_HOST = 'http://auth-server';
 		await appRefreshTokenToModel(refreshToken).save();
 	});
 
@@ -80,7 +88,7 @@ describe('TokenValidation', () => {
 		expect(res.body).toEqual([]);
 	});
 
-	it('access token is expired and refresh is rejected', async () => {
+	it('access token is expired and refresh is skipped because token comes from header', async () => {
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
@@ -162,11 +170,21 @@ describe('TokenValidation', () => {
 		);
 	});
 
-	it('refreshes expired token', async () => {
+	it('token is expired, but it refreshes expired token', async () => {
+		mockRestClient
+			.onPost(
+				'http://auth-server/oauth/token',
+				`grant_type=refresh_token&refresh_token=${refreshToken.refreshToken}`
+			)
+			.reply(200, tokenResponse);
 		throw new Error();
 	});
 
-	it('no refresh token available', async () => {
+	it('token is expired, and no refresh token available', async () => {
+		throw new Error();
+	});
+
+	it('token is expired, and refresh request is rejected', async () => {
 		throw new Error();
 	});
 });
