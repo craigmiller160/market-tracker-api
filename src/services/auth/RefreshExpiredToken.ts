@@ -3,7 +3,7 @@ import { AccessToken } from '../../express/TokenValidation';
 import { flow, pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
-import TaskEither from 'fp-ts/TaskEither';
+import * as TaskEither from 'fp-ts/TaskEither';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as RArr from 'fp-ts/ReadonlyArray';
