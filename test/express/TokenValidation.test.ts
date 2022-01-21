@@ -148,4 +148,8 @@ describe('TokenValidation', () => {
 	it('refreshes expired token', async () => {
 		throw new Error();
 	});
+
+	it('no refresh token available', async () => {
+		throw new Error();
+	});
 });
