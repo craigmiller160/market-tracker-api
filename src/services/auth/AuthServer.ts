@@ -4,14 +4,13 @@ import * as Either from 'fp-ts/Either';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { flow, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import qs from 'qs';
 import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
 import { logError } from '../../logger';
 import * as IO from 'fp-ts/IO';
-import * as IOEither from 'fp-ts/IOEither';
 
 const TOKEN_PATH = '/oauth/token';
 
@@ -77,9 +76,11 @@ const executeTokenRestCall = (
 		TaskEither.mapLeft((_) => handleRestCallError(_)())
 	);
 
-const sendTokenRequest = (requestBody: object) => {
+export const sendTokenRequest = (
+	requestBody: object
+): TaskTry.TaskTry<TokenResponse> => {
 	const formattedRequestBody = qs.stringify(requestBody);
-	pipe(
+	return pipe(
 		getAuthServerHost(),
 		Either.bindTo('authServerHost'),
 		Either.bind('basicAuth', getBasicAuth),
