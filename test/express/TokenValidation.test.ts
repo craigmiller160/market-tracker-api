@@ -191,7 +191,7 @@ describe('TokenValidation', () => {
 			.expect(401);
 		expect(res.body).toEqual(
 			expect.objectContaining({
-				status: 401,
+				status: 401, // TODO shouldn't be 401
 				message: 'Unauthorized'
 			})
 		);
