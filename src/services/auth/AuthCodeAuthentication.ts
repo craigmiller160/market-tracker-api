@@ -7,7 +7,6 @@ import * as IO from 'fp-ts/IO';
 import * as IOEither from 'fp-ts/IOEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { restClient } from '../RestClient';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as A from 'fp-ts/Array';
 import * as RArray from 'fp-ts/ReadonlyArray';
@@ -18,9 +17,7 @@ import { createTokenCookie } from './Cookie';
 import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import { logError } from '../../logger';
-import qs from 'qs';
-import {sendTokenRequest} from './AuthServerRequest';
+import { sendTokenRequest } from './AuthServerRequest';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -38,8 +35,6 @@ interface CodeAndOrigin {
 	readonly code: string;
 	readonly origin: string;
 }
-
-const TOKEN_PATH = '/oauth/token'; // TODO delete this
 
 const validateState = (
 	req: Request,
@@ -103,88 +98,6 @@ const removeAuthCodeSessionAttributes =
 		delete session.state;
 		delete session.origin;
 	};
-
-const sendTokenRequest2 = (
-	requestBody: AuthCodeBody,
-	basicAuth: string,
-	authServerHost: string
-): TaskEither.TaskEither<Error, TokenResponse> =>
-	pipe(
-		TaskTry.tryCatch(() =>
-			restClient.post<TokenResponse>(
-				`${authServerHost}${TOKEN_PATH}`,
-				qs.stringify(requestBody),
-				{
-					headers: {
-						'content-type': 'application/x-www-form-urlencoded',
-						authorization: `Basic ${basicAuth}`
-					}
-				}
-			)
-		),
-		TaskEither.map((_) => _.data),
-		TaskEither.mapLeft((_) =>
-			pipe(
-				logError('Auth server returned error response', _),
-				IO.map(
-					() =>
-						new UnauthorizedError(
-							'Error authenticating with Auth Server'
-						)
-				)
-			)()
-		)
-	);
-
-const createBasicAuth = (
-	clientKey: string,
-	clientSecret: string
-): Either.Either<Error, string> =>
-	Try.tryCatch(() =>
-		Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')
-	);
-
-const authenticateCode = (
-	origin: string,
-	code: string
-): TaskEither.TaskEither<Error, TokenResponse> => {
-	const nullableEnvArray: Array<string | undefined> = [
-		process.env.CLIENT_KEY,
-		process.env.CLIENT_SECRET,
-		process.env.AUTH_CODE_REDIRECT_URI,
-		process.env.AUTH_SERVER_HOST
-	];
-
-	return pipe(
-		nullableEnvArray,
-		A.map(Option.fromNullable),
-		Option.sequenceArray,
-		Option.map((_) => _ as string[]),
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					`Missing environment variables to authenticate auth code: ${nullableEnvArray}`
-				)
-		),
-		Either.bindTo('envVariables'),
-		Either.bind('requestBody', ({ envVariables }) =>
-			Either.right(createAuthenticateBody2(origin, code, envVariables))
-		),
-		Either.bind(
-			'basicAuth',
-			({ envVariables: [clientKey, clientSecret] }) =>
-				createBasicAuth(clientKey, clientSecret)
-		),
-		TaskEither.fromEither,
-		TaskEither.chain(
-			({
-				requestBody,
-				basicAuth,
-				envVariables: [, , , authServerHost]
-			}) => sendTokenRequest2(requestBody, basicAuth, authServerHost)
-		)
-	);
-};
 
 const handleRefreshToken = (
 	tokenResponse: TokenResponse
@@ -253,21 +166,6 @@ const getAndValidateCodeOriginAndState = (
 		Either.chainFirst(IOEither.fromIO(removeAuthCodeSessionAttributes(req)))
 	);
 
-const createAuthenticateBody2 = (
-	origin: string,
-	code: string,
-	envVariables: string[]
-): AuthCodeBody => {
-	const [clientKey, , authCodeRedirectUri] = envVariables;
-
-	return {
-		grant_type: 'authorization_code',
-		client_id: clientKey,
-		code: code,
-		redirect_uri: `${origin}${authCodeRedirectUri}`
-	};
-};
-
 const createAuthCodeBody = (
 	origin: string,
 	code: string
@@ -300,26 +198,12 @@ const createAuthCodeBody = (
 
 export const authenticateWithAuthCode = (
 	req: Request
-): TaskTry.TaskTry<AuthCodeSuccess> => {
+): TaskTry.TaskTry<AuthCodeSuccess> =>
 	pipe(
-		getCodeAndState(req),
-		Either.bindTo('codeAndState'),
-		Either.chainFirst(({ codeAndState: [, state] }) =>
-			validateState(req, state)
-		),
-		Either.chainFirst(() => validateStateExpiration(req)),
-		Either.bind('origin', () => getAndValidateOrigin(req)),
-		Either.map(
-			({ codeAndState: [code], origin }): CodeAndOrigin => ({
-				code,
-				origin
-			})
-		),
-		Either.chainFirst(
-			IOEither.fromIO(removeAuthCodeSessionAttributes(req))
-		),
+		getAndValidateCodeOriginAndState(req),
+		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
 		TaskEither.fromEither,
-		TaskEither.chain(({ code, origin }) => authenticateCode(origin, code)),
+		TaskEither.chain(sendTokenRequest),
 		TaskEither.chainFirst(handleRefreshToken),
 		TaskEither.chain((_) =>
 			TaskEither.fromEither(createTokenCookie(_.accessToken))
@@ -329,13 +213,3 @@ export const authenticateWithAuthCode = (
 			TaskEither.fromEither(prepareRedirect())
 		)
 	);
-
-	pipe(
-		getAndValidateCodeOriginAndState(req),
-		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
-		TaskEither.fromEither,
-		TaskEither.chain(sendTokenRequest)
-	);
-
-	throw new Error();
-};
