@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { getMarketTrackerSession } from '../../function/HttpRequest';
-import * as O from 'fp-ts/Option';
+import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as IO from 'fp-ts/IO';
@@ -10,6 +10,7 @@ import * as TaskEither from 'fp-ts/TaskEither';
 import { restClient } from '../RestClient';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as A from 'fp-ts/Array';
+import * as RArray from 'fp-ts/ReadonlyArray';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
@@ -19,13 +20,14 @@ import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { logError } from '../../logger';
 import qs from 'qs';
+import {sendTokenRequest} from './AuthServerRequest';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
 	readonly postAuthRedirect: string;
 }
 
-export interface AuthenticateBody {
+export interface AuthCodeBody {
 	readonly grant_type: string;
 	readonly client_id: string;
 	readonly code: string;
@@ -45,7 +47,7 @@ const validateState = (
 ): Either.Either<Error, number> => {
 	const { state } = getMarketTrackerSession(req);
 	return pipe(
-		O.fromNullable(state),
+		Option.fromNullable(state),
 		Either.fromOption(
 			() =>
 				new UnauthorizedError('Cannot find auth code state in session')
@@ -69,7 +71,7 @@ const validateStateExpiration = (
 ): Either.Either<Error, string> => {
 	const { stateExpiration } = getMarketTrackerSession(req);
 	return pipe(
-		O.fromNullable(stateExpiration),
+		Option.fromNullable(stateExpiration),
 		Either.fromOption(
 			() =>
 				new UnauthorizedError(
@@ -86,7 +88,7 @@ const validateStateExpiration = (
 const getAndValidateOrigin = (req: Request): Either.Either<Error, string> => {
 	const { origin } = getMarketTrackerSession(req);
 	return pipe(
-		O.fromNullable(origin),
+		Option.fromNullable(origin),
 		Either.fromOption(
 			() => new UnauthorizedError('Cannot find origin in session')
 		)
@@ -102,23 +104,8 @@ const removeAuthCodeSessionAttributes =
 		delete session.origin;
 	};
 
-const createAuthenticateBody = (
-	origin: string,
-	code: string,
-	envVariables: string[]
-): AuthenticateBody => {
-	const [clientKey, , authCodeRedirectUri] = envVariables;
-
-	return {
-		grant_type: 'authorization_code',
-		client_id: clientKey,
-		code: code,
-		redirect_uri: `${origin}${authCodeRedirectUri}`
-	};
-};
-
-const sendTokenRequest = (
-	requestBody: AuthenticateBody,
+const sendTokenRequest2 = (
+	requestBody: AuthCodeBody,
 	basicAuth: string,
 	authServerHost: string
 ): TaskEither.TaskEither<Error, TokenResponse> =>
@@ -170,9 +157,9 @@ const authenticateCode = (
 
 	return pipe(
 		nullableEnvArray,
-		A.map(O.fromNullable),
-		O.sequenceArray,
-		O.map((_) => _ as string[]),
+		A.map(Option.fromNullable),
+		Option.sequenceArray,
+		Option.map((_) => _ as string[]),
 		Either.fromOption(
 			() =>
 				new UnauthorizedError(
@@ -181,7 +168,7 @@ const authenticateCode = (
 		),
 		Either.bindTo('envVariables'),
 		Either.bind('requestBody', ({ envVariables }) =>
-			Either.right(createAuthenticateBody(origin, code, envVariables))
+			Either.right(createAuthenticateBody2(origin, code, envVariables))
 		),
 		Either.bind(
 			'basicAuth',
@@ -194,7 +181,7 @@ const authenticateCode = (
 				requestBody,
 				basicAuth,
 				envVariables: [, , , authServerHost]
-			}) => sendTokenRequest(requestBody, basicAuth, authServerHost)
+			}) => sendTokenRequest2(requestBody, basicAuth, authServerHost)
 		)
 	);
 };
@@ -211,7 +198,7 @@ const handleRefreshToken = (
 
 const prepareRedirect = (): Either.Either<Error, string> =>
 	pipe(
-		O.fromNullable(process.env.POST_AUTH_REDIRECT),
+		Option.fromNullable(process.env.POST_AUTH_REDIRECT),
 		Either.fromOption(
 			() =>
 				new UnauthorizedError(
@@ -230,8 +217,8 @@ const getCodeAndState = (
 
 	return pipe(
 		nullableQueryArray,
-		A.map(O.fromNullable),
-		O.sequenceArray,
+		A.map(Option.fromNullable),
+		Option.sequenceArray,
 		Either.fromOption(
 			() =>
 				new UnauthorizedError(
@@ -243,6 +230,71 @@ const getCodeAndState = (
 			Try.tryCatch(() => parseInt(stateString))
 		),
 		Either.map(({ parts: [code], state }) => [code, state])
+	);
+};
+
+const getAndValidateCodeOriginAndState = (
+	req: Request
+): Try.Try<CodeAndOrigin> =>
+	pipe(
+		getCodeAndState(req),
+		Either.bindTo('codeAndState'),
+		Either.chainFirst(({ codeAndState: [, state] }) =>
+			validateState(req, state)
+		),
+		Either.chainFirst(() => validateStateExpiration(req)),
+		Either.bind('origin', () => getAndValidateOrigin(req)),
+		Either.map(
+			({ codeAndState: [code], origin }): CodeAndOrigin => ({
+				code,
+				origin
+			})
+		),
+		Either.chainFirst(IOEither.fromIO(removeAuthCodeSessionAttributes(req)))
+	);
+
+const createAuthenticateBody2 = (
+	origin: string,
+	code: string,
+	envVariables: string[]
+): AuthCodeBody => {
+	const [clientKey, , authCodeRedirectUri] = envVariables;
+
+	return {
+		grant_type: 'authorization_code',
+		client_id: clientKey,
+		code: code,
+		redirect_uri: `${origin}${authCodeRedirectUri}`
+	};
+};
+
+const createAuthCodeBody = (
+	origin: string,
+	code: string
+): Try.Try<AuthCodeBody> => {
+	const envArray: ReadonlyArray<string | undefined> = [
+		process.env.CLIENT_KEY,
+		process.env.AUTH_CODE_REDIRECT_URI
+	];
+
+	return pipe(
+		envArray,
+		RArray.map(Option.fromNullable),
+		Option.sequenceArray,
+		Either.fromOption(
+			() =>
+				new UnauthorizedError(
+					'Missing environment variables for auth code request'
+				)
+		),
+		Either.map(
+			([clientKey, redirectUri]): AuthCodeBody => ({
+				grant_type: 'authorization_code',
+				client_id: clientKey,
+				code: code,
+				redirect_uri: `${origin}${redirectUri}`
+			})
+		)
 	);
 };
 
@@ -278,7 +330,12 @@ export const authenticateWithAuthCode = (
 		)
 	);
 
-	pipe(getCodeAndState(req), Either.bindTo('CodeAndState'));
+	pipe(
+		getAndValidateCodeOriginAndState(req),
+		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
+		TaskEither.fromEither,
+		TaskEither.chain(sendTokenRequest)
+	);
 
 	throw new Error();
 };

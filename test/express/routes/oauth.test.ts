@@ -14,7 +14,7 @@ import { pipe } from 'fp-ts/function';
 import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from '../../../src/services/auth/constants';
 import { TokenResponse } from '../../../src/types/TokenResponse';
-import { AuthenticateBody } from '../../../src/services/auth/AuthCodeAuthentication';
+import { AuthCodeBody } from '../../../src/services/auth/AuthCodeAuthentication';
 import {
 	AppRefreshToken,
 	AppRefreshTokenModel,
@@ -85,7 +85,7 @@ const createPrepareSession =
 	};
 
 const mockTokenRequest = (code: string, responseStatus = 200) => {
-	const body: AuthenticateBody = {
+	const body: AuthCodeBody = {
 		grant_type: 'authorization_code',
 		client_id: 'clientKey',
 		code,
