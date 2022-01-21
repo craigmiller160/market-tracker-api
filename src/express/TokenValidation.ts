@@ -9,7 +9,7 @@ import passport from 'passport';
 import { logger } from '../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from './expressErrorHandler';
-import { flow, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import * as Either from 'fp-ts/Either';
@@ -69,11 +69,10 @@ const handleTokenError = (
 	match({ error, shouldRefresh: isJwtInCookie(req) })
 		.with(
 			{ error: { name: 'TokenExpiredError' }, shouldRefresh: true },
-			() =>
-				pipe(
-					refreshExpiredToken(jwtFromRequest(req)),
-					TaskEither.map(setResponseCookie(res))
-				)()
+			pipe(
+				refreshExpiredToken(jwtFromRequest(req)),
+				TaskEither.map(setResponseCookie(res))
+			)
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
