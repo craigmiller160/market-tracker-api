@@ -12,6 +12,12 @@ import {
 	AppRefreshToken,
 	AppRefreshTokenModel
 } from '../../mongo/models/AppRefreshTokenModel';
+import { sendTokenRequest } from './AuthServerRequest';
+
+interface RefreshBody {
+	readonly grant_type: 'refresh_token';
+	readonly refresh_token: string;
+}
 
 const decodeToken = (token: string): Try.Try<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
@@ -45,5 +51,16 @@ const getRefreshToken: (token: string | null) => TaskTry.TaskTry<string> = flow(
 	TaskEither.map((_) => _.refreshToken)
 );
 
-export const refreshExpiredToken: (token: string | null) => unknown =
-	flow(getRefreshToken);
+const getRefreshBody = (refreshToken: string): RefreshBody => ({
+	grant_type: 'refresh_token',
+	refresh_token: refreshToken
+});
+
+// TODO finish setting return type
+export const refreshExpiredToken: (
+	token: string | null
+) => TaskTry.TaskTry<unknown> = flow(
+	getRefreshToken,
+	TaskEither.map(getRefreshBody),
+	TaskEither.chain(sendTokenRequest)
+);
