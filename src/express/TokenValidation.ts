@@ -67,6 +67,8 @@ const handleTokenError = (
 ): void =>
 	match(error)
 		.with({ name: 'TokenExpiredError' }, () =>
+			// TODO only call this if the token is in a cookie
+			// TODO follow up the refresh with another function to set the response cookie
 			refreshExpiredToken(jwtFromRequest(req))
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
