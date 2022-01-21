@@ -18,7 +18,7 @@ import { UnauthorizedError } from '../error/UnauthorizedError';
 import * as Pred from 'fp-ts/Predicate';
 import { match } from 'ts-pattern';
 import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
-import TaskEither from 'fp-ts/TaskEither';
+import * as TaskEither from 'fp-ts/TaskEither';
 
 export interface AccessToken {
 	readonly sub: string;
