@@ -13,6 +13,9 @@ import {
 	AppRefreshTokenModel
 } from '../../mongo/models/AppRefreshTokenModel';
 import { sendTokenRequest } from './AuthServerRequest';
+import { TokenResponse } from '../../types/TokenResponse';
+import { saveRefreshToken } from '../mongo/RefreshTokenService';
+import { createTokenCookie } from './Cookie';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -41,6 +44,16 @@ const findRefreshTokenById = (
 		)
 	);
 
+const handleRefreshToken = (
+	tokenResponse: TokenResponse
+): TaskTry.TaskTry<unknown> => {
+	const refreshToken: AppRefreshToken = {
+		tokenId: tokenResponse.tokenId,
+		refreshToken: tokenResponse.refreshToken
+	};
+	return saveRefreshToken(refreshToken);
+};
+
 const getRefreshToken: (token: string | null) => TaskTry.TaskTry<string> = flow(
 	Option.fromNullable,
 	Either.fromOption(() => new UnauthorizedError('No token to refresh')),
@@ -56,11 +69,14 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 	refresh_token: refreshToken
 });
 
-// TODO finish setting return type
 export const refreshExpiredToken: (
 	token: string | null
-) => TaskTry.TaskTry<unknown> = flow(
+) => TaskTry.TaskTry<string> = flow(
 	getRefreshToken,
 	TaskEither.map(getRefreshBody),
-	TaskEither.chain(sendTokenRequest)
+	TaskEither.chain(sendTokenRequest),
+	TaskEither.chainFirst(handleRefreshToken),
+	TaskEither.chain((_) =>
+		TaskEither.fromEither(createTokenCookie(_.accessToken))
+	)
 );
