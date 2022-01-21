@@ -1,6 +1,6 @@
 import * as JWT from 'jsonwebtoken';
 import { AccessToken } from '../../express/TokenValidation';
-import { pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
 import TaskEither from 'fp-ts/TaskEither';
@@ -20,8 +20,8 @@ const getTokenId = (token: AccessToken): string => token.jti;
 
 const findRefreshTokenById = (
 	tokenId: string
-): TaskTry.TaskTry<AppRefreshToken> => {
-	return pipe(
+): TaskTry.TaskTry<AppRefreshToken> =>
+	pipe(
 		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
@@ -34,16 +34,16 @@ const findRefreshTokenById = (
 			)
 		)
 	);
-};
 
-// TODO consider using flow
-export const refreshExpiredToken = (token: string | null) => {
-	pipe(
-		Option.fromNullable(token),
-		Either.fromOption(() => new UnauthorizedError('No token to refresh')),
-		Either.chain(decodeToken),
-		Either.map(getTokenId),
-		TaskEither.fromEither,
-		TaskEither.chain(findRefreshTokenById)
-	);
-};
+const getRefreshToken: (token: string | null) => TaskTry.TaskTry<string> = flow(
+	Option.fromNullable,
+	Either.fromOption(() => new UnauthorizedError('No token to refresh')),
+	Either.chain(decodeToken),
+	Either.map(getTokenId),
+	TaskEither.fromEither,
+	TaskEither.chain(findRefreshTokenById),
+	TaskEither.map((_) => _.refreshToken)
+);
+
+export const refreshExpiredToken: (token: string | null) => unknown =
+	flow(getRefreshToken);
