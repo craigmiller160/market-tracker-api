@@ -171,6 +171,8 @@ describe('TokenValidation', () => {
 	});
 
 	it('token is expired, but it refreshes expired token', async () => {
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_SECRET = 'clientSecret';
 		process.env.COOKIE_NAME = 'cookieName';
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
@@ -188,16 +190,14 @@ describe('TokenValidation', () => {
 			.get('/portfolios')
 			.timeout(2000)
 			.set('Cookie', tokenCookie)
-			.expect(401);
-		expect(res.body).toEqual(
-			expect.objectContaining({
-				status: 401, // TODO shouldn't be 401
-				message: 'Unauthorized'
-			})
-		);
+			.expect(200);
+		expect(res.body).toEqual([]);
+		console.log(mockRestClient.history); // TODO delete this
 	});
 
 	it('token is expired, and no refresh token available', async () => {
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_SECRET = 'clientSecret';
 		process.env.COOKIE_NAME = 'cookieName';
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
@@ -205,6 +205,8 @@ describe('TokenValidation', () => {
 	});
 
 	it('token is expired, and refresh request is rejected', async () => {
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_SECRET = 'clientSecret';
 		process.env.COOKIE_NAME = 'cookieName';
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
