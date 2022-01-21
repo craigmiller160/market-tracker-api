@@ -65,16 +65,15 @@ const handleTokenError = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): void =>
+): unknown =>
 	match({ error, shouldRefresh: isJwtInCookie(req) })
 		.with(
 			{ error: { name: 'TokenExpiredError' }, shouldRefresh: true },
-			() => {
+			() =>
 				pipe(
 					refreshExpiredToken(jwtFromRequest(req)),
 					TaskEither.map(setResponseCookie(res))
-				)();
-			}
+				)()
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
