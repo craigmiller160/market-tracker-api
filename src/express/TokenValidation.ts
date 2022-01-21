@@ -9,7 +9,7 @@ import passport from 'passport';
 import { logger } from '../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from './expressErrorHandler';
-import { pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import * as Either from 'fp-ts/Either';
@@ -18,6 +18,7 @@ import { UnauthorizedError } from '../error/UnauthorizedError';
 import * as Pred from 'fp-ts/Predicate';
 import { match } from 'ts-pattern';
 import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
+import TaskEither from 'fp-ts/TaskEither';
 
 export interface AccessToken {
 	readonly sub: string;
@@ -65,13 +66,21 @@ const handleTokenError = (
 	res: Response,
 	next: NextFunction
 ): void =>
-	match(error)
-		.with({ name: 'TokenExpiredError' }, () =>
-			// TODO only call this if the token is in a cookie
-			// TODO follow up the refresh with another function to set the response cookie
-			refreshExpiredToken(jwtFromRequest(req))
+	match({ error, shouldRefresh: isJwtInCookie(req) })
+		.with(
+			{ error: { name: 'TokenExpiredError' }, shouldRefresh: true },
+			() => {
+				pipe(
+					refreshExpiredToken(jwtFromRequest(req)),
+					TaskEither.map(setResponseCookie(res))
+				)();
+			}
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
+
+const setResponseCookie = (res: Response) => (cookie: string) => {
+	res.setHeader('Set-Cookie', cookie);
+};
 
 export const secure =
 	(fn: Route): Route =>
@@ -82,6 +91,13 @@ export const secure =
 			secureCallback(req, res, next, fn)
 		)(req, res, next);
 	};
+
+const isJwtInCookie: Pred.Predicate<Request> = (req) =>
+	pipe(
+		Option.fromNullable(process.env.COOKIE_NAME),
+		Option.chain((_) => Option.fromNullable(req.cookies[_])),
+		Option.isSome
+	);
 
 const getJwtFromCookie = (req: Request): Option.Option<string> =>
 	pipe(
