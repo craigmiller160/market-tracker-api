@@ -21,7 +21,7 @@ import {
 	appRefreshTokenToModel
 } from '../../../src/mongo/models/AppRefreshTokenModel';
 import qs from 'qs';
-import { AccessToken } from '../../../src/express/TokenValidation';
+import { AccessToken } from '../../../src/express/auth/AccessToken';
 
 const clearEnv = () => {
 	delete process.env.CLIENT_KEY;
