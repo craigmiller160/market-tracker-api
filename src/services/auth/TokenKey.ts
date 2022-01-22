@@ -2,11 +2,11 @@ import jwkToPem, { JWK } from 'jwk-to-pem';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
-import * as TE from 'fp-ts/TaskEither';
+import * as TaskEither from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { restClient } from '../RestClient';
 import * as Try from '@craigmiller160/ts-functions/Try';
-import { logDebug, logInfo } from '../../logger';
+import { logAndReturn } from '../../logger';
 
 export interface TokenKey {
 	readonly key: string;
@@ -28,15 +28,17 @@ const getAuthServerHost = (): E.Either<Error, string> =>
 
 const getJwkSetFromAuthServer = (
 	authServerHost: string
-): TE.TaskEither<Error, JwkSet> =>
+): TaskEither.TaskEither<Error, JwkSet> =>
 	pipe(
 		TaskTry.tryCatch(() =>
 			restClient.get<JwkSet>(`${authServerHost}${JWK_URI}`)
 		),
-		TE.map((_) => _.data)
+		TaskEither.map((_) => _.data)
 	);
 
-const convertJwkToPem = (jwkSet: JwkSet): TE.TaskEither<Error, TokenKey> =>
+const convertJwkToPem = (
+	jwkSet: JwkSet
+): TaskEither.TaskEither<Error, TokenKey> =>
 	pipe(
 		Try.tryCatch(() => jwkToPem(jwkSet.keys[0])),
 		E.map(
@@ -44,15 +46,15 @@ const convertJwkToPem = (jwkSet: JwkSet): TE.TaskEither<Error, TokenKey> =>
 				key: _
 			})
 		),
-		TE.fromEither
+		TaskEither.fromEither
 	);
 
-export const loadTokenKey = (): TE.TaskEither<Error, TokenKey> =>
+export const loadTokenKey = (): TaskEither.TaskEither<Error, TokenKey> =>
 	pipe(
 		getAuthServerHost(),
-		TE.fromEither,
-		TE.chainFirst(() => TE.fromIO(logDebug('Loading JWK'))),
-		TE.chain(getJwkSetFromAuthServer),
-		TE.chain(convertJwkToPem),
-		TE.chainFirst(() => TE.fromIO(logInfo('JWK loaded')))
+		TaskEither.fromEither,
+		TaskEither.map(logAndReturn('debug', 'Loading JWK')),
+		TaskEither.chain(getJwkSetFromAuthServer),
+		TaskEither.chain(convertJwkToPem),
+		TaskEither.map(logAndReturn('info', 'JWK Loaded'))
 	);
