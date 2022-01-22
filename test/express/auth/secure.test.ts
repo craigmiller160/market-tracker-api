@@ -202,6 +202,16 @@ describe('TokenValidation', () => {
 			.set('Cookie', tokenCookie)
 			.expect(401);
 		expect(mockRestClient.history.post).toHaveLength(1);
+
+		const refreshTokens = await AppRefreshTokenModel.find().exec();
+		expect(refreshTokens).toHaveLength(1);
+		expect(refreshTokens[0]).toEqual(expect.objectContaining({
+			tokenId: tokenResponse.tokenId,
+			refreshToken: tokenResponse.refreshToken
+		}))
+
+		console.log(res.headers['set-cookie']);
+
 		// TODO validate other stats
 		// TODO infinite loop should be happening
 		// TODO it does the refresh, then the tokenId doesn't match, hence no infinite loop due to expiration
