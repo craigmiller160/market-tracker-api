@@ -27,11 +27,11 @@ const clearEnv = () => {
 	delete process.env.CLIENT_KEY;
 };
 
-const tokenResponse: TokenResponse = {
-	accessToken: 'accessToken2',
+const createTokenResponse = (accessToken: string): TokenResponse => ({
+	accessToken,
 	refreshToken: 'refreshToken2',
 	tokenId: 'tokenId2'
-};
+});
 
 const refreshToken: AppRefreshToken = {
 	tokenId: accessToken.jti,
@@ -170,12 +170,18 @@ describe('TokenValidation', () => {
 		);
 	});
 
+	it('token is expired, refresh returns expired token, prevent infinite loop', async () => {
+		throw new Error();
+	});
+
 	it('token is expired, but it refreshes expired token', async () => {
 		process.env.CLIENT_KEY = accessToken.clientKey;
 		process.env.CLIENT_SECRET = 'clientSecret';
 		process.env.COOKIE_NAME = 'cookieName';
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
+		const newToken = createAccessToken(fullTestServer.keyPair.privateKey);
+		const tokenResponse = createTokenResponse(newToken);
 		mockRestClient
 			.onPost(
 				'http://auth-server/oauth/token',
