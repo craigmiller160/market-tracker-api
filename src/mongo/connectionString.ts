@@ -2,7 +2,7 @@ import * as Try from '@craigmiller160/ts-functions/Try';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
-import { logDebug } from '../logger';
+import { logger } from '../logger';
 import * as A from 'fp-ts/Array';
 import { match } from 'ts-pattern';
 
@@ -21,7 +21,7 @@ const createConnectionString = (env: MongoEnv): string =>
 const logConnectionStringInDev = (connectionString: string): string =>
 	match(process.env.NODE_ENV)
 		.with('development', () => {
-			logDebug(`Mongo Connection String: ${connectionString}`)();
+			logger.debug(`Mongo Connection String: ${connectionString}`);
 			return connectionString;
 		})
 		.otherwise(() => connectionString);

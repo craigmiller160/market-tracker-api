@@ -1,10 +1,9 @@
 import * as O from 'fp-ts/Option';
-import * as E from 'fp-ts/Either';
 import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 
 import bodyParer from 'body-parser';
-import { logError, logger } from '../logger';
+import { logger } from '../logger';
 import { pipe } from 'fp-ts/function';
 import express, { Express } from 'express';
 import { Server } from 'http';
@@ -20,18 +19,12 @@ import { createPassportValidation } from './auth/passport';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { nanoid } from 'nanoid';
+import { __, match } from 'ts-pattern';
 
 const safeParseInt = (text: string): O.Option<number> =>
-	pipe(
-		E.tryCatch(
-			() => parseInt(text),
-			(error) =>
-				logError(
-					`Error parsing EXPRESS_PORT environment variable: ${error}`
-				)
-		),
-		O.fromEither
-	);
+	match(parseInt(text))
+		.with(__.NaN, () => O.none)
+		.otherwise((_) => O.some(_));
 
 const expressListen = (app: Express, port: number): TaskTry.TaskTry<Server> =>
 	TaskTry.tryCatch(

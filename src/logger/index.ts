@@ -60,27 +60,6 @@ export const logAndReturn =
 
 // TODO delete old logger methods
 
-export const logInfo =
-	(message: string): IO.IO<string> =>
-	() => {
-		logger.info(message);
-		return message;
-	};
-
-export const logDebug =
-	(message: string): IO.IO<string> =>
-	() => {
-		logger.debug(message);
-		return message;
-	};
-
-export const logWarn =
-	(message: string): IO.IO<string> =>
-	() => {
-		logger.warn(message);
-		return message;
-	};
-
 export const logError =
 	(message: string, error?: Error): IO.IO<string> =>
 	() => {
