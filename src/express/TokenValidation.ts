@@ -6,7 +6,7 @@ import {
 } from 'passport-jwt';
 import { TokenKey } from '../services/auth/TokenKey';
 import passport from 'passport';
-import {logDebug, logError, logger} from '../logger';
+import { logDebug, logError, logger } from '../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from './expressErrorHandler';
 import { pipe } from 'fp-ts/function';
