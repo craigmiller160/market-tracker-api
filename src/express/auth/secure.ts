@@ -22,6 +22,10 @@ interface CookieParts {
 	readonly cookieValue: string;
 }
 
+type RefreshFlagRequest = Request & {
+	hasRefreshed: boolean | undefined;
+}
+
 const secureCallback =
 	(req: Request, res: Response, next: NextFunction, fn: Route) =>
 	(
@@ -43,6 +47,9 @@ const secureCallback =
 		);
 	};
 
+const hasRefreshAlreadyHappened = (req: Request): boolean =>
+	(req as RefreshFlagRequest).hasRefreshed ?? false;
+
 const handleTokenError = (
 	error: Error,
 	req: Request,
@@ -50,9 +57,9 @@ const handleTokenError = (
 	next: NextFunction,
 	fn: Route
 ): unknown =>
-	match({ error, shouldRefresh: isJwtInCookie(req) })
+	match({ error, jwtIsInCookie: isJwtInCookie(req), refreshAlreadyHappened: hasRefreshAlreadyHappened(req) })
 		.with(
-			{ error: { name: 'TokenExpiredError' }, shouldRefresh: true },
+			{ error: { name: 'TokenExpiredError' }, jwtIsInCookie: true, refreshAlreadyHappened: false },
 			tryToRefreshExpiredToken(req, res, next, fn)
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
@@ -81,8 +88,9 @@ const tryToRefreshExpiredToken = (
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): Task.Task<unknown> =>
-	pipe(
+): Task.Task<unknown> => {
+	(req as RefreshFlagRequest).hasRefreshed = true;
+	return pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
 		TaskEither.chain(splitCookie),
 		TaskEither.fold(
@@ -104,6 +112,7 @@ const tryToRefreshExpiredToken = (
 			}
 		)
 	);
+}
 
 export const secure =
 	(fn: Route): Route =>
