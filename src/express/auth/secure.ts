@@ -8,9 +8,13 @@ import { match } from 'ts-pattern';
 import { refreshExpiredToken } from '../../services/auth/RefreshExpiredToken';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
+import * as RArray from 'fp-ts/ReadonlyArray';
 import { isJwtInCookie, jwtFromRequest } from './jwt';
 import { AccessToken } from './AccessToken';
 import { Route } from '../Route';
+import * as Text from '@craigmiller160/ts-functions/Text';
+import { UnauthorizedError } from '../../error/UnauthorizedError';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 
 interface CookieParts {
 	readonly cookie: string;
@@ -53,14 +57,23 @@ const handleTokenError = (
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
-const splitCookie = (cookie: string): CookieParts => {
-	const [cookieName, cookieValue] = cookie.split(';')[0].split('=');
-	return {
+const splitCookie = (cookie: string): TaskTry.TaskTry<CookieParts> =>
+	pipe(
 		cookie,
-		cookieName,
-		cookieValue
-	};
-};
+		Text.split(';'),
+		RArray.head,
+		Option.map(Text.split('=')),
+		Option.map(
+			([cookieName, cookieValue]): CookieParts => ({
+				cookie,
+				cookieName,
+				cookieValue
+			})
+		),
+		TaskEither.fromOption(
+			() => new UnauthorizedError('Unable to prepare cookie')
+		)
+	);
 
 const tryToRefreshExpiredToken = (
 	req: Request,
@@ -70,7 +83,7 @@ const tryToRefreshExpiredToken = (
 ): Task.Task<unknown> =>
 	pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
-		TaskEither.map(splitCookie),
+		TaskEither.chain(splitCookie),
 		TaskEither.fold(
 			(ex) => {
 				logError('Error refreshing token', ex)();
