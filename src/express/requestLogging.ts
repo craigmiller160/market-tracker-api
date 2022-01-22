@@ -8,8 +8,10 @@ export const setupRequestLogging = (app: Express) => {
 		const fullQueryString = queryString.length > 0 ? `?${queryString}` : '';
 		logger.debug(`${req.method} ${req.path}${fullQueryString}`);
 		next();
-		logger.info(
-			`${req.method} ${req.path}${fullQueryString} - ${res.statusCode}`
-		);
+		res.on('finish', () => {
+			logger.info(
+				`${req.method} ${req.path}${fullQueryString} - ${res.statusCode}`
+			);
+		});
 	});
 };
