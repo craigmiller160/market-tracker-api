@@ -24,7 +24,7 @@ interface CookieParts {
 
 type RefreshFlagRequest = Request & {
 	hasRefreshed: boolean | undefined;
-}
+};
 
 const secureCallback =
 	(req: Request, res: Response, next: NextFunction, fn: Route) =>
@@ -57,9 +57,17 @@ const handleTokenError = (
 	next: NextFunction,
 	fn: Route
 ): unknown =>
-	match({ error, jwtIsInCookie: isJwtInCookie(req), refreshAlreadyHappened: hasRefreshAlreadyHappened(req) })
+	match({
+		error,
+		jwtIsInCookie: isJwtInCookie(req),
+		refreshAlreadyHappened: hasRefreshAlreadyHappened(req)
+	})
 		.with(
-			{ error: { name: 'TokenExpiredError' }, jwtIsInCookie: true, refreshAlreadyHappened: false },
+			{
+				error: { name: 'TokenExpiredError' },
+				jwtIsInCookie: true,
+				refreshAlreadyHappened: false
+			},
 			tryToRefreshExpiredToken(req, res, next, fn)
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
@@ -100,9 +108,9 @@ const tryToRefreshExpiredToken = (
 			},
 			(cookieParts) => {
 				logDebug('Successfully refreshed token')();
-				res.setHeader('Set-Cookie', cookieParts.cookie);
 				req.headers['Cookie'] = cookieParts.cookie;
 				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
+				res.setHeader('Set-Cookie', cookieParts.cookie);
 				passport.authenticate(
 					'jwt',
 					{ session: false },
@@ -112,7 +120,7 @@ const tryToRefreshExpiredToken = (
 			}
 		)
 	);
-}
+};
 
 export const secure =
 	(fn: Route): Route =>

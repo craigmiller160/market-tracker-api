@@ -27,7 +27,10 @@ const clearEnv = () => {
 	delete process.env.CLIENT_KEY;
 };
 
-const createTokenResponse = (accessToken: string, tokenId: string = 'tokenId2'): TokenResponse => ({
+const createTokenResponse = (
+	accessToken: string,
+	tokenId = 'tokenId2'
+): TokenResponse => ({
 	accessToken,
 	refreshToken: 'refreshToken2',
 	tokenId
@@ -196,7 +199,7 @@ describe('TokenValidation', () => {
 			expiresIn: '-10m'
 		});
 		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
-		const res = await request(fullTestServer.expressServer.server)
+		await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
 			.set('Cookie', tokenCookie)
@@ -205,16 +208,12 @@ describe('TokenValidation', () => {
 
 		const refreshTokens = await AppRefreshTokenModel.find().exec();
 		expect(refreshTokens).toHaveLength(1);
-		expect(refreshTokens[0]).toEqual(expect.objectContaining({
-			tokenId: tokenResponse.tokenId,
-			refreshToken: tokenResponse.refreshToken
-		}))
-
-		console.log(res.headers['set-cookie']);
-
-		// TODO validate other stats
-		// TODO infinite loop should be happening
-		// TODO it does the refresh, then the tokenId doesn't match, hence no infinite loop due to expiration
+		expect(refreshTokens[0]).toEqual(
+			expect.objectContaining({
+				tokenId: tokenResponse.tokenId,
+				refreshToken: tokenResponse.refreshToken
+			})
+		);
 	});
 
 	it('token is expired, but it refreshes expired token', async () => {
