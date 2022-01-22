@@ -12,6 +12,12 @@ import { isJwtInCookie, jwtFromRequest } from './jwt';
 import { AccessToken } from './AccessToken';
 import { Route } from '../Route';
 
+interface CookieParts {
+	readonly cookie: string;
+	readonly cookieName: string;
+	readonly cookieValue: string;
+}
+
 const secureCallback =
 	(req: Request, res: Response, next: NextFunction, fn: Route) =>
 	(
@@ -47,6 +53,15 @@ const handleTokenError = (
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
+const splitCookie = (cookie: string): CookieParts => {
+	const [cookieName, cookieValue] = cookie.split(';')[0].split('=');
+	return {
+		cookie,
+		cookieName,
+		cookieValue
+	};
+};
+
 const tryToRefreshExpiredToken = (
 	req: Request,
 	res: Response,
@@ -55,19 +70,18 @@ const tryToRefreshExpiredToken = (
 ): Task.Task<unknown> =>
 	pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
+		TaskEither.map(splitCookie),
 		TaskEither.fold(
 			(ex) => {
 				logError('Error refreshing token', ex)();
 				next(ex);
 				return Task.of('');
 			},
-			(cookie) => {
-				// TODO clean this up
-				const cookieParts = cookie.split(';')[0].split('=');
+			(cookieParts) => {
 				logDebug('Successfully refreshed token')();
-				res.setHeader('Set-Cookie', cookie);
-				req.headers['Cookie'] = cookie;
-				req.cookies[cookieParts[0]] = cookieParts[1];
+				res.setHeader('Set-Cookie', cookieParts.cookie);
+				req.headers['Cookie'] = cookieParts.cookie;
+				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 				passport.authenticate(
 					'jwt',
 					{ session: false },
