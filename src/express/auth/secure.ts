@@ -64,6 +64,7 @@ const tryToRefreshExpiredToken = (
 			(cookie) => {
 				logDebug('Successfully refreshed token')();
 				res.setHeader('Set-Cookie', cookie);
+				// TODO must feed it back through passport with the route here
 				fn(req, res, next);
 				return Task.of('');
 			}
