@@ -63,6 +63,7 @@ const splitCookie = (cookie: string): TaskTry.TaskTry<CookieParts> =>
 		Text.split(';'),
 		RArray.head,
 		Option.map(Text.split('=')),
+		Option.filter((_) => _.length === 2),
 		Option.map(
 			([cookieName, cookieValue]): CookieParts => ({
 				cookie,
