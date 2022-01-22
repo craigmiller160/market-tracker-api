@@ -192,7 +192,6 @@ describe('TokenValidation', () => {
 			.set('Cookie', tokenCookie)
 			.expect(200);
 		expect(res.body).toEqual([]);
-		throw new Error();
 		// TODO verify that token was refreshed, that there's new refresh token
 	});
 

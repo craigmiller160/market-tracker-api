@@ -64,8 +64,12 @@ const tryToRefreshExpiredToken = (
 			(cookie) => {
 				logDebug('Successfully refreshed token')();
 				res.setHeader('Set-Cookie', cookie);
-				// TODO must feed it back through passport with the route here
-				fn(req, res, next);
+				// TODO creates an infinite loop because the old token is in place
+				passport.authenticate(
+					'jwt',
+					{ session: false },
+					secureCallback(req, res, next, fn)
+				)(req, res, next);
 				return Task.of('');
 			}
 		)
@@ -74,7 +78,6 @@ const tryToRefreshExpiredToken = (
 export const secure =
 	(fn: Route): Route =>
 	(req, res, next) => {
-		// TODO need to feed the new token through here... somehow
 		passport.authenticate(
 			'jwt',
 			{ session: false },
