@@ -8,6 +8,8 @@ const myFormat = format.printf(
 		`[${timestamp}] [${level}] - ${stack ?? message}`
 );
 
+// TODO figure out how to handle ordering of log messages or else remove IO stuff
+
 export const logger = createLogger({
 	level: 'debug',
 	format: format.combine(

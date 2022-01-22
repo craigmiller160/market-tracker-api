@@ -1,5 +1,6 @@
 import { RouteCreator } from './RouteCreator';
-import { AccessToken, secure } from '../TokenValidation';
+import { secure } from '../auth/secure';
+import { AccessToken } from '../auth/AccessToken';
 import { pipe } from 'fp-ts/function';
 import {
 	AuthCodeLoginResponse,

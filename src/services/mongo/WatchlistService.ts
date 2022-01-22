@@ -12,8 +12,10 @@ import { logger } from '../../logger';
 
 export const findWatchlistsForUser = (
 	userId: number
-): TaskTry.TaskTry<Watchlist[]> =>
-	TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
+): TaskTry.TaskTry<Watchlist[]> => {
+	logger.info(`Finding watchlists for user. ID: ${userId}`);
+	return TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
+};
 
 const replaceWatchlistsForUser = async (
 	userId: number,
@@ -27,6 +29,7 @@ export const saveWatchlistsForUser = (
 	userId: number,
 	watchlists: Watchlist[]
 ): TaskTry.TaskTry<unknown> => {
+	logger.info(`Saving watchlists for user. ID: ${userId}`);
 	const watchlistModels = pipe(
 		watchlists,
 		A.map((_) =>

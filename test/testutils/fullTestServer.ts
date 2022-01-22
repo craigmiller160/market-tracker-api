@@ -9,8 +9,8 @@ import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { stopExpressServer } from './expressServer';
 import { createKeyPair, TokenKeyPair } from './keyPair';
-import { TokenKey } from '../../src/auth/TokenKey';
-import { AccessToken } from '../../src/express/TokenValidation';
+import { TokenKey } from '../../src/services/auth/TokenKey';
+import { AccessToken } from '../../src/express/auth/AccessToken';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { createSessionRoute } from './sessionRoute';
 

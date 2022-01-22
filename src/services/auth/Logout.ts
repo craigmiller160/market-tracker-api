@@ -1,6 +1,6 @@
 import { AppRefreshTokenModel } from '../../mongo/models/AppRefreshTokenModel';
 import { Request } from 'express';
-import { AccessToken } from '../../express/TokenValidation';
+import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';

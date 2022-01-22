@@ -4,9 +4,9 @@ import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { restClient } from '../services/RestClient';
+import { restClient } from '../RestClient';
 import * as Try from '@craigmiller160/ts-functions/Try';
-import { logDebug, logInfo } from '../logger';
+import { logDebug, logInfo } from '../../logger';
 
 export interface TokenKey {
 	readonly key: string;

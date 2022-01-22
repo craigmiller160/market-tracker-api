@@ -12,8 +12,10 @@ import { logger } from '../../logger';
 
 export const findPortfoliosForUser = (
 	userId: number
-): TaskTry.TaskTry<Portfolio[]> =>
-	TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec());
+): TaskTry.TaskTry<Portfolio[]> => {
+	logger.info(`Finding portfolios for user. ID: ${userId}`);
+	return TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec());
+};
 
 const replacePortfoliosForUser = async (
 	userId: number,
@@ -27,6 +29,7 @@ export const savePortfoliosForUser = (
 	userId: number,
 	portfolios: Portfolio[]
 ): TaskTry.TaskTry<unknown> => {
+	logger.info(`Saving portfolios for user. ID: ${userId}`);
 	const portfolioModels = pipe(
 		portfolios,
 		A.map((_) =>

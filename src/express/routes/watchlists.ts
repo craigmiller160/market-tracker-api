@@ -7,7 +7,8 @@ import {
 import * as TE from 'fp-ts/TaskEither';
 import { Request } from 'express';
 import { Watchlist } from '../../mongo/models/WatchlistModel';
-import { AccessToken, secure } from '../TokenValidation';
+import { AccessToken } from '../auth/AccessToken';
+import { secure } from '../auth/secure';
 
 export const createWatchlistRoutes: RouteCreator = (app) => {
 	app.get(
