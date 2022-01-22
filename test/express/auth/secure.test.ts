@@ -208,7 +208,12 @@ describe('TokenValidation', () => {
 				refreshToken: tokenResponse.refreshToken
 			})
 		);
-		// TODO verify that token was refreshed, that there's new refresh token, that the access token is set with a new value
+
+		const newTokenCookie = Try.getOrThrow(createTokenCookie(newToken));
+		const returnedTokenCookie = (
+			res.headers['set-cookie'] as string[]
+		).find((cookie) => cookie.startsWith('cookieName'));
+		expect(returnedTokenCookie).toEqual(newTokenCookie);
 	});
 
 	it('token is expired, and no refresh token available', async () => {
