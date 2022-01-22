@@ -1,5 +1,5 @@
 import * as JWT from 'jsonwebtoken';
-import { AccessToken } from '../../express/TokenValidation';
+import { AccessToken } from '../../express/auth/AccessToken';
 import { flow, pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';

@@ -9,20 +9,8 @@ import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
 import { isJwtInCookie, jwtFromRequest } from './auth/jwt';
-
-export interface AccessToken {
-	readonly sub: string;
-	readonly clientName: string;
-	readonly clientKey: string;
-	readonly firstName: string;
-	readonly lastName: string;
-	readonly userId: number;
-	readonly userEmail: string;
-	readonly roles: string[];
-	readonly jti: string;
-}
-
-type Route = (req: Request, res: Response, next: NextFunction) => void;
+import { AccessToken } from './auth/AccessToken';
+import { Route } from './Route';
 
 const secureCallback =
 	(req: Request, res: Response, next: NextFunction, fn: Route) =>

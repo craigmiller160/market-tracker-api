@@ -5,7 +5,7 @@ import passport from 'passport';
 import { pipe } from 'fp-ts/function';
 import * as Either from 'fp-ts/Either';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import { AccessToken } from '../TokenValidation';
+import { AccessToken } from './AccessToken';
 import * as Pred from 'fp-ts/Predicate';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import * as RArr from 'fp-ts/ReadonlyArray';
