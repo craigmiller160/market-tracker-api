@@ -16,7 +16,7 @@ import { setupRequestLogging } from './requestLogging';
 import nocache from 'nocache';
 import { TokenKey } from '../services/auth/TokenKey';
 import passport from 'passport';
-import { createPassportValidation } from './TokenValidation';
+import { createPassportValidation } from './auth/passport';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { nanoid } from 'nanoid';

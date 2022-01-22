@@ -1,25 +1,14 @@
-import {
-	Strategy as JwtStrategy,
-	ExtractJwt,
-	StrategyOptions,
-	JwtFromRequestFunction
-} from 'passport-jwt';
-import { TokenKey } from '../services/auth/TokenKey';
 import passport from 'passport';
-import { logDebug, logError, logger } from '../logger';
+import { logDebug, logError } from '../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from './expressErrorHandler';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
-import * as Try from '@craigmiller160/ts-functions/Try';
-import * as Either from 'fp-ts/Either';
-import * as RArr from 'fp-ts/ReadonlyArray';
-import { UnauthorizedError } from '../error/UnauthorizedError';
-import * as Pred from 'fp-ts/Predicate';
 import { match } from 'ts-pattern';
 import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
+import { isJwtInCookie, jwtFromRequest } from './auth/jwt';
 
 export interface AccessToken {
 	readonly sub: string;
@@ -31,11 +20,6 @@ export interface AccessToken {
 	readonly userEmail: string;
 	readonly roles: string[];
 	readonly jti: string;
-}
-
-interface ClientKeyName {
-	readonly clientKey: string;
-	readonly clientName: string;
 }
 
 type Route = (req: Request, res: Response, next: NextFunction) => void;
@@ -108,81 +92,3 @@ export const secure =
 			secureCallback(req, res, next, fn)
 		)(req, res, next);
 	};
-
-const isJwtInCookie: Pred.Predicate<Request> = (req) =>
-	pipe(
-		Option.fromNullable(process.env.COOKIE_NAME),
-		Option.chain((_) => Option.fromNullable(req.cookies[_])),
-		Option.isSome
-	);
-
-const getJwtFromCookie = (req: Request): Option.Option<string> =>
-	pipe(
-		Option.fromNullable(process.env.COOKIE_NAME),
-		Option.chain((_) => Option.fromNullable(req.cookies[_]))
-	);
-
-const jwtFromRequest: JwtFromRequestFunction = (req) =>
-	pipe(
-		getJwtFromCookie(req),
-		Option.getOrElse(() => ExtractJwt.fromAuthHeaderAsBearerToken()(req))
-	);
-
-const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
-	const envArray: ReadonlyArray<string | undefined> = [
-		process.env.CLIENT_KEY,
-		process.env.CLIENT_NAME
-	];
-
-	return pipe(
-		envArray,
-		RArr.map(Option.fromNullable),
-		Option.sequenceArray,
-		Option.map(
-			([clientKey, clientName]): ClientKeyName => ({
-				clientKey,
-				clientName
-			})
-		),
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					`Missing required environment variables for token property validation: ${envArray}`
-				)
-		)
-	);
-};
-
-const validatePayload = (token: AccessToken): Pred.Predicate<ClientKeyName> =>
-	pipe(
-		(keyAndName: ClientKeyName) => keyAndName.clientKey === token.clientKey,
-		Pred.and((keyAndName) => keyAndName.clientName === token.clientName)
-	);
-
-export const createPassportValidation = (tokenKey: TokenKey) => {
-	logger.debug('Creating passport JWT validation strategy');
-	const options: StrategyOptions = {
-		secretOrKey: tokenKey.key,
-		jwtFromRequest
-	};
-
-	passport.use(
-		new JwtStrategy(options, (payload: AccessToken, done) => {
-			const doValidatePayload = validatePayload(payload);
-			pipe(
-				getClientKeyAndName(),
-				Either.filterOrElse<ClientKeyName, Error>(
-					doValidatePayload,
-					() =>
-						new UnauthorizedError(
-							'Invalid token payload attributes'
-						)
-				),
-				Either.fold(
-					(ex) => done(ex, null),
-					() => done(null, payload)
-				)
-			);
-		})
-	);
-};
