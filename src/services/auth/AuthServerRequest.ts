@@ -1,4 +1,3 @@
-import * as RArray from 'fp-ts/ReadonlyArray';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
 import * as Try from '@craigmiller160/ts-functions/Try';
@@ -11,6 +10,7 @@ import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
 import { logError } from '../../logger';
 import * as IO from 'fp-ts/IO';
+import { getRequiredValues } from '../../function/Values';
 
 const TOKEN_PATH = '/oauth/token';
 
@@ -21,15 +21,7 @@ const getBasicAuth = (): Try.Try<string> => {
 	];
 
 	return pipe(
-		envArray,
-		RArray.map(Option.fromNullable),
-		Option.sequenceArray,
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					`Missing environment variables for Basic Auth: ${envArray}`
-				)
-		),
+		getRequiredValues(envArray),
 		Either.chain(([clientKey, clientSecret]) =>
 			Try.tryCatch(() =>
 				Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')
