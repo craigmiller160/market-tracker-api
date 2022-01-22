@@ -198,6 +198,16 @@ describe('TokenValidation', () => {
 			.set('Cookie', tokenCookie)
 			.expect(200);
 		expect(res.body).toEqual([]);
+		expect(mockRestClient.history.post).toHaveLength(1);
+
+		const refreshTokensInDb = await AppRefreshTokenModel.find().exec();
+		expect(refreshTokensInDb).toHaveLength(1);
+		expect(refreshTokensInDb[0]).toEqual(
+			expect.objectContaining({
+				tokenId: tokenResponse.tokenId,
+				refreshToken: tokenResponse.refreshToken
+			})
+		);
 		// TODO verify that token was refreshed, that there's new refresh token, that the access token is set with a new value
 	});
 

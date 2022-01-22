@@ -23,6 +23,11 @@ interface RefreshBody {
 	readonly refresh_token: string;
 }
 
+interface RefreshTokenAndId {
+	readonly existingTokenId: string;
+	readonly refreshToken: AppRefreshToken;
+}
+
 const decodeToken = (token: string): Try.Try<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
 
@@ -46,23 +51,28 @@ const findRefreshTokenById = (
 	);
 
 const handleRefreshToken = (
+	existingTokenId: string,
 	tokenResponse: TokenResponse
 ): TaskTry.TaskTry<unknown> => {
 	const refreshToken: AppRefreshToken = {
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
 	};
-	return saveRefreshToken(refreshToken);
+	return saveRefreshToken(refreshToken, existingTokenId);
 };
 
-const getRefreshToken: (token: string | null) => TaskTry.TaskTry<string> = flow(
+const getRefreshToken: (
+	token: string | null
+) => TaskTry.TaskTry<RefreshTokenAndId> = flow(
 	Option.fromNullable,
 	Either.fromOption(() => new UnauthorizedError('No token to refresh')),
 	Either.chain(decodeToken),
 	Either.map(getTokenId),
 	TaskEither.fromEither,
-	TaskEither.chain(findRefreshTokenById),
-	TaskEither.map((_) => _.refreshToken)
+	TaskEither.bindTo('existingTokenId'),
+	TaskEither.bind('refreshToken', ({ existingTokenId }) =>
+		findRefreshTokenById(existingTokenId)
+	)
 );
 
 const getRefreshBody = (refreshToken: string): RefreshBody => ({
@@ -77,11 +87,19 @@ export const refreshExpiredToken = (
 		logDebug('Attempting to refresh expired token'), // TODO do I want the log here, or elsewhere?
 		TaskEither.fromIO,
 		TaskEither.chain(() => getRefreshToken(token)),
-		TaskEither.map(getRefreshBody),
-		TaskEither.chain(sendTokenRequest),
-		TaskEither.chainFirst(handleRefreshToken),
-		TaskEither.chain((_) =>
-			TaskEither.fromEither(createTokenCookie(_.accessToken))
+		TaskEither.bindTo('tokenAndId'),
+		TaskEither.bind('refreshBody', ({ tokenAndId: { refreshToken } }) =>
+			TaskEither.right(getRefreshBody(refreshToken.refreshToken))
+		),
+		TaskEither.bind('tokenResponse', ({ refreshBody }) =>
+			sendTokenRequest(refreshBody)
+		),
+		TaskEither.chainFirst(
+			({ tokenResponse, tokenAndId: { existingTokenId } }) =>
+				handleRefreshToken(existingTokenId, tokenResponse)
+		),
+		TaskEither.chain(({ tokenResponse: { accessToken } }) =>
+			TaskEither.fromEither(createTokenCookie(accessToken))
 		)
 	);
 };

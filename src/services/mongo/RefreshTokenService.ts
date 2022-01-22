@@ -9,16 +9,18 @@ import { pipe } from 'fp-ts/function';
 import { logger } from '../../logger';
 
 const removeExistingAndInsertToken = async (
-	refreshToken: AppRefreshToken
+	refreshToken: AppRefreshToken,
+	existingTokenId?: string
 ): Promise<void> => {
 	await AppRefreshTokenModel.deleteOne({
-		tokenId: refreshToken.tokenId
+		tokenId: existingTokenId ?? refreshToken.tokenId
 	}).exec();
 	await appRefreshTokenToModel(refreshToken).save();
 };
 
 export const saveRefreshToken = (
-	refreshToken: AppRefreshToken
+	refreshToken: AppRefreshToken,
+	existingTokenId?: string
 ): TE.TaskEither<Error, unknown> => {
 	const sessionTE = TaskTry.tryCatch(() =>
 		AppRefreshTokenModel.startSession()
@@ -29,7 +31,7 @@ export const saveRefreshToken = (
 		TE.chainFirst((session) =>
 			TaskTry.tryCatch(() =>
 				session.withTransaction(() =>
-					removeExistingAndInsertToken(refreshToken)
+					removeExistingAndInsertToken(refreshToken, existingTokenId)
 				)
 			)
 		)
