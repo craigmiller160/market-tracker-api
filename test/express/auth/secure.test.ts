@@ -171,7 +171,32 @@ describe('TokenValidation', () => {
 	});
 
 	it('token is expired, refresh returns expired token, prevent infinite loop', async () => {
-		throw new Error();
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_SECRET = 'clientSecret';
+		process.env.COOKIE_NAME = 'cookieName';
+		process.env.COOKIE_MAX_AGE_SECS = '8600';
+		process.env.COOKIE_PATH = '/cookie-path';
+		const newToken = createAccessToken(fullTestServer.keyPair.privateKey, {
+			expiresIn: '-10m'
+		});
+		const tokenResponse = createTokenResponse(newToken);
+		mockRestClient
+			.onPost(
+				'http://auth-server/oauth/token',
+				`grant_type=refresh_token&refresh_token=${refreshToken.refreshToken}`
+			)
+			.reply(200, tokenResponse);
+		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
+			expiresIn: '-10m'
+		});
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		const res = await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.timeout(2000)
+			.set('Cookie', tokenCookie)
+			.expect(401);
+		// TODO validate other stats
+		// TODO infinite loop should be happening
 	});
 
 	it('token is expired, but it refreshes expired token', async () => {

@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { logDebug, logError } from '../../logger';
+import { logDebug } from '../../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from '../expressErrorHandler';
 import { pipe } from 'fp-ts/function';
@@ -87,7 +87,6 @@ const tryToRefreshExpiredToken = (
 		TaskEither.chain(splitCookie),
 		TaskEither.fold(
 			(ex) => {
-				logError('Error refreshing token', ex)();
 				next(ex);
 				return Task.of('');
 			},
