@@ -1,8 +1,8 @@
 import { pipe } from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither';
+import * as TaskEither from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import mongoose, { Mongoose } from 'mongoose';
-import { logger } from '../logger';
+import { logAndReturn } from '../logger';
 import { getConnectionString } from './connectionString';
 
 const connectToMongoose = (
@@ -13,14 +13,8 @@ const connectToMongoose = (
 export const connectToMongo = (): TaskTry.TaskTry<Mongoose> =>
 	pipe(
 		getConnectionString(),
-		TE.fromEither,
-		TE.map((_) => {
-			logger.debug('Connecting to MongoDB');
-			return _;
-		}),
-		TE.chain(connectToMongoose),
-		TE.map((_) => {
-			logger.info('Connected to MongoDB');
-			return _;
-		})
+		TaskEither.fromEither,
+		TaskEither.map(logAndReturn('debug', 'Connecting to MongoDB')),
+		TaskEither.chain(connectToMongoose),
+		TaskEither.map(logAndReturn('info', 'Connected to MongoDB'))
 	);

@@ -58,6 +58,8 @@ export const logAndReturn =
 		return value;
 	};
 
+// TODO delete old logger methods
+
 export const logInfo =
 	(message: string): IO.IO<string> =>
 	() => {
