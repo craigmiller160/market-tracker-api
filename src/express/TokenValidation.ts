@@ -56,7 +56,7 @@ const secureCallback =
 					req.user = user as AccessToken;
 					fn(req, res, next);
 				},
-				(realError) => handleTokenError(realError, req, res, next)
+				(realError) => handleTokenError(realError, req, res, next, fn)
 			)
 		);
 	};
@@ -65,19 +65,21 @@ const handleTokenError = (
 	error: Error,
 	req: Request,
 	res: Response,
-	next: NextFunction
+	next: NextFunction,
+	fn: Route
 ): unknown =>
 	match({ error, shouldRefresh: isJwtInCookie(req) })
 		.with(
 			{ error: { name: 'TokenExpiredError' }, shouldRefresh: true },
-			tryToRefreshExpiredToken(req, res, next)
+			tryToRefreshExpiredToken(req, res, next, fn)
 		)
 		.otherwise(() => expressErrorHandler(error, req, res, next));
 
 const tryToRefreshExpiredToken = (
 	req: Request,
 	res: Response,
-	next: NextFunction
+	next: NextFunction,
+	fn: Route
 ): Task.Task<unknown> =>
 	pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
@@ -90,7 +92,7 @@ const tryToRefreshExpiredToken = (
 			(cookie) => {
 				logDebug('Successfully refreshed token')();
 				res.setHeader('Set-Cookie', cookie);
-				res.end();
+				fn(req, res, next);
 				return Task.of('');
 			}
 		)

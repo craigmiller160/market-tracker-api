@@ -193,6 +193,7 @@ describe('TokenValidation', () => {
 			.expect(200);
 		expect(res.body).toEqual([]);
 		console.log(mockRestClient.history); // TODO delete this
+		// TODO verify that token was refreshed, that there's new refresh token
 	});
 
 	it('token is expired, and no refresh token available', async () => {
