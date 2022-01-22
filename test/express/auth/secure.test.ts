@@ -27,10 +27,10 @@ const clearEnv = () => {
 	delete process.env.CLIENT_KEY;
 };
 
-const createTokenResponse = (accessToken: string): TokenResponse => ({
+const createTokenResponse = (accessToken: string, tokenId: string = 'tokenId2'): TokenResponse => ({
 	accessToken,
 	refreshToken: 'refreshToken2',
-	tokenId: 'tokenId2'
+	tokenId
 });
 
 const refreshToken: AppRefreshToken = {
@@ -179,11 +179,17 @@ describe('TokenValidation', () => {
 		const newToken = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
-		const tokenResponse = createTokenResponse(newToken);
+		const tokenResponse = createTokenResponse(newToken, accessToken.jti);
 		mockRestClient
 			.onPost(
 				'http://auth-server/oauth/token',
 				`grant_type=refresh_token&refresh_token=${refreshToken.refreshToken}`
+			)
+			.reply(200, tokenResponse);
+		mockRestClient
+			.onPost(
+				'http://auth-server/oauth/token',
+				`grant_type=refresh_token&refresh_token=${tokenResponse.refreshToken}`
 			)
 			.reply(200, tokenResponse);
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
