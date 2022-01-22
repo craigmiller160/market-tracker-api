@@ -1,5 +1,4 @@
 import { createLogger, transports, format } from 'winston';
-import * as IO from 'fp-ts/IO';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import { instanceOf, match } from 'ts-pattern';
@@ -56,16 +55,4 @@ export const logAndReturn =
 		);
 
 		return value;
-	};
-
-// TODO delete old logger methods
-
-export const logError =
-	(message: string, error?: Error): IO.IO<string> =>
-	() => {
-		logger.error(message);
-
-		pipe(Option.fromNullable(error), Option.map(logger.error));
-
-		return message;
 	};
