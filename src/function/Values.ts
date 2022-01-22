@@ -3,19 +3,19 @@ import * as RArray from 'fp-ts/ReadonlyArray';
 import * as Option from 'fp-ts/Option';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { pipe } from 'fp-ts/function';
-import { MissingEnvError } from '../error/MissingEnvError';
+import { MissingValuesError } from '../error/MissingValuesError';
 
-export const getRequiredEnv = (
-	envArray: ReadonlyArray<string | undefined>
+export const getRequiredValues = (
+	valuesArray: ReadonlyArray<string | undefined>
 ): Try.Try<ReadonlyArray<string>> =>
 	pipe(
-		envArray,
+		valuesArray,
 		RArray.map(Option.fromNullable),
 		Option.sequenceArray,
 		Either.fromOption(
 			() =>
-				new MissingEnvError(
-					`Missing required environment variables: ${envArray}`
+				new MissingValuesError(
+					`Missing required environment variables: ${valuesArray}`
 				)
 		)
 	);

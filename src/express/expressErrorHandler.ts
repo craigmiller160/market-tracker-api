@@ -33,10 +33,7 @@ const getErrorStatus = (err: Error): number =>
 const getErrorMessage = (err: Error): string =>
 	match(err)
 		.with(when(isUnauthorizedError), () => 'Unauthorized')
-		.with(
-			{ name: 'MissingEnvError' },
-			() => 'Missing environment configuration'
-		)
+		.with({ name: 'MissingValuesError' }, () => 'Missing values')
 		.otherwise((_) => _.message);
 
 const createErrorResponse = (

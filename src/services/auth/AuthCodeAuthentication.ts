@@ -8,7 +8,6 @@ import * as IOEither from 'fp-ts/IOEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { TokenResponse } from '../../types/TokenResponse';
-import * as A from 'fp-ts/Array';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
@@ -18,6 +17,7 @@ import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
+import { getRequiredValues } from '../../function/Values';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -123,16 +123,14 @@ const prepareRedirect = (): Either.Either<Error, string> =>
 const getCodeAndState = (
 	req: Request
 ): Either.Either<Error, [string, number]> => {
-	const nullableQueryArray: Array<string | undefined> = [
+	const nullableQueryArray: ReadonlyArray<string | undefined> = [
 		req.query.code as string | undefined,
 		req.query.state as string | undefined
 	];
 
 	return pipe(
-		nullableQueryArray,
-		A.map(Option.fromNullable),
-		Option.sequenceArray,
-		Either.fromOption(
+		getRequiredValues(nullableQueryArray),
+		Either.mapLeft(
 			() =>
 				new UnauthorizedError(
 					`Missing required query params for authentication: ${nullableQueryArray}`

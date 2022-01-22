@@ -9,7 +9,7 @@ import { AccessToken } from './AccessToken';
 import * as Pred from 'fp-ts/Predicate';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { jwtFromRequest } from './jwt';
-import { getRequiredEnv } from '../../function/Env';
+import { getRequiredValues } from '../../function/Values';
 
 interface ClientKeyName {
 	readonly clientKey: string;
@@ -23,7 +23,7 @@ const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
 	];
 
 	return pipe(
-		getRequiredEnv(envArray),
+		getRequiredValues(envArray),
 		Either.map(
 			([clientKey, clientName]): ClientKeyName => ({
 				clientKey,
