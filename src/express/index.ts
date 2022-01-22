@@ -4,7 +4,7 @@ import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 
 import bodyParer from 'body-parser';
-import { logError, logger, logInfo } from '../logger';
+import { logError, logger } from '../logger';
 import { pipe } from 'fp-ts/function';
 import express, { Express } from 'express';
 import { Server } from 'http';

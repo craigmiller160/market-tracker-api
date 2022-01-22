@@ -2,21 +2,25 @@ import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import mongoose, { Mongoose } from 'mongoose';
-import { logDebug, logInfo } from '../logger';
+import { logger } from '../logger';
 import { getConnectionString } from './connectionString';
 
 const connectToMongoose = (
 	connectionString: string
-): TaskTry.TaskTry<typeof mongoose> => {
-	console.log('Foo')
-	return TaskTry.tryCatch(() => mongoose.connect(connectionString));
-};
+): TaskTry.TaskTry<typeof mongoose> =>
+	TaskTry.tryCatch(() => mongoose.connect(connectionString));
 
 export const connectToMongo = (): TaskTry.TaskTry<Mongoose> =>
 	pipe(
 		getConnectionString(),
 		TE.fromEither,
-		TE.chainFirst(() => TE.fromIO(logDebug('Connecting to MongoDB'))),
+		TE.map((_) => {
+			logger.debug('Connecting to MongoDB');
+			return _;
+		}),
 		TE.chain(connectToMongoose),
-		TE.chainFirst(() => TE.fromIO(logInfo('Connected to MongoDB')))
+		TE.map((_) => {
+			logger.info('Connected to MongoDB');
+			return _;
+		})
 	);
