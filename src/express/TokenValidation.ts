@@ -101,6 +101,7 @@ const tryToRefreshExpiredToken = (
 export const secure =
 	(fn: Route): Route =>
 	(req, res, next) => {
+		// TODO need to feed the new token through here... somehow
 		passport.authenticate(
 			'jwt',
 			{ session: false },
