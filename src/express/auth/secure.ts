@@ -1,16 +1,16 @@
 import passport from 'passport';
-import { logDebug, logError } from '../logger';
+import { logDebug, logError } from '../../logger';
 import { NextFunction, Request, Response } from 'express';
-import { expressErrorHandler } from './expressErrorHandler';
+import { expressErrorHandler } from '../expressErrorHandler';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import { match } from 'ts-pattern';
-import { refreshExpiredToken } from '../services/auth/RefreshExpiredToken';
+import { refreshExpiredToken } from '../../services/auth/RefreshExpiredToken';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
-import { isJwtInCookie, jwtFromRequest } from './auth/jwt';
-import { AccessToken } from './auth/AccessToken';
-import { Route } from './Route';
+import { isJwtInCookie, jwtFromRequest } from './jwt';
+import { AccessToken } from './AccessToken';
+import { Route } from '../Route';
 
 const secureCallback =
 	(req: Request, res: Response, next: NextFunction, fn: Route) =>

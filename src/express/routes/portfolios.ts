@@ -7,7 +7,7 @@ import {
 	findPortfoliosForUser,
 	savePortfoliosForUser
 } from '../../services/mongo/PortfolioService';
-import { secure } from '../TokenValidation';
+import { secure } from '../auth/secure';
 import { AccessToken } from '../auth/AccessToken';
 
 export const createPortfolioRoutes: RouteCreator = (app) => {
