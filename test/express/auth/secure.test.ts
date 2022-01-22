@@ -288,6 +288,35 @@ describe('TokenValidation', () => {
 		process.env.COOKIE_NAME = 'cookieName';
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
-		throw new Error();
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_SECRET = 'clientSecret';
+		process.env.COOKIE_NAME = 'cookieName';
+		process.env.COOKIE_MAX_AGE_SECS = '8600';
+		process.env.COOKIE_PATH = '/cookie-path';
+		mockRestClient
+			.onPost(
+				'http://auth-server/oauth/token',
+				`grant_type=refresh_token&refresh_token=${refreshToken.refreshToken}`
+			)
+			.reply(401);
+		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
+			expiresIn: '-10m'
+		});
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.timeout(2000)
+			.set('Cookie', tokenCookie)
+			.expect(401);
+		expect(mockRestClient.history.post).toHaveLength(1);
+
+		const refreshTokensInDb = await AppRefreshTokenModel.find().exec();
+		expect(refreshTokensInDb).toHaveLength(1);
+		expect(refreshTokensInDb[0]).toEqual(
+			expect.objectContaining({
+				tokenId: refreshToken.tokenId,
+				refreshToken: refreshToken.refreshToken
+			})
+		);
 	});
 });
