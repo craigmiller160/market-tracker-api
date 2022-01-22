@@ -201,6 +201,7 @@ describe('TokenValidation', () => {
 			.timeout(2000)
 			.set('Cookie', tokenCookie)
 			.expect(401);
+		expect(mockRestClient.history.post).toHaveLength(1);
 		// TODO validate other stats
 		// TODO infinite loop should be happening
 		// TODO it does the refresh, then the tokenId doesn't match, hence no infinite loop due to expiration
