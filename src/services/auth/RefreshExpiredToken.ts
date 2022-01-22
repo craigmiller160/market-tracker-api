@@ -16,7 +16,7 @@ import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
-import { logDebug } from '../../logger';
+import { logger } from '../../logger';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -83,10 +83,9 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 export const refreshExpiredToken = (
 	token: string | null
 ): TaskTry.TaskTry<string> => {
+	logger.debug('Attempting to refresh expired token');
 	return pipe(
-		logDebug('Attempting to refresh expired token'), // TODO do I want the log here, or elsewhere?
-		TaskEither.fromIO,
-		TaskEither.chain(() => getRefreshToken(token)),
+		getRefreshToken(token),
 		TaskEither.bindTo('tokenAndId'),
 		TaskEither.bind('refreshBody', ({ tokenAndId: { refreshToken } }) =>
 			TaskEither.right(getRefreshBody(refreshToken.refreshToken))

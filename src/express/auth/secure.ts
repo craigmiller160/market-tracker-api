@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { logDebug } from '../../logger';
+import { logAndReturn } from '../../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from '../expressErrorHandler';
 import { pipe } from 'fp-ts/function';
@@ -101,13 +101,13 @@ const tryToRefreshExpiredToken = (
 	return pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
 		TaskEither.chain(splitCookie),
+		TaskEither.map(logAndReturn('debug', 'Successfully refreshed token')),
 		TaskEither.fold(
 			(ex) => {
 				next(ex);
 				return Task.of('');
 			},
 			(cookieParts) => {
-				logDebug('Successfully refreshed token')();
 				req.headers['Cookie'] = cookieParts.cookie;
 				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 				res.setHeader('Set-Cookie', cookieParts.cookie);
