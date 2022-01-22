@@ -264,7 +264,22 @@ describe('TokenValidation', () => {
 		process.env.COOKIE_NAME = 'cookieName';
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
-		throw new Error();
+		process.env.CLIENT_KEY = accessToken.clientKey;
+		process.env.CLIENT_SECRET = 'clientSecret';
+		process.env.COOKIE_NAME = 'cookieName';
+		process.env.COOKIE_MAX_AGE_SECS = '8600';
+		process.env.COOKIE_PATH = '/cookie-path';
+		await AppRefreshTokenModel.deleteMany().exec();
+		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
+			expiresIn: '-10m'
+		});
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		await request(fullTestServer.expressServer.server)
+			.get('/portfolios')
+			.timeout(2000)
+			.set('Cookie', tokenCookie)
+			.expect(401);
+		expect(mockRestClient.history.post).toHaveLength(0);
 	});
 
 	it('token is expired, and refresh request is rejected', async () => {
