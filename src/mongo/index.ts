@@ -7,8 +7,10 @@ import { getConnectionString } from './connectionString';
 
 const connectToMongoose = (
 	connectionString: string
-): TaskTry.TaskTry<typeof mongoose> =>
-	TaskTry.tryCatch(() => mongoose.connect(connectionString));
+): TaskTry.TaskTry<typeof mongoose> => {
+	console.log('Foo')
+	return TaskTry.tryCatch(() => mongoose.connect(connectionString));
+};
 
 export const connectToMongo = (): TaskTry.TaskTry<Mongoose> =>
 	pipe(

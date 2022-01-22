@@ -44,9 +44,9 @@ const expressListen = (app: Express, port: number): TaskTry.TaskTry<Server> =>
 							O.fromNullable(err),
 							O.fold(
 								() => {
-									logInfo(
+									logger.info(
 										`Market Tracker API listening on port ${port}`
-									)();
+									);
 									resolve(server);
 								},
 								(_) => reject(_)

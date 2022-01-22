@@ -8,7 +8,7 @@ export const setupRequestLogging = (app: Express) => {
 		const fullQueryString = queryString.length > 0 ? `?${queryString}` : '';
 		logger.debug(`${req.method} ${req.path}${fullQueryString}`);
 		next();
-		logger.debug(
+		logger.info(
 			`${req.method} ${req.path}${fullQueryString} - ${res.statusCode}`
 		);
 	});
