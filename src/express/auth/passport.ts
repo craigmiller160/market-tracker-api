@@ -8,9 +8,8 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { AccessToken } from './AccessToken';
 import * as Pred from 'fp-ts/Predicate';
 import * as Try from '@craigmiller160/ts-functions/Try';
-import * as RArr from 'fp-ts/ReadonlyArray';
-import * as Option from 'fp-ts/Option';
 import { jwtFromRequest } from './jwt';
+import { getRequiredEnv } from '../../function/Env';
 
 interface ClientKeyName {
 	readonly clientKey: string;
@@ -24,20 +23,12 @@ const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
 	];
 
 	return pipe(
-		envArray,
-		RArr.map(Option.fromNullable),
-		Option.sequenceArray,
-		Option.map(
+		getRequiredEnv(envArray),
+		Either.map(
 			([clientKey, clientName]): ClientKeyName => ({
 				clientKey,
 				clientName
 			})
-		),
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					`Missing required environment variables for token property validation: ${envArray}`
-				)
 		)
 	);
 };
