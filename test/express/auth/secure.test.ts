@@ -197,6 +197,7 @@ describe('TokenValidation', () => {
 			.expect(401);
 		// TODO validate other stats
 		// TODO infinite loop should be happening
+		// TODO it does the refresh, then the tokenId doesn't match, hence no infinite loop due to expiration
 	});
 
 	it('token is expired, but it refreshes expired token', async () => {
