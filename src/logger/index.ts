@@ -1,7 +1,10 @@
 import { createLogger, transports, format } from 'winston';
 import * as IO from 'fp-ts/IO';
 import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
+import * as Option from 'fp-ts/Option';
+import { instanceOf, match } from 'ts-pattern';
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const myFormat = format.printf(
 	({ level, message, timestamp, stack }) =>
@@ -26,6 +29,34 @@ export const logger = createLogger({
 	),
 	transports: [new transports.Console()]
 });
+
+const getErrorIfExists = (
+	errorParam?: Error,
+	valueParam?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+): Option.Option<Error> =>
+	match({ errorParam, valueParam })
+		.with({ errorParam: instanceOf(Error) }, ({ errorParam }) =>
+			Option.some(errorParam)
+		)
+		.with({ valueParam: instanceOf(Error) }, ({ valueParam }) =>
+			Option.some(valueParam)
+		)
+		.otherwise(() => Option.none);
+
+export const logAndReturn =
+	(level: LogLevel, message: string, error?: Error) =>
+	<T>(value: T): T => {
+		logger[level](message);
+		pipe(
+			getErrorIfExists(error, value),
+			Option.map((_) => {
+				logger[level](_);
+				return _;
+			})
+		);
+
+		return value;
+	};
 
 export const logInfo =
 	(message: string): IO.IO<string> =>
@@ -53,7 +84,7 @@ export const logError =
 	() => {
 		logger.error(message);
 
-		pipe(O.fromNullable(error), O.map(logger.error));
+		pipe(Option.fromNullable(error), Option.map(logger.error));
 
 		return message;
 	};
