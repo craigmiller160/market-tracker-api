@@ -8,7 +8,7 @@ import {
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { logger } from '../../logger';
+import { logAndReturn, logger } from '../../logger';
 
 export const findPortfoliosForUser = (
 	userId: number
@@ -56,11 +56,7 @@ export const savePortfoliosForUser = (
 	pipe(
 		sessionTE,
 		TE.chain((session) => TaskTry.tryCatch(() => session.endSession())),
-		TE.mapLeft((ex) => {
-			logger.error('Error closing session');
-			logger.error(ex);
-			return ex;
-		})
+		TE.mapLeft(logAndReturn('error', 'Error closing session'))
 	);
 
 	return postTxnTE;

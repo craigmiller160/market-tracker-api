@@ -8,8 +8,7 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import qs from 'qs';
 import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
-import { logError } from '../../logger';
-import * as IO from 'fp-ts/IO';
+import { logAndReturn } from '../../logger';
 import { getRequiredValues } from '../../function/Values';
 
 const TOKEN_PATH = '/oauth/token';
@@ -38,14 +37,6 @@ const getAuthServerHost = (): Try.Try<string> =>
 		)
 	);
 
-const handleRestCallError = (error: Error): IO.IO<Error> =>
-	pipe(
-		logError('Auth server returned error response', error),
-		IO.map(
-			() => new UnauthorizedError('Error authenticating with AuthServer')
-		)
-	);
-
 const executeTokenRestCall = (
 	authServerHost: string,
 	body: string,
@@ -65,7 +56,12 @@ const executeTokenRestCall = (
 			)
 		),
 		TaskEither.map((_) => _.data),
-		TaskEither.mapLeft((_) => handleRestCallError(_)())
+		TaskEither.mapLeft(
+			logAndReturn('error', 'Auth server returned error response')
+		),
+		TaskEither.mapLeft(
+			() => new UnauthorizedError('Error authenticating with AuthServer')
+		)
 	);
 
 export const sendTokenRequest = (
