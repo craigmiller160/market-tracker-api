@@ -192,7 +192,7 @@ describe('TokenValidation', () => {
 			.set('Cookie', tokenCookie)
 			.expect(200);
 		expect(res.body).toEqual([]);
-		// TODO verify that token was refreshed, that there's new refresh token
+		// TODO verify that token was refreshed, that there's new refresh token, that the access token is set with a new value
 	});
 
 	it('token is expired, and no refresh token available', async () => {

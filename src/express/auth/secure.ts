@@ -19,6 +19,7 @@ const secureCallback =
 		user: AccessToken | boolean,
 		tokenError: Error | undefined
 	) => {
+		console.log('Error', error, tokenError);
 		pipe(
 			Option.fromNullable(error),
 			Option.getOrElse(() => tokenError),
@@ -64,7 +65,9 @@ const tryToRefreshExpiredToken = (
 			(cookie) => {
 				logDebug('Successfully refreshed token')();
 				res.setHeader('Set-Cookie', cookie);
-				// TODO creates an infinite loop because the old token is in place
+				req.headers['Cookie'] = cookie;
+				console.log('CookieHeaders', req.headers['Cookie'], req.cookies);
+				// TODO some progress, new problem is my test token is invalid. Also the cookies value is wrong too
 				passport.authenticate(
 					'jwt',
 					{ session: false },
