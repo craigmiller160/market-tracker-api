@@ -8,7 +8,6 @@ import * as IOEither from 'fp-ts/IOEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { TokenResponse } from '../../types/TokenResponse';
-import * as RArray from 'fp-ts/ReadonlyArray';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
@@ -174,15 +173,7 @@ const createAuthCodeBody = (
 	];
 
 	return pipe(
-		envArray,
-		RArray.map(Option.fromNullable),
-		Option.sequenceArray,
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					'Missing environment variables for auth code request'
-				)
-		),
+		getRequiredValues(envArray),
 		Either.map(
 			([clientKey, redirectUri]): AuthCodeBody => ({
 				grant_type: 'authorization_code',
