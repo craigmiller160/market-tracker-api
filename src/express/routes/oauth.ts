@@ -18,7 +18,7 @@ export const createOAuthRoutes: RouteCreator = (dependencies) => {
 	);
 
 	dependencies.expressApp.get('/oauth/authcode/code', (req, res, next) =>
-		authCodeAuthentication(req, res, next)()
+		authCodeAuthentication(req, res, next)(dependencies)()
 	);
 
 	dependencies.expressApp.get(
