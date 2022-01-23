@@ -1,5 +1,6 @@
 import {
 	DeleteByTokenId,
+	FindByTokenId,
 	SaveRefreshToken
 } from '../AppRefreshTokenRepository';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
@@ -58,3 +59,6 @@ export const saveRefreshToken: SaveRefreshToken = (
 
 	return postTxnTE;
 };
+
+export const findByTokenId: FindByTokenId = (tokenId) =>
+	TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec());

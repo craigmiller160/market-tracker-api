@@ -8,7 +8,12 @@ export type SaveRefreshToken = (
 	existingTokenId?: string
 ) => TaskTryT<unknown>;
 
+export type FindByTokenId = (
+	tokenId: string
+) => TaskTryT<ReadonlyArray<AppRefreshToken>>;
+
 export interface AppRefreshTokenRepository {
 	readonly deleteByTokenId: DeleteByTokenId;
 	readonly saveRefreshToken: SaveRefreshToken;
+	readonly findByTokenId: FindByTokenId;
 }

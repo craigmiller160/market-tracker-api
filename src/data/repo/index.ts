@@ -11,6 +11,7 @@ import {
 import { AppRefreshTokenRepository } from './AppRefreshTokenRepository';
 import {
 	deleteByTokenId,
+	findByTokenId,
 	saveRefreshToken
 } from './mongo/MongoAppRefreshTokenRepository';
 
@@ -26,5 +27,6 @@ export const watchlistRepository: WatchlistRepository = {
 
 export const appRefreshTokenRepository: AppRefreshTokenRepository = {
 	deleteByTokenId,
-	saveRefreshToken
+	saveRefreshToken,
+	findByTokenId
 };
