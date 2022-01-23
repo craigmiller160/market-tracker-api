@@ -6,10 +6,9 @@ import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
-import { TaskT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import { ReaderTaskT, TaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
-import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
 import { errorReaderTask, errorTask } from '../../function/Route';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
@@ -49,15 +48,15 @@ export const authCodeAuthentication = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): TaskT<string> =>
+): ReaderTaskT<ExpressDependencies, string> =>
 	pipe(
 		authenticateWithAuthCode(req),
-		TaskEither.fold(errorTask(next), (authCodeSuccess) => {
+		ReaderTaskEither.fold(errorReaderTask(next), (authCodeSuccess) => {
 			res.setHeader('Set-Cookie', authCodeSuccess.cookie);
 			res.setHeader('Location', authCodeSuccess.postAuthRedirect);
 			res.status(302);
 			res.end();
-			return Task.of('');
+			return ReaderTask.of('');
 		})
 	);
 
