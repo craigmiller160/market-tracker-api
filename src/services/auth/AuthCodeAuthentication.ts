@@ -3,9 +3,7 @@ import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-import * as IO from 'fp-ts/IO';
 import * as IOEither from 'fp-ts/IOEither';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
@@ -17,6 +15,7 @@ import { sendTokenRequest } from './AuthServerRequest';
 import { getRequiredValues } from '../../function/Values';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { appRefreshTokenRepository } from '../../data/repo';
+import { IOT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -35,10 +34,7 @@ interface CodeAndOrigin {
 	readonly origin: string;
 }
 
-const validateState = (
-	req: Request,
-	providedState: number
-): Either.Either<Error, number> => {
+const validateState = (req: Request, providedState: number): TryT<number> => {
 	const { state } = getMarketTrackerSession(req);
 	return pipe(
 		Option.fromNullable(state),
@@ -60,9 +56,7 @@ const parseAndValidateNotExpired = (stateExpString: string): boolean =>
 		Time.compare(new Date())
 	) <= 0;
 
-const validateStateExpiration = (
-	req: Request
-): Either.Either<Error, string> => {
+const validateStateExpiration = (req: Request): TryT<string> => {
 	const { stateExpiration } = getMarketTrackerSession(req);
 	return pipe(
 		Option.fromNullable(stateExpiration),
@@ -79,7 +73,7 @@ const validateStateExpiration = (
 	);
 };
 
-const getAndValidateOrigin = (req: Request): Either.Either<Error, string> => {
+const getAndValidateOrigin = (req: Request): TryT<string> => {
 	const { origin } = getMarketTrackerSession(req);
 	return pipe(
 		Option.fromNullable(origin),
@@ -90,7 +84,7 @@ const getAndValidateOrigin = (req: Request): Either.Either<Error, string> => {
 };
 
 const removeAuthCodeSessionAttributes =
-	(req: Request): IO.IO<void> =>
+	(req: Request): IOT<void> =>
 	() => {
 		const session = getMarketTrackerSession(req);
 		delete session.stateExpiration;
@@ -100,7 +94,7 @@ const removeAuthCodeSessionAttributes =
 
 const handleRefreshToken = (
 	tokenResponse: TokenResponse
-): TaskEither.TaskEither<Error, unknown> => {
+): TaskTryT<unknown> => {
 	const refreshToken: AppRefreshToken = {
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
@@ -109,7 +103,7 @@ const handleRefreshToken = (
 	return appRefreshTokenRepository.saveRefreshToken(refreshToken);
 };
 
-const prepareRedirect = (): Either.Either<Error, string> =>
+const prepareRedirect = (): TryT<string> =>
 	pipe(
 		Option.fromNullable(process.env.POST_AUTH_REDIRECT),
 		Either.fromOption(
@@ -120,9 +114,7 @@ const prepareRedirect = (): Either.Either<Error, string> =>
 		)
 	);
 
-const getCodeAndState = (
-	req: Request
-): Either.Either<Error, [string, number]> => {
+const getCodeAndState = (req: Request): TryT<[string, number]> => {
 	const nullableQueryArray: ReadonlyArray<string | undefined> = [
 		req.query.code as string | undefined,
 		req.query.state as string | undefined
@@ -144,9 +136,7 @@ const getCodeAndState = (
 	);
 };
 
-const getAndValidateCodeOriginAndState = (
-	req: Request
-): Try.Try<CodeAndOrigin> =>
+const getAndValidateCodeOriginAndState = (req: Request): TryT<CodeAndOrigin> =>
 	pipe(
 		getCodeAndState(req),
 		Either.bindTo('codeAndState'),
@@ -167,7 +157,7 @@ const getAndValidateCodeOriginAndState = (
 const createAuthCodeBody = (
 	origin: string,
 	code: string
-): Try.Try<AuthCodeBody> => {
+): TryT<AuthCodeBody> => {
 	const envArray: ReadonlyArray<string | undefined> = [
 		process.env.CLIENT_KEY,
 		process.env.AUTH_CODE_REDIRECT_URI
@@ -188,7 +178,7 @@ const createAuthCodeBody = (
 
 export const authenticateWithAuthCode = (
 	req: Request
-): TaskTry.TaskTry<AuthCodeSuccess> =>
+): TaskTryT<AuthCodeSuccess> =>
 	pipe(
 		getAndValidateCodeOriginAndState(req),
 		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
