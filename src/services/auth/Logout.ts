@@ -12,6 +12,7 @@ const deleteRefreshToken = (
 	token: AccessToken
 ): TE.TaskEither<Error, unknown> =>
 	TaskTry.tryCatch(() =>
+		// TODO do not do this
 		AppRefreshTokenModel.deleteOne({ tokenId: token.jti }).exec()
 	);
 
