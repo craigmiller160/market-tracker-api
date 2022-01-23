@@ -9,7 +9,10 @@ import {
 	saveWatchlistsForUser
 } from './mongo/MongoWatchlistRepository';
 import { AppRefreshTokenRepository } from './AppRefreshTokenRepository';
-import { deleteByTokenId } from './mongo/MongoAppRefreshTokenRepository';
+import {
+	deleteByTokenId,
+	saveRefreshToken
+} from './mongo/MongoAppRefreshTokenRepository';
 
 export const portfolioRepository: PortfolioRepository = {
 	findPortfoliosForUser,
@@ -22,5 +25,6 @@ export const watchlistRepository: WatchlistRepository = {
 };
 
 export const appRefreshTokenRepository: AppRefreshTokenRepository = {
-	deleteByTokenId
+	deleteByTokenId,
+	saveRefreshToken
 };

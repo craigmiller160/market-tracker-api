@@ -11,10 +11,10 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { AppRefreshTokenModel } from '../../mongo/models/AppRefreshTokenModel';
 import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
-import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
 import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
+import { appRefreshTokenRepository } from '../../data/repo';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -57,7 +57,10 @@ const handleRefreshToken = (
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
 	};
-	return saveRefreshToken(refreshToken, existingTokenId);
+	return appRefreshTokenRepository.saveRefreshToken(
+		refreshToken,
+		existingTokenId
+	);
 };
 
 const getRefreshToken: (
