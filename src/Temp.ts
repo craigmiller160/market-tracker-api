@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-unused-vars */
 import * as Reader from 'fp-ts/Reader';
 import * as RArray from 'fp-ts/ReadonlyArray';
 
@@ -15,23 +16,27 @@ const consoleDependencies: Dependencies = {
 	print: printToConsole
 };
 
-const printData =
-	(data: ReadonlyArray<string>) =>
-	(print: Print): ReadonlyArray<string> =>
-		RArray.map(print)(data);
-
 const data: ReadonlyArray<string> = ['Hello World', 'Bob Saget', 'JWST'];
 
-const result = printData(data)(printToConsole);
-console.log('Result', result);
+const manualSolution = () => {
+	const printData =
+		(data: ReadonlyArray<string>) =>
+		(print: Print): ReadonlyArray<string> =>
+			RArray.map(print)(data);
 
-const printDataReader =
-	(
-		data: ReadonlyArray<string>
-	): Reader.Reader<Dependencies, ReadonlyArray<string>> =>
-	(deps) =>
-		RArray.map(deps.print)(data);
+	const result = printData(data)(printToConsole);
+	console.log('Result', result);
+};
 
-const printData2 = printDataReader(data);
-const result2 = printData2(consoleDependencies);
-console.log('Result2', result2);
+const readerSolution = () => {
+	const printDataReader =
+		(
+			data: ReadonlyArray<string>
+		): Reader.Reader<Dependencies, ReadonlyArray<string>> =>
+		(deps) =>
+			RArray.map(deps.print)(data);
+
+	const printData = printDataReader(data);
+	const result = printData(consoleDependencies);
+	console.log('Result', result);
+};
