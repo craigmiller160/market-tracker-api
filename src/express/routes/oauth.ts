@@ -1,4 +1,4 @@
-import { RouteCreator } from './RouteCreator';
+import { OldRouteCreator } from './RouteCreator';
 import { secure } from '../auth/secure';
 import { AccessToken } from '../auth/AccessToken';
 import { pipe } from 'fp-ts/function';
@@ -12,7 +12,7 @@ import * as T from 'fp-ts/Task';
 import { authenticateWithAuthCode } from '../../services/auth/AuthCodeAuthentication';
 import { logout } from '../../services/auth/Logout';
 
-export const createOAuthRoutes: RouteCreator = (app) => {
+export const createOAuthRoutes: OldRouteCreator = (app) => {
 	app.get(
 		'/oauth/user',
 		secure((req, res) => {

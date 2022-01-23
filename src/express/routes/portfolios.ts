@@ -7,13 +7,13 @@ import {
 	savePortfoliosByUser
 } from '../../services/portfolio/PortfolioService';
 
-export const createPortfolioRoutes: RouteCreator = (app) => {
-	app.get(
+export const createPortfolioRoutes: RouteCreator = (dependencies) => {
+	dependencies.expressApp.get(
 		'/portfolios',
-		secure((req, res) => getPortfoliosByUser(req, res)())
+		secure((req, res) => getPortfoliosByUser(req, res)(dependencies)())
 	);
 
-	app.post(
+	dependencies.expressApp.post(
 		'/portfolios',
 		secure(
 			(req: Request<unknown, unknown, ReadonlyArray<Portfolio>>, res) =>

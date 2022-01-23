@@ -1,4 +1,4 @@
-import { RouteCreator } from './RouteCreator';
+import { OldRouteCreator } from './RouteCreator';
 import { pipe } from 'fp-ts/function';
 import {
 	findWatchlistsForUser,
@@ -10,7 +10,7 @@ import { AccessToken } from '../auth/AccessToken';
 import { secure } from '../auth/secure';
 import { Watchlist } from '../../data/modelTypes/Watchlist';
 
-export const createWatchlistRoutes: RouteCreator = (app) => {
+export const createWatchlistRoutes: OldRouteCreator = (app) => {
 	app.get(
 		'/watchlists',
 		secure((req, res) => {
