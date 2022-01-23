@@ -8,6 +8,8 @@ import { pipe } from 'fp-ts/function';
 import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 
+// TODO refactor this heavily
+
 const removeExistingAndInsertToken = async (
 	refreshToken: AppRefreshToken,
 	existingTokenId?: string
