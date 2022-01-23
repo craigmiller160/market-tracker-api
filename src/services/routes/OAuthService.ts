@@ -11,6 +11,7 @@ import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
+import { errorTask } from '../../function/Route';
 
 export const getAuthUser = (req: Request, res: Response): void => {
 	const token = req.user as AccessToken;
@@ -32,19 +33,13 @@ export const getAuthCodeLogin = (
 ): TaskT<string> =>
 	pipe(
 		prepareAuthCodeLogin(req),
-		Either.fold(
-			(ex) => {
-				next(ex);
-				return Task.of('');
-			},
-			(url) => {
-				const response: AuthCodeLoginResponse = {
-					url
-				};
-				res.json(response);
-				return Task.of('');
-			}
-		)
+		Either.fold(errorTask(next), (url) => {
+			const response: AuthCodeLoginResponse = {
+				url
+			};
+			res.json(response);
+			return Task.of('');
+		})
 	);
 
 export const authCodeAuthentication = (
@@ -54,19 +49,13 @@ export const authCodeAuthentication = (
 ): TaskT<string> =>
 	pipe(
 		authenticateWithAuthCode(req),
-		TaskEither.fold(
-			(ex) => {
-				next(ex);
-				return Task.of('');
-			},
-			(authCodeSuccess) => {
-				res.setHeader('Set-Cookie', authCodeSuccess.cookie);
-				res.setHeader('Location', authCodeSuccess.postAuthRedirect);
-				res.status(302);
-				res.end();
-				return Task.of('');
-			}
-		)
+		TaskEither.fold(errorTask(next), (authCodeSuccess) => {
+			res.setHeader('Set-Cookie', authCodeSuccess.cookie);
+			res.setHeader('Location', authCodeSuccess.postAuthRedirect);
+			res.status(302);
+			res.end();
+			return Task.of('');
+		})
 	);
 
 export const logoutAndClearAuth = (
@@ -76,16 +65,10 @@ export const logoutAndClearAuth = (
 ): TaskT<string> =>
 	pipe(
 		logout(req),
-		TaskEither.fold(
-			(ex) => {
-				next(ex);
-				return Task.of('');
-			},
-			(cookie) => {
-				res.setHeader('Set-Cookie', cookie);
-				res.status(204);
-				res.end();
-				return Task.of('');
-			}
-		)
+		TaskEither.fold(errorTask(next), (cookie) => {
+			res.setHeader('Set-Cookie', cookie);
+			res.status(204);
+			res.end();
+			return Task.of('');
+		})
 	);
