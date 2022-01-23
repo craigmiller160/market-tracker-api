@@ -10,14 +10,19 @@ import {
 export const createWatchlistRoutes: RouteCreator = (dependencies) => {
 	dependencies.expressApp.get(
 		'/watchlists',
-		secure((req, res) => getWatchlistsByUser(req, res)(dependencies)())
+		secure((req, res, next) =>
+			getWatchlistsByUser(req, res, next)(dependencies)()
+		)
 	);
 
 	dependencies.expressApp.post(
 		'/watchlists',
 		secure(
-			(req: Request<unknown, unknown, ReadonlyArray<Watchlist>>, res) =>
-				saveWatchlistsByUser(req, res)(dependencies)()
+			(
+				req: Request<unknown, unknown, ReadonlyArray<Watchlist>>,
+				res,
+				next
+			) => saveWatchlistsByUser(req, res, next)(dependencies)()
 		)
 	);
 };

@@ -10,14 +10,19 @@ import {
 export const createPortfolioRoutes: RouteCreator = (dependencies) => {
 	dependencies.expressApp.get(
 		'/portfolios',
-		secure((req, res) => getPortfoliosByUser(req, res)(dependencies)())
+		secure((req, res, next) =>
+			getPortfoliosByUser(req, res, next)(dependencies)()
+		)
 	);
 
 	dependencies.expressApp.post(
 		'/portfolios',
 		secure(
-			(req: Request<unknown, unknown, ReadonlyArray<Portfolio>>, res) =>
-				savePortfoliosByUser(req, res)(dependencies)()
+			(
+				req: Request<unknown, unknown, ReadonlyArray<Portfolio>>,
+				res,
+				next
+			) => savePortfoliosByUser(req, res, next)(dependencies)()
 		)
 	);
 };
