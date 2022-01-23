@@ -22,6 +22,7 @@ import { nanoid } from 'nanoid';
 import { __, match } from 'ts-pattern';
 import { ExpressDependencies } from './ExpressDependencies';
 import { portfolioRepository, watchlistRepository } from '../data/repo';
+import * as Reader from 'fp-ts/Reader';
 
 const safeParseInt = (text: string): O.Option<number> =>
 	match(parseInt(text))
@@ -76,11 +77,14 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.disable('x-powered-by');
 	app.use(bodyParer.json());
 	app.use(passport.initialize());
-	// TODO setup more of these as Readers
-	setupRequestLogging(expressDependencies);
-	createRoutes(expressDependencies);
-	setupErrorHandler(expressDependencies);
-	createPassportValidation(expressDependencies);
+
+	Reader.sequenceArray([
+		setupRequestLogging,
+		createRoutes,
+		setupErrorHandler,
+		createPassportValidation
+	])(expressDependencies);
+
 	return app;
 };
 
