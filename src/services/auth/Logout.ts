@@ -24,7 +24,7 @@ export const logout = (
 					'Should not be able to call /logout without being authenticated'
 				)
 		),
-		ReaderTaskEither.chainFirst((token) => deleteRefreshToken(token)), // TODO figure out Reader functions to avoid drilling
+		ReaderTaskEither.chainFirst(deleteRefreshToken),
 		ReaderTaskEither.chain(() =>
 			ReaderTaskEither.fromEither(getEmptyCookie())
 		)
