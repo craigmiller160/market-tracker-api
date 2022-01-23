@@ -34,6 +34,7 @@ const findRefreshTokenById = (
 	tokenId: string
 ): TaskTry.TaskTry<AppRefreshToken> =>
 	pipe(
+		// TODO refactor this
 		appRefreshTokenRepository.findByTokenId(tokenId),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
@@ -55,6 +56,7 @@ const handleRefreshToken = (
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
 	};
+	// TODO refactor this
 	return appRefreshTokenRepository.saveRefreshToken(
 		refreshToken,
 		existingTokenId

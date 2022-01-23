@@ -105,6 +105,7 @@ const handleRefreshToken = (
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
 	};
+	// TODO refactor this
 	return appRefreshTokenRepository.saveRefreshToken(refreshToken);
 };
 
