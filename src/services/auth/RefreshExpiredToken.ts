@@ -8,7 +8,6 @@ import * as Try from '@craigmiller160/ts-functions/Try';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as RArr from 'fp-ts/ReadonlyArray';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import { AppRefreshTokenModel } from '../../mongo/models/AppRefreshTokenModel';
 import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
 import { createTokenCookie } from './Cookie';
@@ -35,8 +34,7 @@ const findRefreshTokenById = (
 	tokenId: string
 ): TaskTry.TaskTry<AppRefreshToken> =>
 	pipe(
-		// TODO don't do this
-		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
+		appRefreshTokenRepository.findByTokenId(tokenId),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
 			Option.fold<AppRefreshToken, TaskTry.TaskTry<AppRefreshToken>>(
