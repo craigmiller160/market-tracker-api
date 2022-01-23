@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { Watchlist } from '../../data/types';
+import { Watchlist } from '../../data/modelTypes/Watchlist';
 
 const watchlistSchema = new Schema<Watchlist>({
 	userId: {

@@ -6,9 +6,9 @@ import {
 } from '../../services/mongo/WatchlistService';
 import * as TE from 'fp-ts/TaskEither';
 import { Request } from 'express';
-import { Watchlist } from '../../mongo/models/WatchlistModel';
 import { AccessToken } from '../auth/AccessToken';
 import { secure } from '../auth/secure';
+import { Watchlist } from '../../data/modelTypes/Watchlist';
 
 export const createWatchlistRoutes: RouteCreator = (app) => {
 	app.get(

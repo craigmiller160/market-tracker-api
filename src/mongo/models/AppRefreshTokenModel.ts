@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { AppRefreshToken } from '../../data/types';
+import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 
 const appRefreshTokenSchema = new Schema<AppRefreshToken>({
 	tokenId: {

@@ -8,15 +8,13 @@ import * as Try from '@craigmiller160/ts-functions/Try';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as RArr from 'fp-ts/ReadonlyArray';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import {
-	AppRefreshToken,
-	AppRefreshTokenModel
-} from '../../mongo/models/AppRefreshTokenModel';
+import { AppRefreshTokenModel } from '../../mongo/models/AppRefreshTokenModel';
 import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
 import { logger } from '../../logger';
+import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';

@@ -9,7 +9,6 @@ import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
-import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
 import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
 import * as Time from '@craigmiller160/ts-functions/Time';
@@ -17,6 +16,7 @@ import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
 import { getRequiredValues } from '../../function/Values';
+import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;

@@ -1,6 +1,5 @@
 import { RouteCreator } from './RouteCreator';
 import * as TE from 'fp-ts/TaskEither';
-import { Portfolio } from '../../mongo/models/PortfolioModel';
 import { pipe } from 'fp-ts/function';
 import { Request } from 'express';
 import {
@@ -9,6 +8,7 @@ import {
 } from '../../services/mongo/PortfolioService';
 import { secure } from '../auth/secure';
 import { AccessToken } from '../auth/AccessToken';
+import { Portfolio } from '../../data/modelTypes/Portfolio';
 
 export const createPortfolioRoutes: RouteCreator = (app) => {
 	app.get(

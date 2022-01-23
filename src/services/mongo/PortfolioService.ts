@@ -1,6 +1,5 @@
 import * as TE from 'fp-ts/TaskEither';
 import {
-	Portfolio,
 	PortfolioModel,
 	PortfolioModelInstanceType,
 	portfolioToModel
@@ -9,6 +8,7 @@ import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { logAndReturn, logger } from '../../logger';
+import { Portfolio } from '../../data/modelTypes/Portfolio';
 
 export const findPortfoliosForUser = (
 	userId: number

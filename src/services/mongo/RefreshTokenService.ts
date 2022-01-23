@@ -1,5 +1,4 @@
 import {
-	AppRefreshToken,
 	AppRefreshTokenModel,
 	appRefreshTokenToModel
 } from '../../mongo/models/AppRefreshTokenModel';
@@ -7,6 +6,7 @@ import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TE from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
 import { logger } from '../../logger';
+import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 
 const removeExistingAndInsertToken = async (
 	refreshToken: AppRefreshToken,

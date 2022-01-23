@@ -2,13 +2,13 @@ import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as A from 'fp-ts/Array';
 import * as TE from 'fp-ts/TaskEither';
 import {
-	Watchlist,
 	WatchlistModel,
 	WatchlistModelInstanceType,
 	watchlistToModel
 } from '../../mongo/models/WatchlistModel';
 import { pipe } from 'fp-ts/function';
 import { logAndReturn, logger } from '../../logger';
+import { Watchlist } from '../../data/modelTypes/Watchlist';
 
 export const findWatchlistsForUser = (
 	userId: number
