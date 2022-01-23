@@ -8,6 +8,7 @@ import {
 } from '../auth/AuthCodeLogin';
 import { TaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
+import { logout } from '../auth/Logout';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
 
@@ -62,6 +63,27 @@ export const authCodeAuthentication = (
 				res.setHeader('Set-Cookie', authCodeSuccess.cookie);
 				res.setHeader('Location', authCodeSuccess.postAuthRedirect);
 				res.status(302);
+				res.end();
+				return Task.of('');
+			}
+		)
+	);
+
+export const logoutAndClearAuth = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): TaskT<string> =>
+	pipe(
+		logout(req),
+		TaskEither.fold(
+			(ex) => {
+				next(ex);
+				return Task.of('');
+			},
+			(cookie) => {
+				res.setHeader('Set-Cookie', cookie);
+				res.status(204);
 				res.end();
 				return Task.of('');
 			}
