@@ -1,9 +1,7 @@
-import { AppRefreshTokenModel } from '../../mongo/models/AppRefreshTokenModel';
 import { Request } from 'express';
 import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { getEmptyCookie } from './Cookie';
 import { ReaderTaskTryT } from '@craigmiller160/ts-functions/types';
@@ -12,11 +10,8 @@ import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 
 const deleteRefreshToken =
 	(token: AccessToken): ReaderTaskTryT<ExpressDependencies, unknown> =>
-	() =>
-		TaskTry.tryCatch(() =>
-			// TODO do not do this
-			AppRefreshTokenModel.deleteOne({ tokenId: token.jti }).exec()
-		);
+	({ appRefreshTokenRepository }) =>
+		appRefreshTokenRepository.deleteByTokenId(token.jti);
 
 export const logout = (
 	req: Request
