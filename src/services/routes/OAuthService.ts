@@ -2,12 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
 import * as Either from 'fp-ts/Either';
-import * as Task from 'fp-ts/Task';
 import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
 import { TaskT } from '@craigmiller160/ts-functions/types';
+import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
+import * as TaskEither from 'fp-ts/TaskEither';
+import * as Task from 'fp-ts/Task';
 
 export const getAuthUser = (req: Request, res: Response): void => {
 	const token = req.user as AccessToken;
@@ -26,8 +28,8 @@ export const getAuthCodeLogin = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): TaskT<string> => {
-	return pipe(
+): TaskT<string> =>
+	pipe(
 		prepareAuthCodeLogin(req),
 		Either.fold(
 			(ex) => {
@@ -43,4 +45,25 @@ export const getAuthCodeLogin = (
 			}
 		)
 	);
-};
+
+export const authCodeAuthentication = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): TaskT<string> =>
+	pipe(
+		authenticateWithAuthCode(req),
+		TaskEither.fold(
+			(ex) => {
+				next(ex);
+				return Task.of('');
+			},
+			(authCodeSuccess) => {
+				res.setHeader('Set-Cookie', authCodeSuccess.cookie);
+				res.setHeader('Location', authCodeSuccess.postAuthRedirect);
+				res.status(302);
+				res.end();
+				return Task.of('');
+			}
+		)
+	);
