@@ -57,8 +57,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "jsonwebtoken": "^8.5.1",
-    "@craigmiller160/ts-functions": "^1.0.0-beta.8",
+    "@craigmiller160/ts-functions": "file:.yalc/@craigmiller160/ts-functions",
     "axios": "^0.24.0",
     "body-parser": "^1.19.1",
     "cookie-parser": "^1.4.6",
@@ -68,6 +67,7 @@
     "fp-ts": "^2.11.5",
     "https": "^1.0.0",
     "io-ts": "^2.2.16",
+    "jsonwebtoken": "^8.5.1",
     "jwk-to-pem": "^2.0.5",
     "mongoose": "^6.1.4",
     "nanoid": "^3.1.32",

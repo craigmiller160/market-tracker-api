@@ -1,14 +1,14 @@
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { Portfolio } from '../modelTypes/Portfolio';
+import { TaskTryT } from '@craigmiller160/ts-functions/types';
 
 export type FindPortfoliosForUser = (
 	userId: number
-) => TaskTry.TaskTry<ReadonlyArray<Portfolio>>;
+) => TaskTryT<ReadonlyArray<Portfolio>>;
 
 export type SavePortfoliosForUser = (
 	userId: number,
 	portfolios: ReadonlyArray<Portfolio>
-) => TaskTry.TaskTry<unknown>;
+) => TaskTryT<unknown>;
 
 export interface PortfolioRepository {
 	readonly findPortfoliosForUser: FindPortfoliosForUser;
