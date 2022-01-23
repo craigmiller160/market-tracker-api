@@ -2,6 +2,8 @@
 import * as Reader from 'fp-ts/Reader';
 import * as RArray from 'fp-ts/ReadonlyArray';
 
+// TODO delete this whole file
+
 type Print = (msg: string) => string;
 
 interface Dependencies {
