@@ -9,8 +9,9 @@ export const createRoutes: Reader.Reader<ExpressDependencies, void> = (
 	dependencies
 ) => {
 	// TODO see if there's any kind of sequence option here
+	// TODO make sure all other routes are handled
 	createPortfolioRoutes(dependencies);
-	createWatchlistRoutes(dependencies.expressApp);
+	createWatchlistRoutes(dependencies);
 	healthcheck(dependencies.expressApp);
 	createOAuthRoutes(dependencies.expressApp);
 };
