@@ -1,15 +1,5 @@
 import { model, Schema } from 'mongoose';
-
-export interface WatchlistItem {
-	symbol: string;
-}
-
-export interface Watchlist {
-	userId: number;
-	watchlistName: string;
-	stocks: WatchlistItem[];
-	cryptos: WatchlistItem[];
-}
+import { Watchlist } from '../../data/types';
 
 const watchlistSchema = new Schema<Watchlist>({
 	userId: {

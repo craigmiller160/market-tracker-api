@@ -1,9 +1,5 @@
 import { model, Schema } from 'mongoose';
-
-export interface AppRefreshToken {
-	tokenId: string;
-	refreshToken: string;
-}
+import { AppRefreshToken } from '../../data/types';
 
 const appRefreshTokenSchema = new Schema<AppRefreshToken>({
 	tokenId: {
