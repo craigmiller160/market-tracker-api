@@ -23,6 +23,8 @@ export const createOAuthRoutes: RouteCreator = (dependencies) => {
 
 	dependencies.expressApp.get(
 		'/oauth/logout',
-		secure((req, res, next) => logoutAndClearAuth(req, res, next)())
+		secure((req, res, next) =>
+			logoutAndClearAuth(req, res, next)(dependencies)()
+		)
 	);
 };

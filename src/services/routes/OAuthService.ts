@@ -6,12 +6,13 @@ import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
-import { TaskT } from '@craigmiller160/ts-functions/types';
+import { TaskT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as Task from 'fp-ts/Task';
 import { errorTask } from '../../function/Route';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
 
 export const getAuthUser = (req: Request, res: Response): void => {
 	const token = req.user as AccessToken;
@@ -58,17 +59,19 @@ export const authCodeAuthentication = (
 		})
 	);
 
-export const logoutAndClearAuth = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-): TaskT<string> =>
-	pipe(
-		logout(req),
-		TaskEither.fold(errorTask(next), (cookie) => {
-			res.setHeader('Set-Cookie', cookie);
-			res.status(204);
-			res.end();
-			return Task.of('');
-		})
-	);
+export const logoutAndClearAuth =
+	(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): ReaderTaskT<ExpressDependencies, string> =>
+	(dependencies) =>
+		pipe(
+			logout(req)(dependencies), // TODO try to use Reader functions to avoid drilling
+			TaskEither.fold(errorTask(next), (cookie) => {
+				res.setHeader('Set-Cookie', cookie);
+				res.status(204);
+				res.end();
+				return Task.of('');
+			})
+		);
