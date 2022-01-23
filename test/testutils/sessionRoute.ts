@@ -1,4 +1,4 @@
-import { OldRouteCreator } from '../../src/express/routes/RouteCreator';
+import { RouteCreator } from '../../src/express/routes/RouteCreator';
 import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import {
@@ -6,8 +6,8 @@ import {
 	MarketTrackerSession
 } from '../../src/function/HttpRequest';
 
-export const createSessionRoute: OldRouteCreator = (app) => {
-	app.get('/session', (req, res) => {
+export const createSessionRoute: RouteCreator = (dependencies) => {
+	dependencies.expressApp.get('/session', (req, res) => {
 		const session = getMarketTrackerSession(req);
 		res.json({
 			state: session.state,
@@ -16,7 +16,7 @@ export const createSessionRoute: OldRouteCreator = (app) => {
 		});
 	});
 
-	app.post(
+	dependencies.expressApp.post(
 		'/session',
 		(
 			req: Request<ParamsDictionary, unknown, MarketTrackerSession>,
