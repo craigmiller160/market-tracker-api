@@ -5,7 +5,7 @@ import { Portfolio } from '../../data/modelTypes/Portfolio';
 import {
 	getPortfoliosByUser,
 	savePortfoliosByUser
-} from '../../services/portfolio/PortfolioService';
+} from '../../services/routes/PortfolioService';
 
 export const createPortfolioRoutes: RouteCreator = (dependencies) => {
 	dependencies.expressApp.get(
