@@ -1,4 +1,3 @@
-import { TokenKey } from '../../services/auth/TokenKey';
 import { logger } from '../../logger';
 import { Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
 import passport from 'passport';
@@ -10,6 +9,8 @@ import * as Pred from 'fp-ts/Predicate';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { jwtFromRequest } from './jwt';
 import { getRequiredValues } from '../../function/Values';
+import { ReaderT } from '@craigmiller160/ts-functions/types';
+import { ExpressDependencies } from '../ExpressDependencies';
 
 interface ClientKeyName {
 	readonly clientKey: string;
@@ -39,7 +40,9 @@ const validatePayload = (token: AccessToken): Pred.Predicate<ClientKeyName> =>
 		Pred.and((keyAndName) => keyAndName.clientName === token.clientName)
 	);
 
-export const createPassportValidation = (tokenKey: TokenKey) => {
+export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
+	tokenKey
+}) => {
 	logger.debug('Creating passport JWT validation strategy');
 	const options: StrategyOptions = {
 		secretOrKey: tokenKey.key,

@@ -61,7 +61,8 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	const expressDependencies: ExpressDependencies = {
 		portfolioRepository,
 		watchlistRepository,
-		expressApp: app
+		expressApp: app,
+		tokenKey
 	};
 	app.use(cookieParser());
 	app.use(
@@ -79,8 +80,7 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	setupRequestLogging(expressDependencies);
 	createRoutes(expressDependencies);
 	setupErrorHandler(expressDependencies);
-
-	createPassportValidation(tokenKey);
+	createPassportValidation(expressDependencies);
 	return app;
 };
 
