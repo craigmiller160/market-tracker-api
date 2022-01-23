@@ -12,6 +12,6 @@ export const createRoutes: Reader.Reader<ExpressDependencies, void> = (
 	// TODO make sure all other routes are handled
 	createPortfolioRoutes(dependencies);
 	createWatchlistRoutes(dependencies);
-	healthcheck(dependencies.expressApp);
+	healthcheck(dependencies);
 	createOAuthRoutes(dependencies.expressApp);
 };
