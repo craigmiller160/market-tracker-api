@@ -4,14 +4,14 @@ import { createWatchlistRoutes } from './watchlists';
 import { createOAuthRoutes } from './oauth';
 import * as Reader from 'fp-ts/Reader';
 import { ExpressDependencies } from '../ExpressDependencies';
+import { ReaderT } from '@craigmiller160/ts-functions/types';
 
-export const createRoutes: Reader.Reader<ExpressDependencies, void> = (
+export const createRoutes: ReaderT<ExpressDependencies, void> = (
 	dependencies
-) => {
-	// TODO see if there's any kind of sequence option here
-	// TODO make sure all other routes are handled
-	createPortfolioRoutes(dependencies);
-	createWatchlistRoutes(dependencies);
-	healthcheck(dependencies);
-	createOAuthRoutes(dependencies);
-};
+): unknown =>
+	Reader.sequenceArray([
+		createPortfolioRoutes,
+		createWatchlistRoutes,
+		healthcheck,
+		createOAuthRoutes
+	])(dependencies);
