@@ -10,7 +10,7 @@ export type SaveWatchlistsForUser = (
     watchlists: ReadonlyArray<Watchlist>
 ) => TaskTryT<unknown>;
 
-export interface PortfolioRepository {
-    readonly findPortfoliosForUser: FindWatchlistsForUser;
-    readonly savePortfoliosForUser: SaveWatchlistsForUser;
+export interface WatchlistRepository {
+    readonly findWatchlistsForUser: FindWatchlistsForUser;
+    readonly saveWatchlistsForUser: SaveWatchlistsForUser;
 }
