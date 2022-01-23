@@ -2,9 +2,8 @@ import { Request } from 'express';
 import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 import * as IOEither from 'fp-ts/IOEither';
-import * as TaskEither from 'fp-ts/TaskEither';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from './Cookie';
@@ -14,8 +13,9 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
 import { getRequiredValues } from '../../function/Values';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
-import { appRefreshTokenRepository } from '../../data/repo';
-import { IOT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import { IOT, ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
+import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -92,16 +92,17 @@ const removeAuthCodeSessionAttributes =
 		delete session.origin;
 	};
 
-const handleRefreshToken = (
-	tokenResponse: TokenResponse
-): TaskTryT<unknown> => {
-	const refreshToken: AppRefreshToken = {
-		tokenId: tokenResponse.tokenId,
-		refreshToken: tokenResponse.refreshToken
+const handleRefreshToken =
+	(
+		tokenResponse: TokenResponse
+	): ReaderTaskTryT<ExpressDependencies, unknown> =>
+	({ appRefreshTokenRepository }) => {
+		const refreshToken: AppRefreshToken = {
+			tokenId: tokenResponse.tokenId,
+			refreshToken: tokenResponse.refreshToken
+		};
+		return appRefreshTokenRepository.saveRefreshToken(refreshToken);
 	};
-	// TODO refactor this
-	return appRefreshTokenRepository.saveRefreshToken(refreshToken);
-};
 
 const prepareRedirect = (): TryT<string> =>
 	pipe(
@@ -178,18 +179,20 @@ const createAuthCodeBody = (
 
 export const authenticateWithAuthCode = (
 	req: Request
-): TaskTryT<AuthCodeSuccess> =>
+): ReaderTaskTryT<ExpressDependencies, AuthCodeSuccess> =>
 	pipe(
 		getAndValidateCodeOriginAndState(req),
 		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
-		TaskEither.fromEither,
-		TaskEither.chain(sendTokenRequest),
-		TaskEither.chainFirst(handleRefreshToken),
-		TaskEither.chain((_) =>
-			TaskEither.fromEither(createTokenCookie(_.accessToken))
+		ReaderTaskEither.fromEither,
+		ReaderTaskEither.chain(
+			flow(sendTokenRequest, ReaderTaskEither.fromTaskEither)
 		),
-		TaskEither.bindTo('cookie'),
-		TaskEither.bind('postAuthRedirect', () =>
-			TaskEither.fromEither(prepareRedirect())
+		ReaderTaskEither.chainFirst(handleRefreshToken),
+		ReaderTaskEither.chain((_) =>
+			ReaderTaskEither.fromEither(createTokenCookie(_.accessToken))
+		),
+		ReaderTaskEither.bindTo('cookie'),
+		ReaderTaskEither.bind('postAuthRedirect', () =>
+			ReaderTaskEither.fromEither(prepareRedirect())
 		)
 	);
