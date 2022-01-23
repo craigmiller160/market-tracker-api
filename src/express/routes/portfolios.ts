@@ -17,7 +17,7 @@ export const createPortfolioRoutes: RouteCreator = (dependencies) => {
 		'/portfolios',
 		secure(
 			(req: Request<unknown, unknown, ReadonlyArray<Portfolio>>, res) =>
-				savePortfoliosByUser(req, res)()
+				savePortfoliosByUser(req, res)(dependencies)()
 		)
 	);
 };
