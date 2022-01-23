@@ -1,6 +1,5 @@
 import request from 'supertest';
 import {
-	Portfolio,
 	PortfolioModel,
 	portfolioToModel
 } from '../../../src/mongo/models/PortfolioModel';
@@ -11,6 +10,7 @@ import {
 	stopFullTestServer
 } from '../../testutils/fullTestServer';
 import { removeId } from '../../testutils/functions';
+import { Portfolio } from '../../../src/data/modelTypes/Portfolio';
 
 const formatPortfolios = (portfolios: Portfolio[]): Portfolio[] =>
 	portfolios.map((portfolio) => {

@@ -16,12 +16,12 @@ import { STATE_EXP_FORMAT } from '../../../src/services/auth/constants';
 import { TokenResponse } from '../../../src/types/TokenResponse';
 import { AuthCodeBody } from '../../../src/services/auth/AuthCodeAuthentication';
 import {
-	AppRefreshToken,
 	AppRefreshTokenModel,
 	appRefreshTokenToModel
 } from '../../../src/mongo/models/AppRefreshTokenModel';
 import qs from 'qs';
 import { AccessToken } from '../../../src/express/auth/AccessToken';
+import { AppRefreshToken } from '../../../src/data/modelTypes/AppRefreshToken';
 
 const clearEnv = () => {
 	delete process.env.CLIENT_KEY;

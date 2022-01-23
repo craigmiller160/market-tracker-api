@@ -1,5 +1,4 @@
 import {
-	Watchlist,
 	WatchlistModel,
 	watchlistToModel
 } from '../../../src/mongo/models/WatchlistModel';
@@ -11,6 +10,7 @@ import {
 	stopFullTestServer
 } from '../../testutils/fullTestServer';
 import { removeId } from '../../testutils/functions';
+import { Watchlist } from '../../../src/data/modelTypes/Watchlist';
 
 const formatWatchlists = (watchlists: Watchlist[]): Watchlist[] =>
 	watchlists.map((watchlist) => {
