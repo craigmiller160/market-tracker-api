@@ -3,12 +3,12 @@ import { Request } from 'express';
 import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
-import * as TaskEither from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { getEmptyCookie } from './Cookie';
 import { ReaderTaskTryT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
+import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 
 const deleteRefreshToken =
 	(token: AccessToken): ReaderTaskTryT<ExpressDependencies, unknown> =>
@@ -18,19 +18,19 @@ const deleteRefreshToken =
 			AppRefreshTokenModel.deleteOne({ tokenId: token.jti }).exec()
 		);
 
-export const logout =
-	(req: Request): ReaderTaskTryT<ExpressDependencies, string> =>
-	(dependencies) =>
-		pipe(
-			Option.fromNullable(req.user as AccessToken | undefined),
-			TaskEither.fromOption(
-				() =>
-					new UnauthorizedError(
-						'Should not be able to call /logout without being authenticated'
-					)
-			),
-			TaskEither.chainFirst((token) =>
-				deleteRefreshToken(token)(dependencies)
-			), // TODO figure out Reader functions to avoid drilling
-			TaskEither.chain(() => TaskEither.fromEither(getEmptyCookie()))
-		);
+export const logout = (
+	req: Request
+): ReaderTaskTryT<ExpressDependencies, string> =>
+	pipe(
+		Option.fromNullable(req.user as AccessToken | undefined),
+		ReaderTaskEither.fromOption(
+			() =>
+				new UnauthorizedError(
+					'Should not be able to call /logout without being authenticated'
+				)
+		),
+		ReaderTaskEither.chainFirst((token) => deleteRefreshToken(token)), // TODO figure out Reader functions to avoid drilling
+		ReaderTaskEither.chain(() =>
+			ReaderTaskEither.fromEither(getEmptyCookie())
+		)
+	);
