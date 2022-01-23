@@ -1,21 +1,23 @@
 import * as Reader from 'fp-ts/Reader';
-import * as RArray from 'fp-ts/ReadonlyArray'
+import * as RArray from 'fp-ts/ReadonlyArray';
 
-type Print = (msg: string) => void;
+type Print = (msg: string) => string;
 
-const printToConsole: Print = (msg) => console.log(msg);
+const printToConsole: Print = (msg) => {
+	console.log(msg);
+	return `Printed: ${msg}`;
+};
 
 interface Dependencies {
-    readonly print: Print;
+	readonly print: Print;
 }
 
-const printData = (data: ReadonlyArray<string>) => (print: Print): unknown =>
-    RArray.map(print)(data);
+const printData =
+	(data: ReadonlyArray<string>) =>
+	(print: Print): ReadonlyArray<string> =>
+		RArray.map(print)(data);
 
-const data: ReadonlyArray<string> = [
-    'Hello World',
-    'Bob Saget',
-    'JWST'
-];
+const data: ReadonlyArray<string> = ['Hello World', 'Bob Saget', 'JWST'];
 
-printData(data)(printToConsole);
+const result = printData(data)(printToConsole);
+console.log('Result', result);
