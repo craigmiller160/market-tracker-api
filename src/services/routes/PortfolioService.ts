@@ -6,7 +6,7 @@ import { Portfolio } from '../../data/modelTypes/Portfolio';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import { ReaderTaskTryT } from '@craigmiller160/ts-functions/types';
 
-// TODO handle errors here and for watchlist too
+// TODO handle errors here and for watchlist and oauth too
 
 export const getPortfoliosByUser =
 	(

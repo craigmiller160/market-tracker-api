@@ -13,5 +13,5 @@ export const createRoutes: Reader.Reader<ExpressDependencies, void> = (
 	createPortfolioRoutes(dependencies);
 	createWatchlistRoutes(dependencies);
 	healthcheck(dependencies);
-	createOAuthRoutes(dependencies.expressApp);
+	createOAuthRoutes(dependencies);
 };
