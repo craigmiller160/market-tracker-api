@@ -76,10 +76,11 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.use(bodyParer.json());
 	app.use(passport.initialize());
 	// TODO setup more of these as Readers
-	setupRequestLogging(app);
+	setupRequestLogging(expressDependencies);
 	createRoutes(expressDependencies);
+	setupErrorHandler(expressDependencies);
+
 	createPassportValidation(tokenKey);
-	setupErrorHandler(app);
 	return app;
 };
 

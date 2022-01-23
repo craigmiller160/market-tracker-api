@@ -1,9 +1,12 @@
-import { Express } from 'express';
 import qs from 'qs';
 import { logger } from '../logger';
+import { ReaderT } from '@craigmiller160/ts-functions/types';
+import { ExpressDependencies } from './ExpressDependencies';
 
-export const setupRequestLogging = (app: Express) => {
-	app.use((req, res, next) => {
+export const setupRequestLogging: ReaderT<ExpressDependencies, void> = (
+	dependencies
+) => {
+	dependencies.expressApp.use((req, res, next) => {
 		const queryString = qs.stringify(req.query);
 		const fullQueryString = queryString.length > 0 ? `?${queryString}` : '';
 		logger.debug(`${req.method} ${req.path}${fullQueryString}`);
