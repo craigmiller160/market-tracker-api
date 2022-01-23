@@ -21,7 +21,7 @@ import cookieParser from 'cookie-parser';
 import { nanoid } from 'nanoid';
 import { __, match } from 'ts-pattern';
 import { ExpressDependencies } from './ExpressDependencies';
-import { portfolioRepository } from '../data/repo';
+import { portfolioRepository, watchlistRepository } from '../data/repo';
 
 const safeParseInt = (text: string): O.Option<number> =>
 	match(parseInt(text))
@@ -60,6 +60,7 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	const app = express();
 	const expressDependencies: ExpressDependencies = {
 		portfolioRepository,
+		watchlistRepository,
 		expressApp: app
 	};
 	app.use(cookieParser());

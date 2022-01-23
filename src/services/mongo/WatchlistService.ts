@@ -10,6 +10,8 @@ import { pipe } from 'fp-ts/function';
 import { logAndReturn, logger } from '../../logger';
 import { Watchlist } from '../../data/modelTypes/Watchlist';
 
+// TODO delete this
+
 export const findWatchlistsForUser = (
 	userId: number
 ): TaskTry.TaskTry<Watchlist[]> => {
