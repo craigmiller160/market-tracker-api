@@ -20,6 +20,8 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { nanoid } from 'nanoid';
 import { __, match } from 'ts-pattern';
+import { ExpressDependencies } from './ExpressDependencies';
+import { portfolioRepository } from '../data/repo';
 
 const safeParseInt = (text: string): O.Option<number> =>
 	match(parseInt(text))
@@ -56,6 +58,10 @@ export interface ExpressServer {
 
 const createExpressApp = (tokenKey: TokenKey): Express => {
 	const app = express();
+	const expressDependencies: ExpressDependencies = {
+		portfolioRepository,
+		expressApp: app
+	};
 	app.use(cookieParser());
 	app.use(
 		session({
@@ -68,8 +74,9 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.disable('x-powered-by');
 	app.use(bodyParer.json());
 	app.use(passport.initialize());
+	// TODO setup more of these as Readers
 	setupRequestLogging(app);
-	createRoutes(app);
+	createRoutes(expressDependencies);
 	createPassportValidation(tokenKey);
 	setupErrorHandler(app);
 	return app;

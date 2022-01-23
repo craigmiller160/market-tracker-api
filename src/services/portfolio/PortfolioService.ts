@@ -4,7 +4,7 @@ import { AccessToken } from '../../express/auth/AccessToken';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { Portfolio } from '../../data/modelTypes/Portfolio';
-import { RouteDependencies } from '../../express/routes/RouteDependencies';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
 
 // TODO handle errors here and for watchlist too
 
@@ -12,7 +12,7 @@ export const getPortfoliosByUser =
 	(
 		req: Request,
 		res: Response
-	): ReaderTaskEither.ReaderTaskEither<RouteDependencies, Error, unknown> =>
+	): ReaderTaskEither.ReaderTaskEither<ExpressDependencies, Error, unknown> =>
 	({ portfolioRepository }) => {
 		const token = req.user as AccessToken;
 		return pipe(
@@ -25,7 +25,7 @@ export const savePortfoliosByUser =
 	(
 		req: Request<unknown, unknown, ReadonlyArray<Portfolio>>,
 		res: Response
-	): ReaderTaskEither.ReaderTaskEither<RouteDependencies, Error, unknown> =>
+	): ReaderTaskEither.ReaderTaskEither<ExpressDependencies, Error, unknown> =>
 	({ portfolioRepository }) => {
 		const token = req.user as AccessToken;
 		return pipe(
