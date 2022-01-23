@@ -37,6 +37,7 @@ const findRefreshTokenById = (
 	tokenId: string
 ): TaskTry.TaskTry<AppRefreshToken> =>
 	pipe(
+		// TODO don't do this
 		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
 		TaskEither.map(RArr.head),
 		TaskEither.chain(
