@@ -10,6 +10,7 @@ import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
 import { logAndReturn } from '../../logger';
 import { getRequiredValues } from '../../function/Values';
+import { TaskTryT } from '@craigmiller160/ts-functions/types';
 
 const TOKEN_PATH = '/oauth/token';
 
@@ -66,7 +67,7 @@ const executeTokenRestCall = (
 
 export const sendTokenRequest = (
 	requestBody: object
-): TaskTry.TaskTry<TokenResponse> => {
+): TaskTryT<TokenResponse> => {
 	const formattedRequestBody = qs.stringify(requestBody);
 	return pipe(
 		getAuthServerHost(),

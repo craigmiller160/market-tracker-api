@@ -93,31 +93,30 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 // TODO fix return type if everything else works
 export const refreshExpiredToken = (
 	token: string | null
-): ReaderTaskEitherT<ExpressDependencies, Error, string> => {
+): ReaderTaskTryT<ExpressDependencies, string> => {
 	logger.debug('Attempting to refresh expired token');
-
-	const result = pipe(
-		getRefreshToken(token),
-		ReaderTaskEither.bindTo('tokenAndId'),
-		ReaderTaskEither.bind('refreshBody', ({ tokenAndId: { refreshToken } }) =>
-			ReaderTaskEither.right(getRefreshBody(refreshToken.refreshToken))
-		)
-	)
-
-	pipe(
+	return pipe(
 		getRefreshToken(token),
 		ReaderTaskEither.bindTo('tokenAndId'),
 		ReaderTaskEither.bind(
 			'refreshBody',
 			({ tokenAndId: { refreshToken } }) =>
-				pipe(
-					getRefreshBody(refreshToken.refreshToken),
-					TaskEither.right,
-					ReaderTaskEither.fromTaskEither
+				ReaderTaskEither.right(
+					getRefreshBody(refreshToken.refreshToken)
 				)
 		),
-		ReaderTaskEither.bind('tokenResponse', ({ refreshBody }) =>
-			pipe(sendTokenRequest(refreshBody), ReaderTaskEither.fromTaskEither)
+		ReaderTaskEither.bind(
+			'tokenResponse',
+			({ refreshBody }) =>
+				// TODO figure out an alternative to casting
+				pipe(
+					sendTokenRequest(refreshBody),
+					ReaderTaskEither.fromTaskEither
+				) as ReaderTaskEitherT<
+					ExpressDependencies,
+					Error,
+					TokenResponse
+				>
 		),
 		ReaderTaskEither.chainFirst(
 			({ tokenResponse, tokenAndId: { existingTokenId } }) =>
