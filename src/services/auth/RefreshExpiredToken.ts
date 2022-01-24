@@ -95,7 +95,16 @@ export const refreshExpiredToken = (
 	token: string | null
 ): ReaderTaskEitherT<ExpressDependencies, Error, string> => {
 	logger.debug('Attempting to refresh expired token');
-	return pipe(
+
+	const result = pipe(
+		getRefreshToken(token),
+		ReaderTaskEither.bindTo('tokenAndId'),
+		ReaderTaskEither.bind('refreshBody', ({ tokenAndId: { refreshToken } }) =>
+			ReaderTaskEither.right(getRefreshBody(refreshToken.refreshToken))
+		)
+	)
+
+	pipe(
 		getRefreshToken(token),
 		ReaderTaskEither.bindTo('tokenAndId'),
 		ReaderTaskEither.bind(
