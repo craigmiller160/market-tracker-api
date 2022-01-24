@@ -12,7 +12,7 @@ export const createPortfolioRoutes: RouteCreator = (dependencies) => {
 		'/portfolios',
 		secure((req, res, next) =>
 			getPortfoliosByUser(req, res, next)(dependencies)()
-		)
+		)(dependencies)
 	);
 
 	dependencies.expressApp.post(

@@ -12,7 +12,7 @@ export const createWatchlistRoutes: RouteCreator = (dependencies) => {
 		'/watchlists',
 		secure((req, res, next) =>
 			getWatchlistsByUser(req, res, next)(dependencies)()
-		)
+		)(dependencies)
 	);
 
 	dependencies.expressApp.post(
