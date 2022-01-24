@@ -62,7 +62,7 @@ const secureCallback =
 						res,
 						next,
 						fn
-					)(dependencies)
+					)(dependencies)()
 			)
 		);
 	};
@@ -131,13 +131,17 @@ const tryToRefreshExpiredToken = (
 			req.headers['Cookie'] = cookieParts.cookie;
 			req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 			res.setHeader('Set-Cookie', cookieParts.cookie);
-			passport.authenticate(
-				'jwt',
-				{ session: false },
-				secureCallback(req, res, next, fn)
-			)(req, res, next);
 			return ReaderTask.of('');
-		})
+		}),
+		ReaderTask.chain(() =>
+			ReaderTask.asks((deps) => {
+				passport.authenticate(
+					'jwt',
+					{ session: false },
+					secureCallback(req, res, next, fn)(deps) // TODO figure out better solution
+				)(req, res, next);
+			})
+		)
 	);
 };
 
