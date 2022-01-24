@@ -127,19 +127,17 @@ const tryToRefreshExpiredToken = (
 		ReaderTaskEither.map(
 			logAndReturn('debug', 'Successfully refreshed token')
 		),
-		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) => {
-			req.headers['Cookie'] = cookieParts.cookie;
-			req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
-			res.setHeader('Set-Cookie', cookieParts.cookie);
-			return ReaderTask.of('');
-		}),
-		ReaderTask.chain(() =>
+		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) =>
 			ReaderTask.asks((deps) => {
+				req.headers['Cookie'] = cookieParts.cookie;
+				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
+				res.setHeader('Set-Cookie', cookieParts.cookie);
 				passport.authenticate(
 					'jwt',
 					{ session: false },
 					secureCallback(req, res, next, fn)(deps) // TODO figure out better solution
 				)(req, res, next);
+				return '';
 			})
 		)
 	);
