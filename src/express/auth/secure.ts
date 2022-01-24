@@ -141,6 +141,7 @@ const tryToRefreshExpiredToken = (
 	);
 };
 
+// TODO the Route function may require the dependencies, pass them in
 export const secure =
 	(fn: Route): ReaderT<ExpressDependencies, Route> =>
 	(dependencies) =>
