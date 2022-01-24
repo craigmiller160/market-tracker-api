@@ -47,6 +47,7 @@ const secureCallback =
 					req.user = user as AccessToken;
 					fn(req, res, next);
 				},
+				// TODO figure out how to pass dependencies through here
 				(realError) => handleTokenError(realError, req, res, next, fn)
 			)
 		);
@@ -61,7 +62,7 @@ const handleTokenError = (
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): unknown =>
+): ReaderTaskT<ExpressDependencies, unknown> =>
 	match({
 		error,
 		jwtIsInCookie: isJwtInCookie(req),
@@ -73,9 +74,12 @@ const handleTokenError = (
 				jwtIsInCookie: true,
 				refreshAlreadyHappened: false
 			},
-			tryToRefreshExpiredToken(req, res, next, fn)
+			() => tryToRefreshExpiredToken(req, res, next, fn)
 		)
-		.otherwise(() => expressErrorHandler(error, req, res, next));
+		.otherwise(() => {
+			expressErrorHandler(error, req, res, next);
+			return ReaderTask.of<ExpressDependencies, string>('');
+		});
 
 const splitCookie = (cookie: string): TaskTry.TaskTry<CookieParts> =>
 	pipe(
