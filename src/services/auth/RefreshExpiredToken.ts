@@ -13,7 +13,11 @@ import { TokenResponse } from '../../types/TokenResponse';
 import { createTokenCookie } from './Cookie';
 import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
-import { ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import {
+	ReaderTaskEitherT,
+	ReaderTaskTryT,
+	TryT
+} from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 
@@ -86,9 +90,10 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 	refresh_token: refreshToken
 });
 
+// TODO fix return type if everything else works
 export const refreshExpiredToken = (
 	token: string | null
-): ReaderTaskTryT<ExpressDependencies, string> => {
+): ReaderTaskEitherT<ExpressDependencies, Error, string> => {
 	logger.debug('Attempting to refresh expired token');
 	return pipe(
 		getRefreshToken(token),
@@ -96,8 +101,10 @@ export const refreshExpiredToken = (
 		ReaderTaskEither.bind(
 			'refreshBody',
 			({ tokenAndId: { refreshToken } }) =>
-				ReaderTaskEither.right(
-					getRefreshBody(refreshToken.refreshToken)
+				pipe(
+					getRefreshBody(refreshToken.refreshToken),
+					TaskEither.right,
+					ReaderTaskEither.fromTaskEither
 				)
 		),
 		ReaderTaskEither.bind('tokenResponse', ({ refreshBody }) =>
