@@ -33,8 +33,13 @@ type RefreshFlagRequest = Request & {
 
 // TODO fix type
 const secureCallback =
-	(req: Request, res: Response, next: NextFunction, fn: Route): ReaderT<ExpressDependencies, any> =>
-		(dependencies) =>
+	(
+		req: Request,
+		res: Response,
+		next: NextFunction,
+		fn: Route
+	): ReaderT<ExpressDependencies, any> =>
+	(dependencies) =>
 	(
 		error: Error | null,
 		user: AccessToken | boolean,
@@ -50,7 +55,14 @@ const secureCallback =
 					fn(req, res, next);
 				},
 				// TODO figure out how to pass dependencies through here
-				(realError) => handleTokenError(realError, req, res, next, fn)(dependencies)
+				(realError) =>
+					handleTokenError(
+						realError,
+						req,
+						res,
+						next,
+						fn
+					)(dependencies)
 			)
 		);
 	};
@@ -130,8 +142,9 @@ const tryToRefreshExpiredToken = (
 };
 
 export const secure =
-	(fn: Route): ReaderT<ExpressDependencies,Route> => (dependencies) =>
-		(req, res, next) => {
+	(fn: Route): ReaderT<ExpressDependencies, Route> =>
+	(dependencies) =>
+	(req, res, next) => {
 		passport.authenticate(
 			'jwt',
 			{ session: false },
