@@ -90,7 +90,6 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 	refresh_token: refreshToken
 });
 
-// TODO fix return type if everything else works
 export const refreshExpiredToken = (
 	token: string | null
 ): ReaderTaskTryT<ExpressDependencies, string> => {
