@@ -13,11 +13,7 @@ import { TokenResponse } from '../../types/TokenResponse';
 import { createTokenCookie } from './Cookie';
 import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
-import {
-	ReaderTaskEitherT,
-	ReaderTaskTryT,
-	TryT
-} from '@craigmiller160/ts-functions/types';
+import { ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 
@@ -104,18 +100,8 @@ export const refreshExpiredToken = (
 					getRefreshBody(refreshToken.refreshToken)
 				)
 		),
-		ReaderTaskEither.bind(
-			'tokenResponse',
-			({ refreshBody }) =>
-				// TODO figure out an alternative to casting
-				pipe(
-					sendTokenRequest(refreshBody),
-					ReaderTaskEither.fromTaskEither
-				) as ReaderTaskEitherT<
-					ExpressDependencies,
-					Error,
-					TokenResponse
-				>
+		ReaderTaskEither.bind('tokenResponse', ({ refreshBody }) =>
+			ReaderTaskEither.fromTaskEither(sendTokenRequest(refreshBody))
 		),
 		ReaderTaskEither.chainFirst(
 			({ tokenResponse, tokenAndId: { existingTokenId } }) =>
