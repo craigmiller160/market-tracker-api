@@ -14,6 +14,7 @@ import { createTokenCookie } from './Cookie';
 import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { appRefreshTokenRepository } from '../../data/repo';
+import { TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -25,14 +26,12 @@ interface RefreshTokenAndId {
 	readonly refreshToken: AppRefreshToken;
 }
 
-const decodeToken = (token: string): Try.Try<AccessToken> =>
+const decodeToken = (token: string): TryT<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
 
 const getTokenId = (token: AccessToken): string => token.jti;
 
-const findRefreshTokenById = (
-	tokenId: string
-): TaskTry.TaskTry<AppRefreshToken> =>
+const findRefreshTokenById = (tokenId: string): TaskTryT<AppRefreshToken> =>
 	pipe(
 		// TODO refactor this
 		appRefreshTokenRepository.findByTokenId(tokenId),
@@ -51,7 +50,7 @@ const findRefreshTokenById = (
 const handleRefreshToken = (
 	existingTokenId: string,
 	tokenResponse: TokenResponse
-): TaskTry.TaskTry<unknown> => {
+): TaskTryT<unknown> => {
 	const refreshToken: AppRefreshToken = {
 		tokenId: tokenResponse.tokenId,
 		refreshToken: tokenResponse.refreshToken
@@ -63,28 +62,25 @@ const handleRefreshToken = (
 	);
 };
 
-const getRefreshToken: (
-	token: string | null
-) => TaskTry.TaskTry<RefreshTokenAndId> = flow(
-	Option.fromNullable,
-	Either.fromOption(() => new UnauthorizedError('No token to refresh')),
-	Either.chain(decodeToken),
-	Either.map(getTokenId),
-	TaskEither.fromEither,
-	TaskEither.bindTo('existingTokenId'),
-	TaskEither.bind('refreshToken', ({ existingTokenId }) =>
-		findRefreshTokenById(existingTokenId)
-	)
-);
+const getRefreshToken: (token: string | null) => TaskTryT<RefreshTokenAndId> =
+	flow(
+		Option.fromNullable,
+		Either.fromOption(() => new UnauthorizedError('No token to refresh')),
+		Either.chain(decodeToken),
+		Either.map(getTokenId),
+		TaskEither.fromEither,
+		TaskEither.bindTo('existingTokenId'),
+		TaskEither.bind('refreshToken', ({ existingTokenId }) =>
+			findRefreshTokenById(existingTokenId)
+		)
+	);
 
 const getRefreshBody = (refreshToken: string): RefreshBody => ({
 	grant_type: 'refresh_token',
 	refresh_token: refreshToken
 });
 
-export const refreshExpiredToken = (
-	token: string | null
-): TaskTry.TaskTry<string> => {
+export const refreshExpiredToken = (token: string | null): TaskTryT<string> => {
 	logger.debug('Attempting to refresh expired token');
 	return pipe(
 		getRefreshToken(token),
