@@ -93,22 +93,23 @@ export const refreshExpiredToken = (
 	return pipe(
 		getRefreshToken(token),
 		ReaderTaskEither.bindTo('tokenAndId'),
-		ReaderTaskEither.bind(
-			'refreshBody',
-			({ tokenAndId: { refreshToken } }) =>
-				ReaderTaskEither.right(
-					getRefreshBody(refreshToken.refreshToken)
-				)
-		),
-		ReaderTaskEither.bind('tokenResponse', ({ refreshBody }) =>
-			pipe(sendTokenRequest(refreshBody), ReaderTaskEither.fromTaskEither)
-		),
-		ReaderTaskEither.chainFirst(
-			({ tokenResponse, tokenAndId: { existingTokenId } }) =>
-				handleRefreshToken(existingTokenId, tokenResponse)
-		),
-		ReaderTaskEither.chain(({ tokenResponse: { accessToken } }) =>
-			ReaderTaskEither.fromEither(createTokenCookie(accessToken))
-		)
+		// ReaderTaskEither.bind(
+		// 	'refreshBody',
+		// 	({ tokenAndId: { refreshToken } }) =>
+		// 		ReaderTaskEither.right(
+		// 			getRefreshBody(refreshToken.refreshToken)
+		// 		)
+		// ),
+		// ReaderTaskEither.bind('tokenResponse', ({ refreshBody }) =>
+		// 	pipe(sendTokenRequest(refreshBody), ReaderTaskEither.fromTaskEither)
+		// ),
+		// ReaderTaskEither.chainFirst(
+		// 	({ tokenResponse, tokenAndId: { existingTokenId } }) =>
+		// 		handleRefreshToken(existingTokenId, tokenResponse)
+		// ),
+		// ReaderTaskEither.chain(({ tokenResponse: { accessToken } }) =>
+		// 	ReaderTaskEither.fromEither(createTokenCookie(accessToken))
+		// )
+		ReaderTaskEither.map(({ tokenAndId }) => tokenAndId.existingTokenId)
 	);
 };
