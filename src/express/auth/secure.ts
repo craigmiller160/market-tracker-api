@@ -55,7 +55,6 @@ const secureCallback =
 					req.user = user as AccessToken;
 					fn(req, res, next);
 				},
-				// TODO figure out how to pass dependencies through here
 				(realError) =>
 					handleTokenError(
 						realError,
@@ -140,7 +139,6 @@ const tryToRefreshExpiredToken = (
 	);
 };
 
-// TODO the Route function may require the dependencies, pass them in
 export const secure =
 	(fn: Route): ReaderT<ExpressDependencies, Route> =>
 	(dependencies) =>
