@@ -31,20 +31,21 @@ type RefreshFlagRequest = Request & {
 	hasRefreshed: boolean | undefined;
 };
 
-// TODO fix type
+type SecureCallback = (
+	error: Error | null,
+	user: AccessToken | boolean,
+	tokenError: Error | undefined
+) => void;
+
 const secureCallback =
 	(
 		req: Request,
 		res: Response,
 		next: NextFunction,
 		fn: Route
-	): ReaderT<ExpressDependencies, any> =>
+	): ReaderT<ExpressDependencies, SecureCallback> =>
 	(dependencies) =>
-	(
-		error: Error | null,
-		user: AccessToken | boolean,
-		tokenError: Error | undefined
-	) => {
+	(error, user, tokenError) => {
 		pipe(
 			Option.fromNullable(error),
 			Option.getOrElse(() => tokenError),
