@@ -23,6 +23,6 @@ export const createPortfolioRoutes: RouteCreator = (dependencies) => {
 				res,
 				next
 			) => savePortfoliosByUser(req, res, next)(dependencies)()
-		)
+		)(dependencies)
 	);
 };

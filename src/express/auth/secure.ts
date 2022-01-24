@@ -15,7 +15,7 @@ import { Route } from '../Route';
 import * as Text from '@craigmiller160/ts-functions/Text';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import { ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../ExpressDependencies';
@@ -31,8 +31,10 @@ type RefreshFlagRequest = Request & {
 	hasRefreshed: boolean | undefined;
 };
 
+// TODO fix type
 const secureCallback =
-	(req: Request, res: Response, next: NextFunction, fn: Route) =>
+	(req: Request, res: Response, next: NextFunction, fn: Route): ReaderT<ExpressDependencies, any> =>
+		(dependencies) =>
 	(
 		error: Error | null,
 		user: AccessToken | boolean,
@@ -48,7 +50,7 @@ const secureCallback =
 					fn(req, res, next);
 				},
 				// TODO figure out how to pass dependencies through here
-				(realError) => handleTokenError(realError, req, res, next, fn)
+				(realError) => handleTokenError(realError, req, res, next, fn)(dependencies)
 			)
 		);
 	};
@@ -128,11 +130,11 @@ const tryToRefreshExpiredToken = (
 };
 
 export const secure =
-	(fn: Route): Route =>
-	(req, res, next) => {
+	(fn: Route): ReaderT<ExpressDependencies,Route> => (dependencies) =>
+		(req, res, next) => {
 		passport.authenticate(
 			'jwt',
 			{ session: false },
-			secureCallback(req, res, next, fn)
+			secureCallback(req, res, next, fn)(dependencies)
 		)(req, res, next);
 	};

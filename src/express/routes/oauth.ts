@@ -10,7 +10,7 @@ import {
 export const createOAuthRoutes: RouteCreator = (dependencies) => {
 	dependencies.expressApp.get(
 		'/oauth/user',
-		secure((req, res) => getAuthUser(req, res))
+		secure((req, res) => getAuthUser(req, res))(dependencies)
 	);
 
 	dependencies.expressApp.post('/oauth/authcode/login', (req, res, next) =>
@@ -25,6 +25,6 @@ export const createOAuthRoutes: RouteCreator = (dependencies) => {
 		'/oauth/logout',
 		secure((req, res, next) =>
 			logoutAndClearAuth(req, res, next)(dependencies)()
-		)
+		)(dependencies)
 	);
 };

@@ -23,6 +23,6 @@ export const createWatchlistRoutes: RouteCreator = (dependencies) => {
 				res,
 				next
 			) => saveWatchlistsByUser(req, res, next)(dependencies)()
-		)
+		)(dependencies)
 	);
 };
