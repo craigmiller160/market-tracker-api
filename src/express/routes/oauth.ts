@@ -1,6 +1,4 @@
 import { RouteCreator } from './RouteCreator';
-import { secure } from '../auth/secure';
-import { logoutAndClearAuth } from '../../services/routes/OAuthService';
 import { Router } from 'express';
 import * as oAuthController from '../controllers/oauth';
 import { Route } from '../Route';
@@ -13,32 +11,24 @@ interface RouterAndRoutes {
 }
 
 const configureRoutes = ({ router, routes }: RouterAndRoutes): Router => {
-	const [getAuthUser, authCodeLogin, authCodeAuthentication] = routes;
+	const [getAuthUser, authCodeLogin, authCodeAuthentication, logout] = routes;
 	router.get('/user', getAuthUser);
 	router.post('/authcode/login', authCodeLogin);
 	router.get('/authcode/code', authCodeAuthentication);
-	return router;
-}
-
-export const createOAuthRoutes: RouteCreator = (dependencies) => {
-	const router = pipe(
-		Reader.of(Router()),
-		Reader.bindTo('router'),
-		Reader.bind('routes', () => Reader.sequenceArray([
-			oAuthController.getAuthUser,
-			oAuthController.getAuthCodeLogin,
-			oAuthController.authCodeAuthentication
-		])),
-		Reader.map(configureRoutes)
-	)(dependencies);
-
-	// TODO finish refactoring this hard one
-	router.get(
-		'/logout',
-		secure((req, res, next) =>
-			logoutAndClearAuth(req, res, next)(dependencies)()
-		)(dependencies)
-	);
-
+	router.get('/logout', logout);
 	return router;
 };
+
+export const createOAuthRoutes: RouteCreator = pipe(
+	Reader.of(Router()),
+	Reader.bindTo('router'),
+	Reader.bind('routes', () =>
+		Reader.sequenceArray([
+			oAuthController.getAuthUser,
+			oAuthController.getAuthCodeLogin,
+			oAuthController.authCodeAuthentication,
+			oAuthController.logout
+		])
+	),
+	Reader.map(configureRoutes)
+);
