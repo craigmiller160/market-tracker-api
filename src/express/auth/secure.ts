@@ -19,7 +19,6 @@ import { ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../ExpressDependencies';
-import * as Reader from 'fp-ts/Reader';
 
 interface CookieParts {
 	readonly cookie: string;
@@ -161,21 +160,14 @@ export const secureReaderTask =
 	(fn: ReaderTaskRoute): ReaderT<ExpressDependencies, Route> =>
 	(deps) =>
 	(req, res, next) => {
-		const wrappedFn: Route = (req: Request, res: Response, next: NextFunction) =>
-			fn(req, res, next)(deps)();
+		const wrappedFn: Route = (
+			req: Request,
+			res: Response,
+			next: NextFunction
+		) => fn(req, res, next)(deps)();
 		passport.authenticate(
 			'jwt',
 			{ session: false },
 			secureCallback(req, res, next, wrappedFn)(deps)
 		)(req, res, next);
 	};
-
-// TODO if it remains unused, delete it
-export const secure2: ReaderT<ExpressDependencies, (fn: Route) => Route> =
-	Reader.asks((deps) => (fn: Route) => (req, res, next) => {
-		passport.authenticate(
-			'jwt',
-			{ session: false },
-			secureCallback(req, res, next, fn)(deps)
-		)(req, res, next);
-	});
