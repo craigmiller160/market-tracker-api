@@ -27,6 +27,7 @@ import {
 	watchlistRepository
 } from '../data/repo';
 import * as Reader from 'fp-ts/Reader';
+import { createOAuthRoutes } from './routes/oauth';
 
 const safeParseInt = (text: string): O.Option<number> =>
 	match(parseInt(text))
@@ -89,6 +90,7 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 		setupErrorHandler,
 		createPassportValidation
 	])(expressDependencies);
+	app.use('/oauth', createOAuthRoutes(expressDependencies)); // TODO refactor this back into createRoutes
 
 	return app;
 };
