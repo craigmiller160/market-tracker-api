@@ -6,11 +6,10 @@ import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
-import { ReaderTaskT, TaskT } from '@craigmiller160/ts-functions/types';
+import { ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
-import * as Task from 'fp-ts/Task';
-import { errorReaderTask, errorTask } from '../../function/Route';
+import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import * as ReaderTask from 'fp-ts/ReaderTask';
@@ -32,16 +31,18 @@ export const getAuthCodeLogin = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): TaskT<string> =>
+): void =>
 	pipe(
 		prepareAuthCodeLogin(req),
-		Either.fold(errorTask(next), (url) => {
-			const response: AuthCodeLoginResponse = {
-				url
-			};
-			res.json(response);
-			return Task.of('');
-		})
+		Either.fold(
+			(ex) => next(ex),
+			(url) => {
+				const response: AuthCodeLoginResponse = {
+					url
+				};
+				res.json(response);
+			}
+		)
 	);
 
 export const authCodeAuthentication = (

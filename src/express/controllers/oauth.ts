@@ -8,12 +8,12 @@ export const getAuthUser: ReaderT<ExpressDependencies, Route> = secure(
 	oAuthService.getAuthUser
 );
 
-export const getAuthCodeLogin: Route = (req, res, next) =>
-	oAuthService.getAuthCodeLogin(req, res, next)();
+export const getAuthCodeLogin: Route = oAuthService.getAuthCodeLogin;
 
 export const authCodeAuthentication: ReaderT<ExpressDependencies, Route> = (
 	dependencies
 ): Route => {
+	// TODO cleanup
 	return (req, res, next) =>
 		oAuthService.authCodeAuthentication(req, res, next)(dependencies)();
 };

@@ -7,7 +7,7 @@ import * as oAuthController from '../controllers/oauth';
 // TODO root path is /oauth
 export const createOAuthRoutes: RouteCreator = (dependencies) => {
 	const router = Router();
-	router.get('/oauth/user', oAuthController.getAuthUser(dependencies));
+	router.get('/user', oAuthController.getAuthUser(dependencies));
 	router.post('/authcode/login', oAuthController.getAuthCodeLogin);
 	router.get(
 		'/authcode/code',
@@ -15,7 +15,7 @@ export const createOAuthRoutes: RouteCreator = (dependencies) => {
 	);
 	// TODO finish refactoring this hard one
 	router.get(
-		'/oauth/logout',
+		'/logout',
 		secure((req, res, next) =>
 			logoutAndClearAuth(req, res, next)(dependencies)()
 		)(dependencies)
