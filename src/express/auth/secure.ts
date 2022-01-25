@@ -150,14 +150,14 @@ export const secure =
 		)(req, res, next);
 	};
 
-type ReaderTaskRoute = (
+type ReaderTaskRoute<T> = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-) => ReaderTaskT<ExpressDependencies, any>;
+) => ReaderTaskT<ExpressDependencies, T>;
 
 export const secureReaderTask =
-	(fn: ReaderTaskRoute): ReaderT<ExpressDependencies, Route> =>
+	<T>(fn: ReaderTaskRoute<T>): ReaderT<ExpressDependencies, Route> =>
 	(deps) =>
 	(req, res, next) => {
 		const wrappedFn: Route = (
