@@ -161,7 +161,7 @@ export const secureReaderTask =
 	(fn: ReaderTaskRoute): ReaderT<ExpressDependencies, Route> =>
 	(deps) =>
 	(req, res, next) => {
-		const wrappedFn = (req: Request, res: Response, next: NextFunction) =>
+		const wrappedFn: Route = (req: Request, res: Response, next: NextFunction) =>
 			fn(req, res, next)(deps)();
 		passport.authenticate(
 			'jwt',
