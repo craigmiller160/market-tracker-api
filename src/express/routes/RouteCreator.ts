@@ -1,4 +1,7 @@
-import * as Reader from 'fp-ts/Reader';
 import { ExpressDependencies } from '../ExpressDependencies';
+import { ReaderT } from '@craigmiller160/ts-functions/types';
+import { Router } from 'express';
 
-export type RouteCreator = Reader.Reader<ExpressDependencies, void>;
+export type OldRouteCreator = ReaderT<ExpressDependencies, void>;
+
+export type RouteCreator = ReaderT<ExpressDependencies, Router>;

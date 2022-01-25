@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import { secure } from '../auth/secure';
 import * as oAuthService from '../../services/routes/OAuthService';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
@@ -11,3 +10,10 @@ export const getAuthUser: ReaderT<ExpressDependencies, Route> = secure(
 
 export const getAuthCodeLogin: Route = (req, res, next) =>
 	oAuthService.getAuthCodeLogin(req, res, next)();
+
+export const authCodeAuthentication: ReaderT<ExpressDependencies, Route> = (
+	dependencies
+): Route => {
+	return (req, res, next) =>
+		oAuthService.authCodeAuthentication(req, res, next)(dependencies)();
+};

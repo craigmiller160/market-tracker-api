@@ -1,4 +1,4 @@
-import { RouteCreator } from './RouteCreator';
+import { OldRouteCreator } from './RouteCreator';
 import { Request } from 'express';
 import { secure } from '../auth/secure';
 import { Watchlist } from '../../data/modelTypes/Watchlist';
@@ -7,7 +7,7 @@ import {
 	saveWatchlistsByUser
 } from '../../services/routes/WatchlistService';
 
-export const createWatchlistRoutes: RouteCreator = (dependencies) => {
+export const createWatchlistRoutes: OldRouteCreator = (dependencies) => {
 	dependencies.expressApp.get(
 		'/watchlists',
 		secure((req, res, next) =>

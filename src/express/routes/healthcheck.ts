@@ -1,6 +1,6 @@
-import { RouteCreator } from './RouteCreator';
+import { OldRouteCreator } from './RouteCreator';
 
-export const healthcheck: RouteCreator = (dependencies) =>
+export const healthcheck: OldRouteCreator = (dependencies) =>
 	dependencies.expressApp.get('/healthcheck', (req, res) => {
 		res.send('Healthy');
 	});
