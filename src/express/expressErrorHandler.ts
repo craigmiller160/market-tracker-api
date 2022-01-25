@@ -6,6 +6,7 @@ import { match, when } from 'ts-pattern';
 import * as P from 'fp-ts/Predicate';
 import { pipe } from 'fp-ts/function';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
+import * as Reader from 'fp-ts/Reader';
 import { ExpressDependencies } from './ExpressDependencies';
 
 interface ErrorResponse {
@@ -72,11 +73,5 @@ export const expressErrorHandler = (
 	next();
 };
 
-// TODO try another way of accessing dependencies here
-export const setupErrorHandler: ReaderT<ExpressDependencies, void> = (
-	dependencies
-) =>
-	dependencies.expressApp.use(
-		(err: Error, req: Request, res: Response, next: NextFunction) =>
-			expressErrorHandler(err, req, res, next)
-	);
+export const setupErrorHandler: ReaderT<ExpressDependencies, void> =
+	Reader.asks(({ expressApp }) => expressApp.use(expressErrorHandler));
