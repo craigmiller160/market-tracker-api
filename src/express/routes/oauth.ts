@@ -13,6 +13,7 @@ export const createOAuthRoutes: RouteCreator = (dependencies) => {
 		'/authcode/code',
 		oAuthController.authCodeAuthentication(dependencies)
 	);
+	// TODO finish refactoring this hard one
 	router.get(
 		'/oauth/logout',
 		secure((req, res, next) =>
