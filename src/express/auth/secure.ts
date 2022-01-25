@@ -151,6 +151,25 @@ export const secure =
 		)(req, res, next);
 	};
 
+type ReaderTaskRoute = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => ReaderTaskT<ExpressDependencies, any>;
+
+export const secureReaderTask =
+	(fn: ReaderTaskRoute): ReaderT<ExpressDependencies, Route> =>
+	(deps) =>
+	(req, res, next) => {
+		const wrappedFn = (req: Request, res: Response, next: NextFunction) =>
+			fn(req, res, next)(deps)();
+		passport.authenticate(
+			'jwt',
+			{ session: false },
+			secureCallback(req, res, next, wrappedFn)(deps)
+		)(req, res, next);
+	};
+
 // TODO if it remains unused, delete it
 export const secure2: ReaderT<ExpressDependencies, (fn: Route) => Route> =
 	Reader.asks((deps) => (fn: Route) => (req, res, next) => {

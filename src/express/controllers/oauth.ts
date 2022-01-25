@@ -1,4 +1,4 @@
-import { secure } from '../auth/secure';
+import { secure, secureReaderTask } from '../auth/secure';
 import * as oAuthService from '../../services/routes/OAuthService';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../ExpressDependencies';
@@ -19,7 +19,6 @@ export const authCodeAuthentication: ReaderT<ExpressDependencies, Route> =
 			oAuthService.authCodeAuthentication(req, res, next)(deps)()
 	);
 
-export const logout: ReaderT<ExpressDependencies, Route> = (deps) =>
-	secure((req, res, next) =>
-		oAuthService.logoutAndClearAuth(req, res, next)(deps)()
-	)(deps);
+export const logout: ReaderT<ExpressDependencies, Route> = secureReaderTask(
+	oAuthService.logoutAndClearAuth
+);
