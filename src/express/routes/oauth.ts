@@ -6,6 +6,14 @@ import {
 	getAuthUser,
 	logoutAndClearAuth
 } from '../../services/routes/OAuthService';
+import { Router } from 'express';
+import * as oAuthController from '../controllers/oauth';
+
+// TODO root path is /oauth
+const router = Router();
+// router.get('/oauth/user', oAuthController.getAuthUser)
+router.post('/authcode/code', oAuthController.getAuthCodeLogin);
+
 
 export const createOAuthRoutes: RouteCreator = (dependencies) => {
 	dependencies.expressApp.get(
