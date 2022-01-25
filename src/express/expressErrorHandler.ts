@@ -72,6 +72,7 @@ export const expressErrorHandler = (
 	next();
 };
 
+// TODO try another way of accessing dependencies here
 export const setupErrorHandler: ReaderT<ExpressDependencies, void> = (
 	dependencies
 ) =>
