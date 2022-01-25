@@ -159,4 +159,4 @@ export const secure2: ReaderT<ExpressDependencies, (fn: Route) => Route> =
 			{ session: false },
 			secureCallback(req, res, next, fn)(deps)
 		)(req, res, next);
-	})
+	});
