@@ -2,21 +2,20 @@ import { Request } from 'express';
 import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
-import { pipe } from 'fp-ts/function';
-import * as IO from 'fp-ts/IO';
+import { flow, pipe } from 'fp-ts/function';
 import * as IOEither from 'fp-ts/IOEither';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import * as TaskEither from 'fp-ts/TaskEither';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
-import { AppRefreshToken } from '../../mongo/models/AppRefreshTokenModel';
-import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
 import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
 import { getRequiredValues } from '../../function/Values';
+import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
+import { IOT, ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
+import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -35,10 +34,7 @@ interface CodeAndOrigin {
 	readonly origin: string;
 }
 
-const validateState = (
-	req: Request,
-	providedState: number
-): Either.Either<Error, number> => {
+const validateState = (req: Request, providedState: number): TryT<number> => {
 	const { state } = getMarketTrackerSession(req);
 	return pipe(
 		Option.fromNullable(state),
@@ -60,9 +56,7 @@ const parseAndValidateNotExpired = (stateExpString: string): boolean =>
 		Time.compare(new Date())
 	) <= 0;
 
-const validateStateExpiration = (
-	req: Request
-): Either.Either<Error, string> => {
+const validateStateExpiration = (req: Request): TryT<string> => {
 	const { stateExpiration } = getMarketTrackerSession(req);
 	return pipe(
 		Option.fromNullable(stateExpiration),
@@ -79,7 +73,7 @@ const validateStateExpiration = (
 	);
 };
 
-const getAndValidateOrigin = (req: Request): Either.Either<Error, string> => {
+const getAndValidateOrigin = (req: Request): TryT<string> => {
 	const { origin } = getMarketTrackerSession(req);
 	return pipe(
 		Option.fromNullable(origin),
@@ -90,7 +84,7 @@ const getAndValidateOrigin = (req: Request): Either.Either<Error, string> => {
 };
 
 const removeAuthCodeSessionAttributes =
-	(req: Request): IO.IO<void> =>
+	(req: Request): IOT<void> =>
 	() => {
 		const session = getMarketTrackerSession(req);
 		delete session.stateExpiration;
@@ -98,17 +92,19 @@ const removeAuthCodeSessionAttributes =
 		delete session.origin;
 	};
 
-const handleRefreshToken = (
-	tokenResponse: TokenResponse
-): TaskEither.TaskEither<Error, unknown> => {
-	const refreshToken: AppRefreshToken = {
-		tokenId: tokenResponse.tokenId,
-		refreshToken: tokenResponse.refreshToken
+const handleRefreshToken =
+	(
+		tokenResponse: TokenResponse
+	): ReaderTaskTryT<ExpressDependencies, unknown> =>
+	({ appRefreshTokenRepository }) => {
+		const refreshToken: AppRefreshToken = {
+			tokenId: tokenResponse.tokenId,
+			refreshToken: tokenResponse.refreshToken
+		};
+		return appRefreshTokenRepository.saveRefreshToken(refreshToken);
 	};
-	return saveRefreshToken(refreshToken);
-};
 
-const prepareRedirect = (): Either.Either<Error, string> =>
+const prepareRedirect = (): TryT<string> =>
 	pipe(
 		Option.fromNullable(process.env.POST_AUTH_REDIRECT),
 		Either.fromOption(
@@ -119,9 +115,7 @@ const prepareRedirect = (): Either.Either<Error, string> =>
 		)
 	);
 
-const getCodeAndState = (
-	req: Request
-): Either.Either<Error, [string, number]> => {
+const getCodeAndState = (req: Request): TryT<[string, number]> => {
 	const nullableQueryArray: ReadonlyArray<string | undefined> = [
 		req.query.code as string | undefined,
 		req.query.state as string | undefined
@@ -143,9 +137,7 @@ const getCodeAndState = (
 	);
 };
 
-const getAndValidateCodeOriginAndState = (
-	req: Request
-): Try.Try<CodeAndOrigin> =>
+const getAndValidateCodeOriginAndState = (req: Request): TryT<CodeAndOrigin> =>
 	pipe(
 		getCodeAndState(req),
 		Either.bindTo('codeAndState'),
@@ -166,7 +158,7 @@ const getAndValidateCodeOriginAndState = (
 const createAuthCodeBody = (
 	origin: string,
 	code: string
-): Try.Try<AuthCodeBody> => {
+): TryT<AuthCodeBody> => {
 	const envArray: ReadonlyArray<string | undefined> = [
 		process.env.CLIENT_KEY,
 		process.env.AUTH_CODE_REDIRECT_URI
@@ -187,18 +179,20 @@ const createAuthCodeBody = (
 
 export const authenticateWithAuthCode = (
 	req: Request
-): TaskTry.TaskTry<AuthCodeSuccess> =>
+): ReaderTaskTryT<ExpressDependencies, AuthCodeSuccess> =>
 	pipe(
 		getAndValidateCodeOriginAndState(req),
 		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
-		TaskEither.fromEither,
-		TaskEither.chain(sendTokenRequest),
-		TaskEither.chainFirst(handleRefreshToken),
-		TaskEither.chain((_) =>
-			TaskEither.fromEither(createTokenCookie(_.accessToken))
+		ReaderTaskEither.fromEither,
+		ReaderTaskEither.chain(
+			flow(sendTokenRequest, ReaderTaskEither.fromTaskEither)
 		),
-		TaskEither.bindTo('cookie'),
-		TaskEither.bind('postAuthRedirect', () =>
-			TaskEither.fromEither(prepareRedirect())
+		ReaderTaskEither.chainFirst(handleRefreshToken),
+		ReaderTaskEither.chain((_) =>
+			ReaderTaskEither.fromEither(createTokenCookie(_.accessToken))
+		),
+		ReaderTaskEither.bindTo('cookie'),
+		ReaderTaskEither.bind('postAuthRedirect', () =>
+			ReaderTaskEither.fromEither(prepareRedirect())
 		)
 	);

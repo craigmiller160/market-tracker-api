@@ -11,13 +11,13 @@ import { pipe } from 'fp-ts/function';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from '../../../src/services/auth/Cookie';
 import {
-	AppRefreshToken,
 	AppRefreshTokenModel,
 	appRefreshTokenToModel
 } from '../../../src/mongo/models/AppRefreshTokenModel';
 import { restClient } from '../../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
 import { TokenResponse } from '../../../src/types/TokenResponse';
+import { AppRefreshToken } from '../../../src/data/modelTypes/AppRefreshToken';
 
 const clearEnv = () => {
 	delete process.env.COOKIE_NAME;

@@ -1,36 +1,28 @@
 import { RouteCreator } from './RouteCreator';
-import { pipe } from 'fp-ts/function';
-import {
-	findWatchlistsForUser,
-	saveWatchlistsForUser
-} from '../../services/mongo/WatchlistService';
-import * as TE from 'fp-ts/TaskEither';
 import { Request } from 'express';
-import { Watchlist } from '../../mongo/models/WatchlistModel';
-import { AccessToken } from '../auth/AccessToken';
 import { secure } from '../auth/secure';
+import { Watchlist } from '../../data/modelTypes/Watchlist';
+import {
+	getWatchlistsByUser,
+	saveWatchlistsByUser
+} from '../../services/routes/WatchlistService';
 
-export const createWatchlistRoutes: RouteCreator = (app) => {
-	app.get(
+export const createWatchlistRoutes: RouteCreator = (dependencies) => {
+	dependencies.expressApp.get(
 		'/watchlists',
-		secure((req, res) => {
-			const token = req.user as AccessToken;
-			pipe(
-				findWatchlistsForUser(token.userId),
-				TE.map((_) => res.json(_))
-			)();
-		})
+		secure((req, res, next) =>
+			getWatchlistsByUser(req, res, next)(dependencies)()
+		)(dependencies)
 	);
 
-	app.post(
+	dependencies.expressApp.post(
 		'/watchlists',
-		secure((req: Request<unknown, unknown, Watchlist[]>, res) => {
-			const token = req.user as AccessToken;
-			pipe(
-				saveWatchlistsForUser(token.userId, req.body),
-				TE.chain(() => findWatchlistsForUser(token.userId)),
-				TE.map((_) => res.json(_))
-			)();
-		})
+		secure(
+			(
+				req: Request<unknown, unknown, ReadonlyArray<Watchlist>>,
+				res,
+				next
+			) => saveWatchlistsByUser(req, res, next)(dependencies)()
+		)(dependencies)
 	);
 };

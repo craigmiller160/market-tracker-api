@@ -1,10 +1,12 @@
-import { Express, NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { logger } from '../logger';
 import qs from 'qs';
 import { format } from 'date-fns';
 import { match, when } from 'ts-pattern';
 import * as P from 'fp-ts/Predicate';
 import { pipe } from 'fp-ts/function';
+import { ReaderT } from '@craigmiller160/ts-functions/types';
+import { ExpressDependencies } from './ExpressDependencies';
 
 interface ErrorResponse {
 	readonly timestamp: string;
@@ -70,7 +72,10 @@ export const expressErrorHandler = (
 	next();
 };
 
-export const setupErrorHandler = (app: Express) =>
-	app.use((err: Error, req: Request, res: Response, next: NextFunction) =>
-		expressErrorHandler(err, req, res, next)
+export const setupErrorHandler: ReaderT<ExpressDependencies, void> = (
+	dependencies
+) =>
+	dependencies.expressApp.use(
+		(err: Error, req: Request, res: Response, next: NextFunction) =>
+			expressErrorHandler(err, req, res, next)
 	);

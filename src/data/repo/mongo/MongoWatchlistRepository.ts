@@ -1,38 +1,39 @@
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import * as A from 'fp-ts/Array';
-import * as TE from 'fp-ts/TaskEither';
 import {
-	Watchlist,
+	FindWatchlistsForUser,
+	SaveWatchlistsForUser
+} from '../WatchlistRepository';
+import { logAndReturn, logger } from '../../../logger';
+import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
+import {
 	WatchlistModel,
 	WatchlistModelInstanceType,
 	watchlistToModel
-} from '../../mongo/models/WatchlistModel';
+} from '../../../mongo/models/WatchlistModel';
 import { pipe } from 'fp-ts/function';
-import { logAndReturn, logger } from '../../logger';
+import * as RArray from 'fp-ts/ReadonlyArray';
+import * as TaskEither from 'fp-ts/TaskEither';
 
-export const findWatchlistsForUser = (
-	userId: number
-): TaskTry.TaskTry<Watchlist[]> => {
+export const findWatchlistsForUser: FindWatchlistsForUser = (userId) => {
 	logger.info(`Finding watchlists for user. ID: ${userId}`);
 	return TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
 };
 
 const replaceWatchlistsForUser = async (
 	userId: number,
-	watchlistModels: WatchlistModelInstanceType[]
+	watchlistModels: ReadonlyArray<WatchlistModelInstanceType>
 ): Promise<void> => {
 	await WatchlistModel.deleteMany({ userId }).exec();
 	await WatchlistModel.insertMany(watchlistModels);
 };
 
-export const saveWatchlistsForUser = (
-	userId: number,
-	watchlists: Watchlist[]
-): TaskTry.TaskTry<unknown> => {
+export const saveWatchlistsForUser: SaveWatchlistsForUser = (
+	userId,
+	watchlists
+) => {
 	logger.info(`Saving watchlists for user. ID: ${userId}`);
 	const watchlistModels = pipe(
 		watchlists,
-		A.map((_) =>
+		RArray.map((_) =>
 			watchlistToModel({
 				..._,
 				userId
@@ -44,7 +45,7 @@ export const saveWatchlistsForUser = (
 
 	const postTxnTE = pipe(
 		sessionTE,
-		TE.chainFirst((session) =>
+		TaskEither.chainFirst((session) =>
 			TaskTry.tryCatch(() =>
 				session.withTransaction(() =>
 					replaceWatchlistsForUser(userId, watchlistModels)
@@ -55,8 +56,10 @@ export const saveWatchlistsForUser = (
 
 	pipe(
 		sessionTE,
-		TE.chain((session) => TaskTry.tryCatch(() => session.endSession())),
-		TE.mapLeft(logAndReturn('error', 'Error closing session'))
+		TaskEither.chain((session) =>
+			TaskTry.tryCatch(() => session.endSession())
+		),
+		TaskEither.mapLeft(logAndReturn('error', 'Error closing session'))
 	);
 
 	return postTxnTE;

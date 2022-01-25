@@ -8,15 +8,14 @@ import * as Try from '@craigmiller160/ts-functions/Try';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as RArr from 'fp-ts/ReadonlyArray';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import {
-	AppRefreshToken,
-	AppRefreshTokenModel
-} from '../../mongo/models/AppRefreshTokenModel';
 import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
-import { saveRefreshToken } from '../mongo/RefreshTokenService';
 import { createTokenCookie } from './Cookie';
 import { logger } from '../../logger';
+import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
+import { ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -28,49 +27,56 @@ interface RefreshTokenAndId {
 	readonly refreshToken: AppRefreshToken;
 }
 
-const decodeToken = (token: string): Try.Try<AccessToken> =>
+const decodeToken = (token: string): TryT<AccessToken> =>
 	Try.tryCatch(() => JWT.decode(token) as AccessToken);
 
 const getTokenId = (token: AccessToken): string => token.jti;
 
-const findRefreshTokenById = (
-	tokenId: string
-): TaskTry.TaskTry<AppRefreshToken> =>
-	pipe(
-		TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec()),
-		TaskEither.map(RArr.head),
-		TaskEither.chain(
-			Option.fold<AppRefreshToken, TaskTry.TaskTry<AppRefreshToken>>(
-				() =>
-					TaskEither.left(
-						new UnauthorizedError('Unable to find refresh token')
-					),
-				(_) => TaskEither.right(_)
+const findRefreshTokenById =
+	(tokenId: string): ReaderTaskTryT<ExpressDependencies, AppRefreshToken> =>
+	({ appRefreshTokenRepository }) =>
+		pipe(
+			appRefreshTokenRepository.findByTokenId(tokenId),
+			TaskEither.map(RArr.head),
+			TaskEither.chain(
+				Option.fold<AppRefreshToken, TaskTry.TaskTry<AppRefreshToken>>(
+					() =>
+						TaskEither.left(
+							new UnauthorizedError(
+								'Unable to find refresh token'
+							)
+						),
+					(_) => TaskEither.right(_)
+				)
 			)
-		)
-	);
+		);
 
-const handleRefreshToken = (
-	existingTokenId: string,
-	tokenResponse: TokenResponse
-): TaskTry.TaskTry<unknown> => {
-	const refreshToken: AppRefreshToken = {
-		tokenId: tokenResponse.tokenId,
-		refreshToken: tokenResponse.refreshToken
+const handleRefreshToken =
+	(
+		existingTokenId: string,
+		tokenResponse: TokenResponse
+	): ReaderTaskTryT<ExpressDependencies, unknown> =>
+	({ appRefreshTokenRepository }) => {
+		const refreshToken: AppRefreshToken = {
+			tokenId: tokenResponse.tokenId,
+			refreshToken: tokenResponse.refreshToken
+		};
+		return appRefreshTokenRepository.saveRefreshToken(
+			refreshToken,
+			existingTokenId
+		);
 	};
-	return saveRefreshToken(refreshToken, existingTokenId);
-};
 
 const getRefreshToken: (
 	token: string | null
-) => TaskTry.TaskTry<RefreshTokenAndId> = flow(
+) => ReaderTaskTryT<ExpressDependencies, RefreshTokenAndId> = flow(
 	Option.fromNullable,
 	Either.fromOption(() => new UnauthorizedError('No token to refresh')),
 	Either.chain(decodeToken),
 	Either.map(getTokenId),
-	TaskEither.fromEither,
-	TaskEither.bindTo('existingTokenId'),
-	TaskEither.bind('refreshToken', ({ existingTokenId }) =>
+	ReaderTaskEither.fromEither,
+	ReaderTaskEither.bindTo('existingTokenId'),
+	ReaderTaskEither.bind('refreshToken', ({ existingTokenId }) =>
 		findRefreshTokenById(existingTokenId)
 	)
 );
@@ -82,23 +88,27 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 
 export const refreshExpiredToken = (
 	token: string | null
-): TaskTry.TaskTry<string> => {
+): ReaderTaskTryT<ExpressDependencies, string> => {
 	logger.debug('Attempting to refresh expired token');
 	return pipe(
 		getRefreshToken(token),
-		TaskEither.bindTo('tokenAndId'),
-		TaskEither.bind('refreshBody', ({ tokenAndId: { refreshToken } }) =>
-			TaskEither.right(getRefreshBody(refreshToken.refreshToken))
+		ReaderTaskEither.bindTo('tokenAndId'),
+		ReaderTaskEither.bind(
+			'refreshBody',
+			({ tokenAndId: { refreshToken } }) =>
+				ReaderTaskEither.right(
+					getRefreshBody(refreshToken.refreshToken)
+				)
 		),
-		TaskEither.bind('tokenResponse', ({ refreshBody }) =>
-			sendTokenRequest(refreshBody)
+		ReaderTaskEither.bind('tokenResponse', ({ refreshBody }) =>
+			ReaderTaskEither.fromTaskEither(sendTokenRequest(refreshBody))
 		),
-		TaskEither.chainFirst(
+		ReaderTaskEither.chainFirst(
 			({ tokenResponse, tokenAndId: { existingTokenId } }) =>
 				handleRefreshToken(existingTokenId, tokenResponse)
 		),
-		TaskEither.chain(({ tokenResponse: { accessToken } }) =>
-			TaskEither.fromEither(createTokenCookie(accessToken))
+		ReaderTaskEither.chain(({ tokenResponse: { accessToken } }) =>
+			ReaderTaskEither.fromEither(createTokenCookie(accessToken))
 		)
 	);
 };

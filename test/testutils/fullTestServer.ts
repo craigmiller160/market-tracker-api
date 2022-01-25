@@ -13,6 +13,11 @@ import { TokenKey } from '../../src/services/auth/TokenKey';
 import { AccessToken } from '../../src/express/auth/AccessToken';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { createSessionRoute } from './sessionRoute';
+import {
+	appRefreshTokenRepository,
+	portfolioRepository,
+	watchlistRepository
+} from '../../src/data/repo';
 
 export interface FullTestServer {
 	readonly keyPair: TokenKeyPair;
@@ -62,7 +67,15 @@ export const createFullTestServer = (): Promise<FullTestServer> => {
 			createExpressServerWithKey(keyPair.publicKey)
 		),
 		TE.map((fullTestServer) => {
-			createSessionRoute(fullTestServer.expressServer.app);
+			createSessionRoute({
+				expressApp: fullTestServer.expressServer.app,
+				portfolioRepository,
+				watchlistRepository,
+				appRefreshTokenRepository,
+				tokenKey: {
+					key: ''
+				}
+			});
 			return fullTestServer;
 		}),
 		TaskTry.getOrThrow

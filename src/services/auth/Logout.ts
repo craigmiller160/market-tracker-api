@@ -1,29 +1,31 @@
-import { AppRefreshTokenModel } from '../../mongo/models/AppRefreshTokenModel';
 import { Request } from 'express';
 import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
-import * as TE from 'fp-ts/TaskEither';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
+import * as Option from 'fp-ts/Option';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { getEmptyCookie } from './Cookie';
+import { ReaderTaskTryT } from '@craigmiller160/ts-functions/types';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
+import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 
-const deleteRefreshToken = (
-	token: AccessToken
-): TE.TaskEither<Error, unknown> =>
-	TaskTry.tryCatch(() =>
-		AppRefreshTokenModel.deleteOne({ tokenId: token.jti }).exec()
-	);
+const deleteRefreshToken =
+	(token: AccessToken): ReaderTaskTryT<ExpressDependencies, unknown> =>
+	({ appRefreshTokenRepository }) =>
+		appRefreshTokenRepository.deleteByTokenId(token.jti);
 
-export const logout = (req: Request): TE.TaskEither<Error, string> =>
+export const logout = (
+	req: Request
+): ReaderTaskTryT<ExpressDependencies, string> =>
 	pipe(
-		O.fromNullable(req.user as AccessToken | undefined),
-		TE.fromOption(
+		Option.fromNullable(req.user as AccessToken | undefined),
+		ReaderTaskEither.fromOption(
 			() =>
 				new UnauthorizedError(
 					'Should not be able to call /logout without being authenticated'
 				)
 		),
-		TE.chainFirst(deleteRefreshToken),
-		TE.chain(() => TE.fromEither(getEmptyCookie()))
+		ReaderTaskEither.chainFirst(deleteRefreshToken),
+		ReaderTaskEither.chain(() =>
+			ReaderTaskEither.fromEither(getEmptyCookie())
+		)
 	);
