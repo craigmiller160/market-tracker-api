@@ -85,8 +85,9 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.use(bodyParer.json());
 	app.use(passport.initialize());
 
-	app.use('/oauth', createOAuthRoutes(expressDependencies)); // TODO refactor this back into createRoutes
-	app.use('/healthcheck', createHealthcheckRoutes(expressDependencies));
+	// TODO refactor this back into createRoutes
+	createOAuthRoutes(expressDependencies);
+	createHealthcheckRoutes(expressDependencies);
 
 	Reader.sequenceArray([
 		setupRequestLogging,

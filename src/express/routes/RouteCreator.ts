@@ -1,7 +1,6 @@
 import { ExpressDependencies } from '../ExpressDependencies';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
-import { Router } from 'express';
 
 export type OldRouteCreator = ReaderT<ExpressDependencies, void>;
 
-export type RouteCreator = ReaderT<ExpressDependencies, Router>;
+export type RouteCreator = ReaderT<ExpressDependencies, void>;

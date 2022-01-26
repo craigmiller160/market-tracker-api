@@ -37,5 +37,8 @@ export const createOAuthRoutes: RouteCreator = pipe(
 		() => oAuthController.authCodeAuthentication
 	),
 	Reader.bind('logout', () => oAuthController.logout),
-	Reader.map(configureRoutes)
+	Reader.map(configureRoutes),
+	Reader.chain((router) =>
+		Reader.asks(({ expressApp }) => expressApp.use('/oauth', router))
+	)
 );

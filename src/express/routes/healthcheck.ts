@@ -11,5 +11,8 @@ export const createHealthcheckRoutes: RouteCreator = pipe(
 	Reader.map(({ router, healthcheck }) => {
 		router.get('/', healthcheck);
 		return router;
-	})
+	}),
+	Reader.chain((router) =>
+		Reader.asks(({ expressApp }) => expressApp.use('/healthcheck', router))
+	)
 );
