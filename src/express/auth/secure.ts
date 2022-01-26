@@ -11,7 +11,7 @@ import * as ReaderTask from 'fp-ts/ReaderTask';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import { isJwtInCookie, jwtFromRequest } from './jwt';
 import { AccessToken } from './AccessToken';
-import { Route } from '../Route';
+import { ReaderTaskRoute, Route } from '../Route';
 import * as Text from '@craigmiller160/ts-functions/Text';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
@@ -154,12 +154,6 @@ export const secure =
 			secureCallback(req, res, next, fn)(dependencies)
 		)(req, res, next);
 	};
-
-type ReaderTaskRoute<T> = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => ReaderTaskT<ExpressDependencies, T>;
 
 export const secureReaderTask =
 	<T>(fn: ReaderTaskRoute<T>): ReaderT<ExpressDependencies, Route> =>
