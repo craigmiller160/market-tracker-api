@@ -7,13 +7,21 @@ import { pipe } from 'fp-ts/function';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly routes: ReadonlyArray<Route>;
+	readonly getAuthUser: Route;
+	readonly getAuthCodeLogin: Route;
+	readonly authCodeAuthentication: Route;
+	readonly logout: Route;
 }
 
-const configureRoutes = ({ router, routes }: RouterAndRoutes): Router => {
-	const [getAuthUser, authCodeLogin, authCodeAuthentication, logout] = routes;
+const configureRoutes = ({
+	router,
+	getAuthUser,
+	getAuthCodeLogin,
+	authCodeAuthentication,
+	logout
+}: RouterAndRoutes): Router => {
 	router.get('/user', getAuthUser);
-	router.post('/authcode/login', authCodeLogin);
+	router.post('/authcode/login', getAuthCodeLogin);
 	router.get('/authcode/code', authCodeAuthentication);
 	router.get('/logout', logout);
 	return router;
@@ -22,13 +30,12 @@ const configureRoutes = ({ router, routes }: RouterAndRoutes): Router => {
 export const createOAuthRoutes: RouteCreator = pipe(
 	Reader.of(Router()),
 	Reader.bindTo('router'),
-	Reader.bind('routes', () =>
-		Reader.sequenceArray([
-			oAuthController.getAuthUser,
-			oAuthController.getAuthCodeLogin,
-			oAuthController.authCodeAuthentication,
-			oAuthController.logout
-		])
+	Reader.bind('getAuthUser', () => oAuthController.getAuthUser),
+	Reader.bind('getAuthCodeLogin', () => oAuthController.getAuthCodeLogin),
+	Reader.bind(
+		'authCodeAuthentication',
+		() => oAuthController.authCodeAuthentication
 	),
+	Reader.bind('logout', () => oAuthController.logout),
 	Reader.map(configureRoutes)
 );
