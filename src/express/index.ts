@@ -28,6 +28,7 @@ import {
 } from '../data/repo';
 import * as Reader from 'fp-ts/Reader';
 import { createOAuthRoutes } from './routes/oauth';
+import { createHealthcheckRoutes } from './routes/healthcheck';
 
 const safeParseInt = (text: string): O.Option<number> =>
 	match(parseInt(text))
@@ -85,6 +86,7 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.use(passport.initialize());
 
 	app.use('/oauth', createOAuthRoutes(expressDependencies)); // TODO refactor this back into createRoutes
+	app.use('/healthcheck', createHealthcheckRoutes(expressDependencies));
 
 	Reader.sequenceArray([
 		setupRequestLogging,
