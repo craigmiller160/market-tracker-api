@@ -127,14 +127,19 @@ const tryToRefreshExpiredToken = (
 		ReaderTaskEither.map(
 			logAndReturn('debug', 'Successfully refreshed token')
 		),
-		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) =>
-			ReaderTask.asks((deps) => {
+		ReaderTaskEither.bindTo('cookieParts'),
+		ReaderTaskEither.bind('secureFn', () =>
+			ReaderTaskEither.fromReader(secure(fn))
+		),
+		ReaderTaskEither.fold(
+			errorReaderTask(next),
+			({ cookieParts, secureFn }) => {
 				req.headers['Cookie'] = cookieParts.cookie;
 				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 				res.setHeader('Set-Cookie', cookieParts.cookie);
-				secure(fn)(deps)(req, res, next);
-				return '';
-			})
+				secureFn(req, res, next);
+				return ReaderTask.of('');
+			}
 		)
 	);
 };
