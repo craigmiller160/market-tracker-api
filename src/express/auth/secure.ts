@@ -14,8 +14,11 @@ import { AccessToken } from './AccessToken';
 import { ReaderTaskRoute, Route } from '../Route';
 import * as Text from '@craigmiller160/ts-functions/Text';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import {
+	ReaderT,
+	ReaderTaskT,
+	TaskTryT
+} from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../ExpressDependencies';
@@ -99,7 +102,7 @@ const handleTokenError = (
 			return ReaderTask.of<ExpressDependencies, string>('');
 		});
 
-const splitCookie = (cookie: string): TaskTry.TaskTry<CookieParts> =>
+const splitCookie = (cookie: string): TaskTryT<CookieParts> =>
 	pipe(
 		cookie,
 		Text.split(';'),
