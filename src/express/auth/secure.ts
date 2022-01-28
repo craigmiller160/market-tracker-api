@@ -14,8 +14,11 @@ import { AccessToken } from './AccessToken';
 import { ReaderTaskRoute, Route } from '../Route';
 import * as Text from '@craigmiller160/ts-functions/Text';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import {
+	ReaderT,
+	ReaderTaskT,
+	TaskTryT
+} from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../ExpressDependencies';
@@ -26,10 +29,11 @@ interface CookieParts {
 	readonly cookieValue: string;
 }
 
-// TODO figure out a solution that does not involve mutable state
-type RefreshFlagRequest = Request & {
-	hasRefreshed: boolean | undefined;
-};
+interface HasRefreshed {
+	readonly hasRefreshed?: boolean;
+}
+
+type SecureExpressDependencies = ExpressDependencies & HasRefreshed;
 
 type SecureCallback = (
 	error: Error | null,
@@ -67,35 +71,39 @@ const secureCallback =
 		);
 	};
 
-const hasRefreshAlreadyHappened = (req: Request): boolean =>
-	(req as RefreshFlagRequest).hasRefreshed ?? false;
-
 const handleTokenError = (
 	error: Error,
 	req: Request,
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): ReaderTaskT<ExpressDependencies, unknown> =>
-	match({
-		error,
-		jwtIsInCookie: isJwtInCookie(req),
-		refreshAlreadyHappened: hasRefreshAlreadyHappened(req)
-	})
-		.with(
-			{
-				error: { name: 'TokenExpiredError' },
-				jwtIsInCookie: true,
-				refreshAlreadyHappened: false
-			},
-			() => tryToRefreshExpiredToken(req, res, next, fn)
+): ReaderTaskT<SecureExpressDependencies, unknown> =>
+	pipe(
+		ReaderTask.asks<SecureExpressDependencies, boolean>(
+			({ hasRefreshed }) => hasRefreshed ?? false
+		),
+		ReaderTask.chain((hasRefreshed) =>
+			match({
+				error,
+				jwtIsInCookie: isJwtInCookie(req),
+				refreshAlreadyHappened: hasRefreshed
+			})
+				.with(
+					{
+						error: { name: 'TokenExpiredError' },
+						jwtIsInCookie: true,
+						refreshAlreadyHappened: false
+					},
+					() => tryToRefreshExpiredToken(req, res, next, fn)
+				)
+				.otherwise(() => {
+					expressErrorHandler(error, req, res, next);
+					return ReaderTask.of<ExpressDependencies, string>('');
+				})
 		)
-		.otherwise(() => {
-			expressErrorHandler(error, req, res, next);
-			return ReaderTask.of<ExpressDependencies, string>('');
-		});
+	);
 
-const splitCookie = (cookie: string): TaskTry.TaskTry<CookieParts> =>
+const splitCookie = (cookie: string): TaskTryT<CookieParts> =>
 	pipe(
 		cookie,
 		Text.split(';'),
@@ -119,54 +127,60 @@ const tryToRefreshExpiredToken = (
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): ReaderTaskT<ExpressDependencies, unknown> => {
-	(req as RefreshFlagRequest).hasRefreshed = true;
-	return pipe(
+): ReaderTaskT<SecureExpressDependencies, unknown> =>
+	pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
 		ReaderTaskEither.chainTaskEitherK(splitCookie),
 		ReaderTaskEither.map(
 			logAndReturn('debug', 'Successfully refreshed token')
 		),
-		ReaderTaskEither.bindTo('cookieParts'),
-		ReaderTaskEither.bind('secureFn', () =>
-			ReaderTaskEither.fromReader(secure(fn))
-		),
-		ReaderTaskEither.fold(
-			errorReaderTask(next),
-			({ cookieParts, secureFn }) => {
+		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) =>
+			ReaderTask.asks((deps) => {
 				req.headers['Cookie'] = cookieParts.cookie;
 				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 				res.setHeader('Set-Cookie', cookieParts.cookie);
-				secureFn(req, res, next);
-				return ReaderTask.of('');
-			}
+				secure(fn)({
+					...deps,
+					hasRefreshed: true
+				})(req, res, next);
+				return '';
+			})
 		)
 	);
-};
 
 export const secure =
-	(fn: Route): ReaderT<ExpressDependencies, Route> =>
+	(fn: Route): ReaderT<SecureExpressDependencies, Route> =>
 	(dependencies) =>
 	(req, res, next) => {
+		const newDeps: SecureExpressDependencies = {
+			...dependencies,
+			hasRefreshed: dependencies.hasRefreshed ?? false
+		};
+
 		passport.authenticate(
 			'jwt',
 			{ session: false },
-			secureCallback(req, res, next, fn)(dependencies)
+			secureCallback(req, res, next, fn)(newDeps)
 		)(req, res, next);
 	};
 
 export const secureReaderTask =
-	<T>(fn: ReaderTaskRoute<T>): ReaderT<ExpressDependencies, Route> =>
-	(deps) =>
+	<T>(fn: ReaderTaskRoute<T>): ReaderT<SecureExpressDependencies, Route> =>
+	(dependencies) =>
 	(req, res, next) => {
+		const newDeps: SecureExpressDependencies = {
+			...dependencies,
+			hasRefreshed: dependencies.hasRefreshed ?? false
+		};
+
 		const wrappedFn: Route = (
 			req: Request,
 			res: Response,
 			next: NextFunction
-		) => fn(req, res, next)(deps)();
+		) => fn(req, res, next)(newDeps)();
 		passport.authenticate(
 			'jwt',
 			{ session: false },
-			secureCallback(req, res, next, wrappedFn)(deps)
+			secureCallback(req, res, next, wrappedFn)(newDeps)
 		)(req, res, next);
 	};
