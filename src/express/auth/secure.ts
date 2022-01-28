@@ -35,11 +35,6 @@ interface HasRefreshed {
 
 type SecureExpressDependencies = ExpressDependencies & HasRefreshed;
 
-// TODO figure out a solution that does not involve mutable state
-type RefreshFlagRequest = Request & {
-	hasRefreshed: boolean | undefined;
-};
-
 type SecureCallback = (
 	error: Error | null,
 	user: AccessToken | boolean,
@@ -132,33 +127,35 @@ const tryToRefreshExpiredToken = (
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): ReaderTaskT<SecureExpressDependencies, unknown> => {
-	(req as RefreshFlagRequest).hasRefreshed = true; // TODO delete this
-	return pipe(
-		ReaderTaskEither.asksReaderTaskEitherW<ExpressDependencies, HasRefreshed, Error, unknown>((deps) => {
-			return ReaderTaskEither.of({ hasRefreshed: false });
-		}),
+): ReaderTaskT<SecureExpressDependencies, unknown> =>
+	pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
-		// ReaderTaskEither.chainTaskEitherK(splitCookie),
-		// ReaderTaskEither.map(
-		// 	logAndReturn('debug', 'Successfully refreshed token')
-		// ),
-		// ReaderTaskEither.bindTo('cookieParts'),
-		// ReaderTaskEither.bind('secureFn', () =>
-		// 	ReaderTaskEither.fromReader(secure(fn))
-		// ),
-		// ReaderTaskEither.fold(
-		// 	errorReaderTask(next),
-		// 	({ cookieParts, secureFn }) => {
-		// 		req.headers['Cookie'] = cookieParts.cookie;
-		// 		req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
-		// 		res.setHeader('Set-Cookie', cookieParts.cookie);
-		// 		secureFn(req, res, next);
-		// 		return ReaderTask.of('');
-		// 	}
-		// )
+		ReaderTaskEither.chainTaskEitherK(splitCookie),
+		ReaderTaskEither.map(
+			logAndReturn('debug', 'Successfully refreshed token')
+		),
+		ReaderTaskEither.bindTo('cookieParts'),
+		ReaderTaskEither.bind('secureFn', () =>
+			ReaderTaskEither.fromReader(secure(fn))
+		),
+		ReaderTaskEither.fold(
+			errorReaderTask(next),
+			({ cookieParts, secureFn }) => {
+				req.headers['Cookie'] = cookieParts.cookie;
+				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
+				res.setHeader('Set-Cookie', cookieParts.cookie);
+				secureFn(req, res, next);
+				return ReaderTask.of('');
+			}
+		),
+		ReaderTask.chainFirst(() =>
+			ReaderTask.asksReaderTaskW<
+				ExpressDependencies,
+				HasRefreshed,
+				unknown
+			>(() => ReaderTask.of({ hasRefreshed: true }))
+		)
 	);
-};
 
 export const secure =
 	(fn: Route): ReaderT<SecureExpressDependencies, Route> =>
