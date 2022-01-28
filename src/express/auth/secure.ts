@@ -26,6 +26,10 @@ interface CookieParts {
 	readonly cookieValue: string;
 }
 
+interface SecureExpressDependencies extends ExpressDependencies {
+	readonly hasRefreshed?: boolean;
+}
+
 // TODO figure out a solution that does not involve mutable state
 type RefreshFlagRequest = Request & {
 	hasRefreshed: boolean | undefined;
@@ -145,7 +149,7 @@ const tryToRefreshExpiredToken = (
 };
 
 export const secure =
-	(fn: Route): ReaderT<ExpressDependencies, Route> =>
+	(fn: Route): ReaderT<SecureExpressDependencies, Route> =>
 	(dependencies) =>
 	(req, res, next) => {
 		passport.authenticate(
@@ -156,7 +160,7 @@ export const secure =
 	};
 
 export const secureReaderTask =
-	<T>(fn: ReaderTaskRoute<T>): ReaderT<ExpressDependencies, Route> =>
+	<T>(fn: ReaderTaskRoute<T>): ReaderT<SecureExpressDependencies, Route> =>
 	(deps) =>
 	(req, res, next) => {
 		const wrappedFn: Route = (
