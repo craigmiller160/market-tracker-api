@@ -11,7 +11,7 @@ import * as ReaderTask from 'fp-ts/ReaderTask';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import { isJwtInCookie, jwtFromRequest } from './jwt';
 import { AccessToken } from './AccessToken';
-import { Route } from '../Route';
+import { ReaderTaskRoute, Route } from '../Route';
 import * as Text from '@craigmiller160/ts-functions/Text';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
@@ -127,14 +127,19 @@ const tryToRefreshExpiredToken = (
 		ReaderTaskEither.map(
 			logAndReturn('debug', 'Successfully refreshed token')
 		),
-		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) =>
-			ReaderTask.asks((deps) => {
+		ReaderTaskEither.bindTo('cookieParts'),
+		ReaderTaskEither.bind('secureFn', () =>
+			ReaderTaskEither.fromReader(secure(fn))
+		),
+		ReaderTaskEither.fold(
+			errorReaderTask(next),
+			({ cookieParts, secureFn }) => {
 				req.headers['Cookie'] = cookieParts.cookie;
 				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 				res.setHeader('Set-Cookie', cookieParts.cookie);
-				secure(fn)(deps)(req, res, next);
-				return '';
-			})
+				secureFn(req, res, next);
+				return ReaderTask.of('');
+			}
 		)
 	);
 };
@@ -147,5 +152,21 @@ export const secure =
 			'jwt',
 			{ session: false },
 			secureCallback(req, res, next, fn)(dependencies)
+		)(req, res, next);
+	};
+
+export const secureReaderTask =
+	<T>(fn: ReaderTaskRoute<T>): ReaderT<ExpressDependencies, Route> =>
+	(deps) =>
+	(req, res, next) => {
+		const wrappedFn: Route = (
+			req: Request,
+			res: Response,
+			next: NextFunction
+		) => fn(req, res, next)(deps)();
+		passport.authenticate(
+			'jwt',
+			{ session: false },
+			secureCallback(req, res, next, wrappedFn)(deps)
 		)(req, res, next);
 	};
