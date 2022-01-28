@@ -29,9 +29,11 @@ interface CookieParts {
 	readonly cookieValue: string;
 }
 
-interface SecureExpressDependencies extends ExpressDependencies {
+interface HasRefreshed {
 	readonly hasRefreshed?: boolean;
 }
+
+type SecureExpressDependencies = ExpressDependencies & HasRefreshed;
 
 // TODO figure out a solution that does not involve mutable state
 type RefreshFlagRequest = Request & {
@@ -130,28 +132,31 @@ const tryToRefreshExpiredToken = (
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): ReaderTaskT<ExpressDependencies, unknown> => {
-	(req as RefreshFlagRequest).hasRefreshed = true;
+): ReaderTaskT<SecureExpressDependencies, unknown> => {
+	(req as RefreshFlagRequest).hasRefreshed = true; // TODO delete this
 	return pipe(
+		ReaderTaskEither.asksReaderTaskEitherW<ExpressDependencies, HasRefreshed, Error, unknown>((deps) => {
+			return ReaderTaskEither.of({ hasRefreshed: false });
+		}),
 		refreshExpiredToken(jwtFromRequest(req)),
-		ReaderTaskEither.chainTaskEitherK(splitCookie),
-		ReaderTaskEither.map(
-			logAndReturn('debug', 'Successfully refreshed token')
-		),
-		ReaderTaskEither.bindTo('cookieParts'),
-		ReaderTaskEither.bind('secureFn', () =>
-			ReaderTaskEither.fromReader(secure(fn))
-		),
-		ReaderTaskEither.fold(
-			errorReaderTask(next),
-			({ cookieParts, secureFn }) => {
-				req.headers['Cookie'] = cookieParts.cookie;
-				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
-				res.setHeader('Set-Cookie', cookieParts.cookie);
-				secureFn(req, res, next);
-				return ReaderTask.of('');
-			}
-		)
+		// ReaderTaskEither.chainTaskEitherK(splitCookie),
+		// ReaderTaskEither.map(
+		// 	logAndReturn('debug', 'Successfully refreshed token')
+		// ),
+		// ReaderTaskEither.bindTo('cookieParts'),
+		// ReaderTaskEither.bind('secureFn', () =>
+		// 	ReaderTaskEither.fromReader(secure(fn))
+		// ),
+		// ReaderTaskEither.fold(
+		// 	errorReaderTask(next),
+		// 	({ cookieParts, secureFn }) => {
+		// 		req.headers['Cookie'] = cookieParts.cookie;
+		// 		req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
+		// 		res.setHeader('Set-Cookie', cookieParts.cookie);
+		// 		secureFn(req, res, next);
+		// 		return ReaderTask.of('');
+		// 	}
+		// )
 	);
 };
 
