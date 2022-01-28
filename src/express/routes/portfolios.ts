@@ -2,9 +2,9 @@ import { RouteCreator } from './RouteCreator';
 import { Router } from 'express';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
-import { ExpressDependencies } from '../ExpressDependencies';
 import * as portfolioController from '../controllers/portfolios';
 import { Route } from '../Route';
+import { newRouter } from './routeUtils';
 
 interface RouterAndRoutes {
 	readonly router: Router;
@@ -23,11 +23,7 @@ const configureRoutes = ({
 };
 
 export const createPortfolioRoutes: RouteCreator = pipe(
-	Reader.asks<ExpressDependencies, Router>(({ expressApp }) => {
-		const router = Router();
-		expressApp.use('/portfolios', router);
-		return router;
-	}),
+	newRouter('/portfolios'),
 	Reader.bindTo('router'),
 	Reader.bind(
 		'getPortfoliosForUser',

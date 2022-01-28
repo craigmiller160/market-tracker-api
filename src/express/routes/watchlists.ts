@@ -2,9 +2,9 @@ import { RouteCreator } from './RouteCreator';
 import { Router } from 'express';
 import { pipe } from 'fp-ts/function';
 import * as Reader from 'fp-ts/Reader';
-import { ExpressDependencies } from '../ExpressDependencies';
 import * as watchlistController from '../controllers/watchlists';
 import { Route } from '../Route';
+import { newRouter } from './routeUtils';
 
 interface RouterAndRoutes {
 	readonly router: Router;
@@ -23,11 +23,7 @@ const configureRoutes = ({
 };
 
 export const createWatchlistRoutes: RouteCreator = pipe(
-	Reader.asks<ExpressDependencies, Router>(({ expressApp }) => {
-		const router = Router();
-		expressApp.use('/watchlists', router);
-		return router;
-	}),
+	newRouter('/watchlists'),
 	Reader.bindTo('router'),
 	Reader.bind(
 		'getWatchlistsForUser',
