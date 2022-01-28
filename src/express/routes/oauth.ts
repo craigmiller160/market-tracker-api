@@ -4,6 +4,7 @@ import * as oAuthController from '../controllers/oauth';
 import { Route } from '../Route';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
+import { ExpressDependencies } from '../ExpressDependencies';
 
 interface RouterAndRoutes {
 	readonly router: Router;
@@ -28,7 +29,11 @@ const configureRoutes = ({
 };
 
 export const createOAuthRoutes: RouteCreator = pipe(
-	Reader.of(Router()),
+	Reader.asks<ExpressDependencies, Router>(({ expressApp }) => {
+		const router = Router();
+		expressApp.use('/oauth', router);
+		return router;
+	}),
 	Reader.bindTo('router'),
 	Reader.bind('getAuthUser', () => oAuthController.getAuthUser),
 	Reader.bind('getAuthCodeLogin', () => oAuthController.getAuthCodeLogin),
@@ -37,8 +42,5 @@ export const createOAuthRoutes: RouteCreator = pipe(
 		() => oAuthController.authCodeAuthentication
 	),
 	Reader.bind('logout', () => oAuthController.logout),
-	Reader.map(configureRoutes),
-	Reader.chain((router) =>
-		Reader.asks(({ expressApp }) => expressApp.use('/oauth', router))
-	)
+	Reader.map(configureRoutes)
 );
