@@ -1,28 +1,41 @@
-import { OldRouteCreator } from './RouteCreator';
-import { Request } from 'express';
-import { secure } from '../auth/secure';
-import { Watchlist } from '../../data/modelTypes/Watchlist';
-import {
-	getWatchlistsByUser,
-	saveWatchlistsByUser
-} from '../../services/routes/WatchlistService';
+import { RouteCreator } from './RouteCreator';
+import { Router } from 'express';
+import { pipe } from 'fp-ts/function';
+import * as Reader from 'fp-ts/Reader';
+import { ExpressDependencies } from '../ExpressDependencies';
+import * as watchlistController from '../controllers/watchlists';
+import { Route } from '../Route';
 
-export const createWatchlistRoutes: OldRouteCreator = (dependencies) => {
-	dependencies.expressApp.get(
-		'/watchlists',
-		secure((req, res, next) =>
-			getWatchlistsByUser(req, res, next)(dependencies)()
-		)(dependencies)
-	);
+interface RouterAndRoutes {
+	readonly router: Router;
+	readonly getWatchlistsForUser: Route;
+	readonly saveWatchlistsForUser: Route;
+}
 
-	dependencies.expressApp.post(
-		'/watchlists',
-		secure(
-			(
-				req: Request<unknown, unknown, ReadonlyArray<Watchlist>>,
-				res,
-				next
-			) => saveWatchlistsByUser(req, res, next)(dependencies)()
-		)(dependencies)
-	);
+const configureRoutes = ({
+	router,
+	getWatchlistsForUser,
+	saveWatchlistsForUser
+}: RouterAndRoutes): Router => {
+	router.get('/', getWatchlistsForUser);
+	router.post('/', saveWatchlistsForUser);
+	return router;
 };
+
+export const createWatchlistRoutes: RouteCreator = pipe(
+	Reader.asks<ExpressDependencies, Router>(({ expressApp }) => {
+		const router = Router();
+		expressApp.use('/watchlists', router);
+		return router;
+	}),
+	Reader.bindTo('router'),
+	Reader.bind(
+		'getWatchlistsForUser',
+		() => watchlistController.getWatchlistsForUser
+	),
+	Reader.bind(
+		'saveWatchlistsForUser',
+		() => watchlistController.saveWatchlistsForUser
+	),
+	Reader.map(configureRoutes)
+);
