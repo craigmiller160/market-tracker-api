@@ -74,33 +74,37 @@ const secureCallback =
 		);
 	};
 
-const hasRefreshAlreadyHappened = (req: Request): boolean =>
-	(req as RefreshFlagRequest).hasRefreshed ?? false;
-
 const handleTokenError = (
 	error: Error,
 	req: Request,
 	res: Response,
 	next: NextFunction,
 	fn: Route
-): ReaderTaskT<ExpressDependencies, unknown> =>
-	match({
-		error,
-		jwtIsInCookie: isJwtInCookie(req),
-		refreshAlreadyHappened: hasRefreshAlreadyHappened(req)
-	})
-		.with(
-			{
-				error: { name: 'TokenExpiredError' },
-				jwtIsInCookie: true,
-				refreshAlreadyHappened: false
-			},
-			() => tryToRefreshExpiredToken(req, res, next, fn)
+): ReaderTaskT<SecureExpressDependencies, unknown> =>
+	pipe(
+		ReaderTask.asks<SecureExpressDependencies, boolean>(
+			({ hasRefreshed }) => hasRefreshed ?? false
+		),
+		ReaderTask.chain((hasRefreshed) =>
+			match({
+				error,
+				jwtIsInCookie: isJwtInCookie(req),
+				refreshAlreadyHappened: hasRefreshed
+			})
+				.with(
+					{
+						error: { name: 'TokenExpiredError' },
+						jwtIsInCookie: true,
+						refreshAlreadyHappened: false
+					},
+					() => tryToRefreshExpiredToken(req, res, next, fn)
+				)
+				.otherwise(() => {
+					expressErrorHandler(error, req, res, next);
+					return ReaderTask.of<ExpressDependencies, string>('');
+				})
 		)
-		.otherwise(() => {
-			expressErrorHandler(error, req, res, next);
-			return ReaderTask.of<ExpressDependencies, string>('');
-		});
+	);
 
 const splitCookie = (cookie: string): TaskTryT<CookieParts> =>
 	pipe(
