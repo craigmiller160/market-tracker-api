@@ -134,26 +134,17 @@ const tryToRefreshExpiredToken = (
 		ReaderTaskEither.map(
 			logAndReturn('debug', 'Successfully refreshed token')
 		),
-		ReaderTaskEither.bindTo('cookieParts'),
-		ReaderTaskEither.bind('secureFn', () =>
-			ReaderTaskEither.fromReader(secure(fn))
-		),
-		ReaderTaskEither.fold(
-			errorReaderTask(next),
-			({ cookieParts, secureFn }) => {
+		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) =>
+			ReaderTask.asks((deps) => {
 				req.headers['Cookie'] = cookieParts.cookie;
 				req.cookies[cookieParts.cookieName] = cookieParts.cookieValue;
 				res.setHeader('Set-Cookie', cookieParts.cookie);
-				secureFn(req, res, next);
-				return ReaderTask.of('');
-			}
-		),
-		ReaderTask.chainFirst(() =>
-			ReaderTask.asksReaderTaskW<
-				ExpressDependencies,
-				HasRefreshed,
-				unknown
-			>(() => ReaderTask.of({ hasRefreshed: true }))
+				secure(fn)({
+					...deps,
+					hasRefreshed: true
+				})(req, res, next);
+				return '';
+			})
 		)
 	);
 
@@ -161,25 +152,35 @@ export const secure =
 	(fn: Route): ReaderT<SecureExpressDependencies, Route> =>
 	(dependencies) =>
 	(req, res, next) => {
+		const newDeps: SecureExpressDependencies = {
+			...dependencies,
+			hasRefreshed: dependencies.hasRefreshed ?? false
+		};
+
 		passport.authenticate(
 			'jwt',
 			{ session: false },
-			secureCallback(req, res, next, fn)(dependencies)
+			secureCallback(req, res, next, fn)(newDeps)
 		)(req, res, next);
 	};
 
 export const secureReaderTask =
 	<T>(fn: ReaderTaskRoute<T>): ReaderT<SecureExpressDependencies, Route> =>
-	(deps) =>
+	(dependencies) =>
 	(req, res, next) => {
+		const newDeps: SecureExpressDependencies = {
+			...dependencies,
+			hasRefreshed: dependencies.hasRefreshed ?? false
+		};
+
 		const wrappedFn: Route = (
 			req: Request,
 			res: Response,
 			next: NextFunction
-		) => fn(req, res, next)(deps)();
+		) => fn(req, res, next)(newDeps)();
 		passport.authenticate(
 			'jwt',
 			{ session: false },
-			secureCallback(req, res, next, wrappedFn)(deps)
+			secureCallback(req, res, next, wrappedFn)(newDeps)
 		)(req, res, next);
 	};
