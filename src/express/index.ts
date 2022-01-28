@@ -27,8 +27,6 @@ import {
 	watchlistRepository
 } from '../data/repo';
 import * as Reader from 'fp-ts/Reader';
-import { createOAuthRoutes } from './routes/oauth';
-import { createHealthcheckRoutes } from './routes/healthcheck';
 
 const safeParseInt = (text: string): O.Option<number> =>
 	match(parseInt(text))
@@ -84,10 +82,6 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.disable('x-powered-by');
 	app.use(bodyParer.json());
 	app.use(passport.initialize());
-
-	// TODO refactor this back into createRoutes
-	createOAuthRoutes(expressDependencies);
-	createHealthcheckRoutes(expressDependencies);
 
 	Reader.sequenceArray([
 		setupRequestLogging,
