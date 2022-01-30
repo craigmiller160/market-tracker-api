@@ -9,6 +9,7 @@ import { match, when } from 'ts-pattern';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { errorTask } from '../../function/Route';
 import * as Task from 'fp-ts/Task';
+import { logger } from '../../logger';
 
 const getTradierEnv = (): TryT<ReadonlyArray<string>> =>
 	getRequiredValues([
@@ -28,9 +29,11 @@ const sendTradierRequest = (
 		.with(when(isNotEmpty), (_) => `?${_}`)
 		.otherwise(identity);
 	const realUri = uri.replace(/^\/tradier/, '');
+	const fullTradierRequestUrl = `${baseUrl}${realUri}${queryString}`;
+	logger.debug(`Sending request to Tradier: ${fullTradierRequestUrl}`);
 	return pipe(
 		TaskTry.tryCatch(() =>
-			restClient.get(`${baseUrl}${realUri}${queryString}`, {
+			restClient.get(fullTradierRequestUrl, {
 				headers: {
 					Accept: 'application/json',
 					Authorization: `Bearer ${apiKey}`
