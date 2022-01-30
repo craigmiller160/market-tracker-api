@@ -1,7 +1,8 @@
 import {
 	FullTestServer,
 	createFullTestServer,
-	stopFullTestServer, createAccessToken
+	stopFullTestServer,
+	createAccessToken
 } from '../../testutils/fullTestServer';
 import { restClient } from '../../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
@@ -24,8 +25,9 @@ const mockClient = new MockAdapter(restClient);
 const tradierResponse = {
 	hello: 'world'
 };
-
-// TODO need to test for headers on Tradier request
+const tradierError = {
+	hello: 'fail'
+};
 
 describe('tradier', () => {
 	let fullTestServer: FullTestServer;
@@ -55,6 +57,7 @@ describe('tradier', () => {
 	});
 
 	it('forwards requests to Tradier', async () => {
+		mockClient.onGet(`${baseUrl}/foo?abc=def`).reply(200, tradierResponse);
 		const token = createAccessToken(fullTestServer.keyPair.privateKey);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/tradier/foo?abc=def')
@@ -62,9 +65,11 @@ describe('tradier', () => {
 			.timeout(2000)
 			.expect(200);
 		expect(res.body).toEqual(tradierResponse);
+		// TODO test tradier headers
 	});
 
 	it('handles Tradier request errors', async () => {
+		mockClient.onGet(`${baseUrl}/foo?abc=def`).reply(500, tradierError);
 		const token = createAccessToken(fullTestServer.keyPair.privateKey);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/tradier/foo?abc=def')
@@ -72,5 +77,7 @@ describe('tradier', () => {
 			.timeout(2000)
 			.expect(500);
 		// TODO validate response message
+
+		// TODO test tradier headers
 	});
 });
