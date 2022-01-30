@@ -57,7 +57,15 @@ describe('tradier', () => {
 	});
 
 	it('forwards requests to Tradier', async () => {
-		mockClient.onGet(`${baseUrl}/foo?abc=def`).reply(200, tradierResponse);
+		mockClient.onGet(`${baseUrl}/foo?abc=def`).reply((config) => {
+			expect(config.headers).toEqual(
+				expect.objectContaining({
+					Accept: 'application/json',
+					Authorization: `Bearer ${apiKey}`
+				})
+			);
+			return [200, tradierResponse];
+		});
 		const token = createAccessToken(fullTestServer.keyPair.privateKey);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/tradier/foo?abc=def')
@@ -65,19 +73,25 @@ describe('tradier', () => {
 			.timeout(2000)
 			.expect(200);
 		expect(res.body).toEqual(tradierResponse);
-		// TODO test tradier headers
 	});
 
 	it('handles Tradier request errors', async () => {
-		mockClient.onGet(`${baseUrl}/foo?abc=def`).reply(500, tradierError);
+		mockClient.onGet(`${baseUrl}/foo?abc=def`).reply((config) => {
+			expect(config.headers).toEqual(
+				expect.objectContaining({
+					Accept: 'application/json',
+					Authorization: `Bearer ${apiKey}`
+				})
+			);
+			return [500, tradierError];
+		});
 		const token = createAccessToken(fullTestServer.keyPair.privateKey);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/tradier/foo?abc=def')
 			.set('Authorization', `Bearer ${token}`)
 			.timeout(2000)
 			.expect(500);
+		console.log(res.body);
 		// TODO validate response message
-
-		// TODO test tradier headers
 	});
 });
