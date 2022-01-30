@@ -11,7 +11,7 @@ import * as ReaderTask from 'fp-ts/ReaderTask';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import { isJwtInCookie, jwtFromRequest } from './jwt';
 import { AccessToken } from './AccessToken';
-import { ReaderTaskRoute, Route } from '../Route';
+import { ReaderTaskRoute, Route, TaskRoute } from '../Route';
 import * as Text from '@craigmiller160/ts-functions/Text';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import {
@@ -148,15 +148,18 @@ const tryToRefreshExpiredToken = (
 		)
 	);
 
+const createNewDependencies = (
+	dependencies: SecureExpressDependencies
+): SecureExpressDependencies => ({
+	...dependencies,
+	hasRefreshed: dependencies.hasRefreshed ?? false
+});
+
 export const secure =
 	(fn: Route): ReaderT<SecureExpressDependencies, Route> =>
 	(dependencies) =>
 	(req, res, next) => {
-		const newDeps: SecureExpressDependencies = {
-			...dependencies,
-			hasRefreshed: dependencies.hasRefreshed ?? false
-		};
-
+		const newDeps = createNewDependencies(dependencies);
 		passport.authenticate(
 			'jwt',
 			{ session: false },
@@ -164,15 +167,28 @@ export const secure =
 		)(req, res, next);
 	};
 
+export const secureTask =
+	<T>(fn: TaskRoute<T>): ReaderT<SecureExpressDependencies, Route> =>
+	(dependencies) =>
+	(req, res, next) => {
+		const newDeps = createNewDependencies(dependencies);
+		const wrappedFn: Route = (
+			req: Request,
+			res: Response,
+			next: NextFunction
+		) => fn(req, res, next)();
+		passport.authenticate(
+			'jwt',
+			{ session: false },
+			secureCallback(req, res, next, wrappedFn)(newDeps)
+		)(req, res, next);
+	};
+
 export const secureReaderTask =
 	<T>(fn: ReaderTaskRoute<T>): ReaderT<SecureExpressDependencies, Route> =>
 	(dependencies) =>
 	(req, res, next) => {
-		const newDeps: SecureExpressDependencies = {
-			...dependencies,
-			hasRefreshed: dependencies.hasRefreshed ?? false
-		};
-
+		const newDeps = createNewDependencies(dependencies);
 		const wrappedFn: Route = (
 			req: Request,
 			res: Response,
