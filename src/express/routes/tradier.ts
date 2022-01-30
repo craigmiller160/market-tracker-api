@@ -12,7 +12,7 @@ interface RouterAndRoutes {
 }
 
 const configureRoutes = ({ router, queryTradier }: RouterAndRoutes): Router => {
-	// TODO finish this
+	router.get(/^(.*)$/, queryTradier);
 	return router;
 };
 
