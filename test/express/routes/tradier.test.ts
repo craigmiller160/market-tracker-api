@@ -3,6 +3,8 @@ import {
 	createFullTestServer,
 	stopFullTestServer
 } from '../../testutils/fullTestServer';
+import { restClient } from '../../../src/services/RestClient';
+import MockAdapter from 'axios-mock-adapter';
 
 const baseUrl = 'https://tradier.com';
 const apiKey = 'apiKey';
@@ -17,6 +19,8 @@ const setEnv = () => {
 	process.env.TRADIER_API_KEY = apiKey;
 };
 
+const mockClient = new MockAdapter(restClient);
+
 describe('tradier', () => {
 	let fullTestServer: FullTestServer;
 	beforeAll(async () => {
@@ -28,6 +32,7 @@ describe('tradier', () => {
 	});
 
 	beforeEach(() => {
+		mockClient.reset();
 		setEnv();
 	});
 
