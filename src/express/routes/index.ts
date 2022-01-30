@@ -5,11 +5,13 @@ import { ExpressDependencies } from '../ExpressDependencies';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { createOAuthRoutes } from './oauth';
 import { createHealthcheckRoutes } from './healthcheck';
+import { createTradierRoutes } from './tradier';
 
 export const createRoutes: ReaderT<ExpressDependencies, void> =
 	Reader.sequenceArray([
 		createPortfolioRoutes,
 		createOAuthRoutes,
 		createHealthcheckRoutes,
-		createWatchlistRoutes
+		createWatchlistRoutes,
+		createTradierRoutes
 	]);

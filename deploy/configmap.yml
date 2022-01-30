@@ -19,3 +19,4 @@ data:
   COOKIE_MAX_AGE_SECS: "86400"
   COOKIE_PATH: "/market-tracker"
   POST_AUTH_REDIRECT: "/market-tracker"
+  TRADIER_BASE_URL: "https://sandbox.tradier.com/v1"

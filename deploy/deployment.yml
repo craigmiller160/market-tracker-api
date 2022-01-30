@@ -31,6 +31,11 @@ spec:
                 secretKeyRef:
                   name: market-tracker-api-client-secret
                   key: client-secret
+            - name: TRADIER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tradier-api-key-secret
+                  key: tradier-api-key
           livenessProbe:
             httpGet:
               path: /healthcheck
