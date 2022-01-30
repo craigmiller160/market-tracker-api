@@ -91,7 +91,12 @@ describe('tradier', () => {
 			.set('Authorization', `Bearer ${token}`)
 			.timeout(2000)
 			.expect(500);
-		console.log(res.body);
-		// TODO validate response message
+		expect(res.body).toEqual(
+			expect.objectContaining({
+				message: `Error calling Tradier. Status: 500 Message: ${JSON.stringify(
+					tradierError
+				)}`
+			})
+		);
 	});
 });

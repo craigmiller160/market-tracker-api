@@ -1,15 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 import { restClient } from '../RestClient';
 import { getRequiredValues } from '../../function/Values';
-import { identity, pipe } from 'fp-ts/function';
+import { flow, identity, pipe } from 'fp-ts/function';
 import { TaskT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import { TaskTry } from '@craigmiller160/ts-functions';
 import qs from 'qs';
 import { match, when } from 'ts-pattern';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { errorTask } from '../../function/Route';
-import * as Task from 'fp-ts/Task';
 import { logger } from '../../logger';
+import { Error } from 'mongoose';
+import { AxiosError } from 'axios';
+import { TradierError } from '../../error/TradierError';
+import * as Option from 'fp-ts/Option';
+import * as Json from '@craigmiller160/ts-functions/Json';
 
 const getTradierEnv = (): TryT<ReadonlyArray<string>> =>
 	getRequiredValues([
@@ -44,19 +47,57 @@ const sendTradierRequest = (
 	);
 };
 
+const isAxiosError = (ex: Error): ex is AxiosError =>
+	(ex as unknown as { response: object | undefined }).response !== undefined;
+
+const buildTradierErrorMessage = (ex: AxiosError): string =>
+	pipe(
+		Option.of(ex.response?.status),
+		Option.bindTo('status'),
+		Option.bind(
+			'data',
+			flow(
+				() => Option.of(ex.response?.data),
+				Option.fold(() => ({}), identity),
+				Json.stringify,
+				Option.fromEither,
+				Option.getOrElse(() => ''),
+				Option.of
+			)
+		),
+		Option.map(
+			({ status, data }) =>
+				`Error calling Tradier. Status: ${status} Message: ${data}`
+		),
+		Option.getOrElse(() => 'Error calling Tradier. No data on error.')
+	);
+
+const handleTradierError =
+	(next: NextFunction) =>
+	(ex: Error): TaskT<void> => {
+		const handledError = match(ex)
+			.with(
+				when(isAxiosError),
+				(_) => new TradierError(buildTradierErrorMessage(_))
+			)
+			.otherwise(identity);
+		return async () => {
+			next(handledError);
+		};
+	};
+
 export const queryTradier = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): TaskT<string> =>
+): TaskT<void> =>
 	pipe(
 		getTradierEnv(),
 		TaskEither.fromEither,
 		TaskEither.chain(([baseUrl, apiKey]) =>
 			sendTradierRequest(baseUrl, apiKey, req.path, req.query)
 		),
-		TaskEither.fold(errorTask(next), (data) => {
+		TaskEither.fold(handleTradierError(next), (data) => async () => {
 			res.json(data);
-			return Task.of('');
 		})
 	);
