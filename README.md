@@ -19,7 +19,15 @@ The application uses the Tradier service to get Stock Market data. This requires
 Add a file called `.env.private` containing:
 
 ```
-TRADIER_API_KEY=abcdefg
+TRADIER_API_KEY=######
+```
+
+### Production Setup
+
+For production, a Kubernetes secret must be created for this.
+
+```bash
+kubectl create secret generic tradier-api-key-secret --from-literal=tradier-api-key=######
 ```
 
 ## Running Locally
