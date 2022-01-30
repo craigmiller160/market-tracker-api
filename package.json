@@ -10,7 +10,7 @@
     "yarn.lock"
   ],
   "scripts": {
-    "start": "env-cmd ts-node src",
+    "start": "env-cmd -f .env env-cmd -f .env.private ts-node src",
     "build": "yarn lint && yarn test && yarn forceBuild",
     "start:prod": "node build",
     "lint": "craig-lint",
