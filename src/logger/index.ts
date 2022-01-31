@@ -1,7 +1,7 @@
 import { createLogger, transports, format } from 'winston';
-import { pipe } from 'fp-ts/function';
-import * as Option from 'fp-ts/Option';
 import { instanceOf, match } from 'ts-pattern';
+import { Json } from '@craigmiller160/ts-functions';
+import * as Either from 'fp-ts/Either';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -29,30 +29,20 @@ export const logger = createLogger({
 	transports: [new transports.Console()]
 });
 
-const getErrorIfExists = (
-	errorParam?: Error,
-	valueParam?: any // eslint-disable-line @typescript-eslint/no-explicit-any
-): Option.Option<Error> =>
-	match({ errorParam, valueParam })
-		.with({ errorParam: instanceOf(Error) }, ({ errorParam }) =>
-			Option.some(errorParam)
-		)
-		.with({ valueParam: instanceOf(Error) }, ({ valueParam }) =>
-			Option.some(valueParam)
-		)
-		.otherwise(() => Option.none);
-
 export const logAndReturn =
-	(level: LogLevel, message: string, error?: Error) =>
+	(level: LogLevel, message: string, logNonErrorValue = false) =>
 	<T>(value: T): T => {
-		logger[level](message);
-		pipe(
-			getErrorIfExists(error, value),
-			Option.map((_) => {
-				logger[level](_);
-				return _;
-			})
-		);
+		const valueMsg = match({ value, logNonErrorValue })
+			.with(
+				{ value: instanceOf(Error) },
+				() => (value as unknown as Error).stack ?? ''
+			)
+			.with({ logNonErrorValue: true }, () =>
+				Either.getOrElse(() => '')(Json.stringify(value))
+			)
+			.otherwise(() => '');
+
+		logger[level](`${message} ${valueMsg}`);
 
 		return value;
 	};
