@@ -7,7 +7,7 @@ import { TaskTry } from '@craigmiller160/ts-functions';
 import qs from 'qs';
 import { match, when } from 'ts-pattern';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { logger } from '../../logger';
+import { logAndReturn, logger } from '../../logger';
 import { Error } from 'mongoose';
 import { AxiosError } from 'axios';
 import { TradierError } from '../../error/TradierError';
@@ -43,7 +43,8 @@ const sendTradierRequest = (
 				}
 			})
 		),
-		TaskEither.map((_) => _.data)
+		TaskEither.map((_) => _.data),
+		TaskEither.map(logAndReturn('debug', 'Tradier request completed', true))
 	);
 };
 
