@@ -343,9 +343,9 @@
     prettier "^2.5.1"
 
 "@craigmiller160/ts-functions@^1.0.0-beta.9":
-  version "1.0.0-beta.9"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.0.0-beta.9.tgz#238e5332182dccf38019dc2c27efb3b112dadcdf"
-  integrity sha512-WZa0FAUXvBGs6ZwTguVuyLblygzbeJIECjJ6mLq+O8PgURD4VwlNL6HGAz6L19tUF4t92B5BLMw9y1vQ9amGaw==
+  version "1.0.0-beta.18"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.0.0-beta.18.tgz#9c1e9d42855450fed01d1b76feafa6d31a997e1c"
+  integrity sha512-7Ua79oE54mezr9IN7UfnEiKARoKoSihF3xEAPgyUm06XU1IzFgAnQIj+l2OdOiRUDcdPqBg/crPFxmRSiCwwOg==
 
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
@@ -1690,6 +1690,11 @@ data-urls@^2.0.0:
     abab "^2.0.3"
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
+
+date-fns-tz@^1.2.2:
+  version "1.2.2"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/date-fns-tz/-/date-fns-tz-1.2.2.tgz#89432b54ce3fa7d050a2039e997e5b6a96df35dd"
+  integrity sha512-vWtn44eEqnLbkACb7T5G5gPgKR4nY8NkNMOCyoY49NsRGHrcDmY2aysCyzDeA+u+vcDBn/w6nQqEDyouRs4m8w==
 
 date-fns@^2.28.0:
   version "2.28.0"

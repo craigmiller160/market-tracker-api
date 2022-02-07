@@ -8,6 +8,7 @@ import { pipe } from 'fp-ts/function';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import * as Reader from 'fp-ts/Reader';
 import { ExpressDependencies } from './ExpressDependencies';
+import { emergencyErrorLog } from '../logger/emergencyErrorLog';
 
 interface ErrorResponse {
 	readonly timestamp: string;
@@ -48,6 +49,7 @@ const createErrorResponse = (
 	const fullQueryString = queryString.length > 0 ? `?${queryString}` : '';
 
 	const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm:ss.SSS');
+	emergencyErrorLog(timestamp, err);
 
 	return {
 		timestamp,
