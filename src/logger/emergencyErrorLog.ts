@@ -1,9 +1,9 @@
-import fs from 'fs';
 import path from 'path';
 import * as Option from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
 import * as File from '@craigmiller160/ts-functions/File';
 import * as Either from 'fp-ts/Either';
+import { logAndReturn } from './index';
 
 const LOG_FILE_PATH = path.join(process.cwd(), 'emergency-log.txt');
 type BooleanString = 'true' | 'false';
@@ -18,13 +18,13 @@ const useEmergencyErrorLog = (): BooleanString =>
 
 export const emergencyErrorLog = (timestamp: string, err: Error) => {
 	if (useEmergencyErrorLog() === 'true') {
-        fs.writeFileSync(LOG_FILE_PATH, timestamp, {
-
-        })
 		pipe(
-			File.writeFileSync(LOG_FILE_PATH, `${timestamp}\n`),
+			File.appendFileSync(LOG_FILE_PATH, `${timestamp}\n`),
 			Either.chain(() =>
-				File.writeFileSync(LOG_FILE_PATH, `${err.stack ?? ''}\n`)
+				File.appendFileSync(LOG_FILE_PATH, `${err.stack ?? ''}\n`)
+			),
+			Either.mapLeft(
+				logAndReturn('error', 'Error writing to emergency error log')
 			)
 		);
 	}
