@@ -293,59 +293,59 @@
   dependencies:
     lodash.merge "^4.6.2"
 
-"@craigmiller160/eslint-config-js@^1.0.0-beta.5":
-  version "1.0.0-beta.5"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/eslint-config-js/-/eslint-config-js-1.0.0-beta.5.tgz#b032edddaf1542c41bae209901429f7aad29694d"
-  integrity sha512-AE0FjF8FsaK/6k174ui3M6sroj7DGdjNViKOADLJr38gmvbMvaYfG2COTPEu94iHwuZcs/xlXMfrsxNkjWf9mQ==
+"@craigmiller160/eslint-config-js@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/eslint-config-js/-/eslint-config-js-1.0.0.tgz#228680c9072eb8d6bdf891bd417842a9c38a3d9f"
+  integrity sha512-svaYf4vVdeIcYQ3iwHNF5l79yf11pb05uz8QqTlNybs2NC/BNfxUKsoRoB/t4dwzCOHopg08dK5ydojwMNrNDw==
   dependencies:
     cross-spawn "^7.0.3"
     eslint "^8.5.0"
 
-"@craigmiller160/eslint-config-prettier@^1.0.0-beta.1":
-  version "1.0.0-beta.1"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/eslint-config-prettier/-/eslint-config-prettier-1.0.0-beta.1.tgz#a61293224ec93ec2dd4e3ed33d9eb2ce48369817"
-  integrity sha512-Sv6oklv75FVpldJg1UY8buVIcDGGMEwguD+Aod9IIq9lisv9tVCXmsVJcmW966yQz+tUf9nlqkTup4JnxixhAQ==
+"@craigmiller160/eslint-config-prettier@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/eslint-config-prettier/-/eslint-config-prettier-1.0.0.tgz#69094ea475b133ed9540781626aca87215b9f158"
+  integrity sha512-9TXfKZeGLH/aTgU/g0Zpf1wzXozRQtQ/dAS1+naM64UAHqOLxyBjpuUVCxEa+oFluofVUsBpT9N5wURWSlp91w==
   dependencies:
     eslint-config-prettier "^8.3.0"
     eslint-plugin-prettier "^4.0.0"
 
-"@craigmiller160/eslint-config-ts@^1.0.0-beta.1":
-  version "1.0.0-beta.1"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/eslint-config-ts/-/eslint-config-ts-1.0.0-beta.1.tgz#38b93ec22a346d1b4d90f174c2f15ce533939720"
-  integrity sha512-kOF+UuQKoaJBRoI24UB5MBM7lJfK6TfYjwY/MtCeO5K6a623Iz7rRz0/oaiiI90v2tLJnhlCe+xnNehUQVOhnA==
+"@craigmiller160/eslint-config-ts@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/eslint-config-ts/-/eslint-config-ts-1.0.0.tgz#bb9ab0e2bbf92ca7d03df2a91ca34dfafcc2b27b"
+  integrity sha512-jRM6e/Bfr+GOXX+mqpHEUjTFfLxW89MXp0BU6+PYTQ4R6tjwutJjvP8sykPtnBUxuZYIxsH+GUHwnEgAa5mpTw==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^5.8.1"
     "@typescript-eslint/parser" "^5.8.1"
 
-"@craigmiller160/jest-config-ts@^1.0.0-beta.2":
-  version "1.0.0-beta.2"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/jest-config-ts/-/jest-config-ts-1.0.0-beta.2.tgz#3ece5b038f6aad12911a59f77dc572b8bdc519dd"
-  integrity sha512-WhqVXh+UBhvNyEkhQJHHSwFVUKF6EelNQbPiqs8qFcFJb2XCkj6b4CKipYVAVChbaV9hsV1Z4PtbUZ5mSJANRg==
+"@craigmiller160/jest-config-ts@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/jest-config-ts/-/jest-config-ts-1.0.0.tgz#3209ec59bb3ceed83e6d95eb9e57dee0848bbbdf"
+  integrity sha512-+mtnzKZsT8pedMgsD5B52fs18I3JE4qWdVzYCtN50VS3h5D05gdkJ8VROPaf9d0QVX1x8CDxecz9BRxnW81hhQ==
   dependencies:
     "@types/jest" "^27.0.3"
     ts-jest "^27.1.2"
 
-"@craigmiller160/jest-config@^1.0.0-beta.9":
-  version "1.0.0-beta.10"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/jest-config/-/jest-config-1.0.0-beta.10.tgz#5e33026d8fafafe8b6b1bfe2a04ebb08e46909ba"
-  integrity sha512-+2o648BMu54gG0EYy9pyF2pUGFGI+Ar5ygXV7IqnKugwHCLhW57Mz0DXOGqIUd4Yj5MrZUk5e9NolwXaH90HCg==
+"@craigmiller160/jest-config@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/jest-config/-/jest-config-1.0.0.tgz#583837c3967ce370fcf17f39bf3fbf61df9c07f7"
+  integrity sha512-F/qqOc+WtGNQIPX3mG0egTbeIq1qkktbqiHTzc0ZL4Ne//QFlwZWO9FJ3vzpZAiVV4GrJjtNJNIDzf2HaPV7Og==
   dependencies:
     cross-env "^7.0.3"
     cross-spawn "^7.0.3"
     identity-obj-proxy "^3.0.0"
     jest "^27.4.5"
 
-"@craigmiller160/prettier-config@^1.0.0-beta.1":
-  version "1.0.0-beta.1"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/prettier-config/-/prettier-config-1.0.0-beta.1.tgz#f414e462f34352724b21372d50ebd62563cc3a25"
-  integrity sha512-fBHU/OmGPMitz9Oy0xgKD8VfahsvH9r+nhgrRhE3vXKBRCT+mLojhvYL6ze2MEfc7la7kL/HYNoW54oHAN+eLQ==
+"@craigmiller160/prettier-config@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/prettier-config/-/prettier-config-1.0.0.tgz#b4e4899ad3c5e1f6b92a6b032df42d8e8e97b9ff"
+  integrity sha512-X2D3uUf3azwfgcm4JT06chSxNgDGKspc+i87oNvOFHnuErGUfK8gxWmU7cdySXN6ZRGMdemQx9g/AeqbpMHo5A==
   dependencies:
     prettier "^2.5.1"
 
-"@craigmiller160/ts-functions@^1.0.0-beta.9":
-  version "1.0.0-beta.18"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.0.0-beta.18.tgz#9c1e9d42855450fed01d1b76feafa6d31a997e1c"
-  integrity sha512-7Ua79oE54mezr9IN7UfnEiKARoKoSihF3xEAPgyUm06XU1IzFgAnQIj+l2OdOiRUDcdPqBg/crPFxmRSiCwwOg==
+"@craigmiller160/ts-functions@1.0.0":
+  version "1.0.0"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.0.0.tgz#7e3e4d962b63e46296fc2893c5e4659e17d0b49f"
+  integrity sha512-5KcTxN9TEyGsq7b6T5FQ5lZxgGsuzsirannVOR64Lboz0bmUglZUv33CHyANGLdY7TQXYc5FH4R6oCuixJ56OQ==
 
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
