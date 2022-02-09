@@ -5,7 +5,7 @@ import { constants } from 'crypto';
 import { match } from 'ts-pattern';
 
 const basePath = match(process.env.NODE_ENV)
-	.with('production', () => '')
+	.with('production', () => __dirname)
 	.otherwise(() => path.join(__dirname, '..', 'cert'));
 
 const keyPath = path.join(basePath, 'market-tracker.key.pem');
