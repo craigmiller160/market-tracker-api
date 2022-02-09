@@ -17,7 +17,8 @@
     "test": "craig-test --runInBand",
     "forceBuild": "ts-node scripts/build.ts",
     "prepare": "husky install",
-    "validate": "yarn lint && yarn test"
+    "validate": "yarn lint && yarn test",
+    "temp": "webpack"
   },
   "lint-staged": {
     "*.{ts,tsx}": "yarn lint"
