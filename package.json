@@ -12,13 +12,11 @@
   "scripts": {
     "start": "env-cmd -f .env env-cmd -f .env.private ts-node src",
     "build": "yarn lint && yarn test && yarn forceBuild",
-    "start:prod": "node build",
     "lint": "craig-lint",
     "test": "craig-test --runInBand",
-    "forceBuild": "ts-node scripts/build.ts",
+    "forceBuild": "NODE_ENV=production webpack",
     "prepare": "husky install",
-    "validate": "yarn lint && yarn test",
-    "temp": "NODE_ENV=production webpack"
+    "validate": "yarn lint && yarn test"
   },
   "lint-staged": {
     "*.{ts,tsx}": "yarn lint"
@@ -46,6 +44,7 @@
     "@types/passport-jwt": "^3.0.6",
     "@types/supertest": "^2.0.11",
     "axios-mock-adapter": "^1.20.0",
+    "clean-webpack-plugin": "^4.0.0",
     "cross-spawn": "^7.0.3",
     "elliptic": "^6.5.4",
     "env-cmd": "^10.1.0",

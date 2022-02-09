@@ -2,6 +2,7 @@ const path = require('path');
 const { IgnorePlugin } = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const { merge } = require('webpack-merge');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const baseConfig = {
 	entry: path.join(process.cwd(), 'src', 'index.ts'),
@@ -26,7 +27,10 @@ const baseConfig = {
 			}
 		]
 	},
-	externals: [nodeExternals()]
+	externals: [nodeExternals()],
+	plugins: [
+		new CleanWebpackPlugin()
+	]
 };
 
 const mongodbDependencyIssueConfig = {
