@@ -3,6 +3,7 @@ const { IgnorePlugin } = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const { merge } = require('webpack-merge');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const baseConfig = {
 	entry: path.join(process.cwd(), 'src', 'index.ts'),
@@ -29,7 +30,16 @@ const baseConfig = {
 	},
 	externals: [nodeExternals()],
 	plugins: [
-		new CleanWebpackPlugin()
+		new CleanWebpackPlugin(),
+		new CopyWebpackPlugin({
+			patterns: [
+				{
+					from: path.resolve(process.cwd(), 'src', 'cert'),
+					to: path.resolve(process.cwd(), 'build'),
+					noErrorOnMissing: true
+				}
+			]
+		})
 	]
 };
 
