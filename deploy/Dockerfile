@@ -7,4 +7,4 @@ RUN tar xvf market-tracker-api.tgz
 RUN cp -R package/* .
 RUN rm -rf package
 
-CMD ["node", "index.js"]
+CMD ["node", "build/index.js"]
