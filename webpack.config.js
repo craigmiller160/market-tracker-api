@@ -1,4 +1,5 @@
 const path = require('path');
+const { IgnorePlugin } = require('webpack');
 // const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
@@ -31,5 +32,12 @@ module.exports = {
 		'bson-ext',
 		'snappy',
 		'kerberos'
+	],
+	// TODO same here, for mongodb issues
+	plugins: [
+		new IgnorePlugin({
+			resourceRegExp: /snappy/,
+			contextRegExp: /mongodb/
+		})
 	]
 };
