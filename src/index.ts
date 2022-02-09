@@ -1,4 +1,4 @@
-// import './processErrorHandling'; TODO restore this
+import './processErrorHandling';
 import { connectToMongo } from './mongo';
 import { pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
