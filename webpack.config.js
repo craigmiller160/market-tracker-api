@@ -1,6 +1,6 @@
 const path = require('path');
 const { IgnorePlugin } = require('webpack');
-// const nodeExternals = require('webpack-node-externals');
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
 	entry: path.join(process.cwd(), 'src', 'index.ts'),
@@ -27,6 +27,7 @@ module.exports = {
 	},
 	// TODO label these as the optional mongodb dependencies
 	externals: [
+		nodeExternals(),
 		'mongodb-client-encryption',
 		'aws4',
 		'bson-ext',
