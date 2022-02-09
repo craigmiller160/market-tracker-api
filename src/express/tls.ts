@@ -2,9 +2,14 @@ import path from 'path';
 import fs from 'fs';
 import { ServerOptions } from 'https';
 import { constants } from 'crypto';
+import { match } from 'ts-pattern';
 
-const keyPath = path.join(__dirname, '..', 'cert', 'market-tracker.key.pem');
-const certPath = path.join(__dirname, '..', 'cert', 'market-tracker.cert.pem');
+const basePath = match(process.env.NODE_ENV)
+	.with('production', () => '')
+	.otherwise(() => path.join(__dirname, '..', 'cert'));
+
+const keyPath = path.join(basePath, 'market-tracker.key.pem');
+const certPath = path.join(basePath, 'market-tracker.cert.pem');
 
 const ciphers = [
 	'ECDHE-ECDSA-AES256-GCM-SHA384',
