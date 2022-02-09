@@ -9,6 +9,6 @@ RUN rm -rf package
 
 RUN npm set registry https://craigmiller160.ddns.net:30003/repository/npm-group/
 
-RUN yarn
+RUN NODE_ENV=production yarn install --production
 
 CMD ["yarn", "start:prod"]
