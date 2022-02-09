@@ -28,7 +28,7 @@ const baseConfig = {
 			}
 		]
 	},
-	externals: [nodeExternals()],
+	// externals: [nodeExternals()],
 	plugins: [
 		new CleanWebpackPlugin(),
 		new CopyWebpackPlugin({
