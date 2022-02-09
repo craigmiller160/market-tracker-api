@@ -26,9 +26,7 @@ const baseConfig = {
 			}
 		]
 	},
-	externals: [
-		nodeExternals()
-	]
+	externals: [nodeExternals()]
 };
 
 const mongodbDependencyIssueConfig = {
