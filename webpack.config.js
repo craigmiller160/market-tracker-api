@@ -1,4 +1,5 @@
 const path = require('path');
+// const nodeExternals = require('webpack-node-externals');
 
 module.exports = {
 	entry: path.join(process.cwd(), 'src', 'index.ts'),
@@ -9,16 +10,26 @@ module.exports = {
 		filename: 'index.js'
 	},
 	resolve: {
-		extensions: ['.ts', '.js']
+		modules: [
+			path.resolve(process.cwd(), 'src'),
+			path.resolve(process.cwd(), 'node_modules')
+		],
+		extensions: ['.ts', '.js', '.json']
 	},
 	module: {
 		rules: [
 			{
 				test: /\.ts$/,
-				use: [
-					'ts-loader'
-				]
+				use: ['ts-loader']
 			}
 		]
-	}
+	},
+	// TODO label these as the optional mongodb dependencies
+	externals: [
+		'mongodb-client-encryption',
+		'aws4',
+		'bson-ext',
+		'snappy',
+		'kerberos'
+	]
 };
