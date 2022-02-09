@@ -18,7 +18,7 @@
     "forceBuild": "ts-node scripts/build.ts",
     "prepare": "husky install",
     "validate": "yarn lint && yarn test",
-    "temp": "webpack"
+    "temp": "NODE_ENV=production webpack"
   },
   "lint-staged": {
     "*.{ts,tsx}": "yarn lint"
