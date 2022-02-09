@@ -1,8 +1,9 @@
 const path = require('path');
 const { IgnorePlugin } = require('webpack');
 const nodeExternals = require('webpack-node-externals');
+const { merge } = require('webpack-merge');
 
-module.exports = {
+const baseConfig = {
 	entry: path.join(process.cwd(), 'src', 'index.ts'),
 	mode: process.env.NODE_ENV,
 	target: 'node',
@@ -25,16 +26,19 @@ module.exports = {
 			}
 		]
 	},
-	// TODO label these as the optional mongodb dependencies
 	externals: [
-		nodeExternals(),
+		nodeExternals()
+	]
+};
+
+const mongodbDependencyIssueConfig = {
+	externals: [
 		'mongodb-client-encryption',
 		'aws4',
 		'bson-ext',
 		'snappy',
 		'kerberos'
 	],
-	// TODO same here, for mongodb issues
 	plugins: [
 		new IgnorePlugin({
 			resourceRegExp: /snappy/,
@@ -42,3 +46,5 @@ module.exports = {
 		})
 	]
 };
+
+module.exports = merge(baseConfig, mongodbDependencyIssueConfig);
