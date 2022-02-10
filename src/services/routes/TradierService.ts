@@ -13,6 +13,7 @@ import { AxiosError } from 'axios';
 import { TradierError } from '../../error/TradierError';
 import * as Option from 'fp-ts/Option';
 import * as Json from '@craigmiller160/ts-functions/Json';
+import * as Either from 'fp-ts/Either';
 
 const getTradierEnv = (): TryT<ReadonlyArray<string>> =>
 	getRequiredValues([
@@ -53,7 +54,7 @@ const isAxiosError = (ex: Error): ex is AxiosError =>
 
 const buildTradierErrorMessage = (ex: AxiosError): string =>
 	pipe(
-		Option.of(ex.response?.status),
+		Option.fromNullable(ex.response?.status),
 		Option.bindTo('status'),
 		Option.bind(
 			'data',
@@ -61,8 +62,7 @@ const buildTradierErrorMessage = (ex: AxiosError): string =>
 				() => Option.of(ex.response?.data),
 				Option.fold(() => ({}), identity),
 				Json.stringify,
-				Option.fromEither,
-				Option.getOrElse(() => ''),
+				Either.fold(() => '', identity),
 				Option.of
 			)
 		),
