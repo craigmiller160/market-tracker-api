@@ -64,9 +64,9 @@ const buildCryptoGeckoErrorMessage = (ex: AxiosError): string =>
 		),
 		Option.map(
 			({ status, data }) =>
-				`Error calling CryptoGecko. Status: ${status} Message: ${data}`
+				`Error calling CoinGecko. Status: ${status} Message: ${data}`
 		),
-		Option.getOrElse(() => 'Error calling CryptoGecko. No data on error.')
+		Option.getOrElse(() => 'Error calling CoinGecko. No data on error.')
 	);
 
 const handleCryptoGeckoError =
