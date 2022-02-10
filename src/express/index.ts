@@ -1,6 +1,7 @@
-import * as O from 'fp-ts/Option';
-import * as TE from 'fp-ts/TaskEither';
+import * as Option from 'fp-ts/Option';
+import * as TaskEither from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
+import { TaskTryT, OptionT } from '@craigmiller160/ts-functions/types';
 
 import bodyParer from 'body-parser';
 import { logger } from '../logger';
@@ -28,33 +29,36 @@ import {
 } from '../data/repo';
 import * as Reader from 'fp-ts/Reader';
 
-const safeParseInt = (text: string): O.Option<number> =>
+const safeParseInt = (text: string): OptionT<number> =>
 	match(parseInt(text))
-		.with(__.NaN, () => O.none)
-		.otherwise((_) => O.some(_));
+		.with(__.NaN, () => Option.none)
+		.otherwise((_) => Option.some(_));
 
-const expressListen = (app: Express, port: number): TaskTry.TaskTry<Server> =>
-	TaskTry.tryCatch(
-		() =>
-			new Promise((resolve, reject) => {
-				const server = https
-					.createServer(httpsOptions, app)
-					.listen(port, (err?: Error) => {
-						pipe(
-							O.fromNullable(err),
-							O.fold(
-								() => {
-									logger.info(
-										`Market Tracker API listening on port ${port}`
-									);
-									resolve(server);
-								},
-								(_) => reject(_)
-							)
+const expressListen = (app: Express, port: number): TaskTryT<Server> => {
+	const server = https.createServer(httpsOptions, app);
+
+	return match(process.env.NODE_ENV)
+		.with('test', () => TaskEither.right(server))
+		.otherwise(() => TaskTry.tryCatch(() => wrapListen(server, port)));
+};
+
+const wrapListen = (server: Server, port: number): Promise<Server> =>
+	new Promise((resolve, reject) => {
+		server.listen(port, (err?: Error) => {
+			pipe(
+				Option.fromNullable(err),
+				Option.fold(
+					() => {
+						logger.info(
+							`Market Tracker API listening on port ${port}`
 						);
-					});
-			})
-	);
+						resolve(server);
+					},
+					(_) => reject(_)
+				)
+			);
+		});
+	});
 
 export interface ExpressServer {
 	readonly server: Server;
@@ -95,11 +99,11 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 
 export const startExpressServer = (
 	tokenKey: TokenKey
-): TaskTry.TaskTry<ExpressServer> => {
+): TaskTryT<ExpressServer> => {
 	const port = pipe(
-		O.fromNullable(process.env.EXPRESS_PORT),
-		O.chain(safeParseInt),
-		O.getOrElse(() => 8080)
+		Option.fromNullable(process.env.EXPRESS_PORT),
+		Option.chain(safeParseInt),
+		Option.getOrElse(() => 8080)
 	);
 
 	logger.debug('Starting server');
@@ -108,7 +112,7 @@ export const startExpressServer = (
 
 	return pipe(
 		expressListen(app, port),
-		TE.map((_) => ({
+		TaskEither.map((_) => ({
 			server: _,
 			app
 		}))
