@@ -6,6 +6,7 @@ import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { createOAuthRoutes } from './oauth';
 import { createHealthcheckRoutes } from './healthcheck';
 import { createTradierRoutes } from './tradier';
+import { createCoinGeckoRoutes } from './coingecko';
 
 export const createRoutes: ReaderT<ExpressDependencies, void> =
 	Reader.sequenceArray([
@@ -13,5 +14,6 @@ export const createRoutes: ReaderT<ExpressDependencies, void> =
 		createOAuthRoutes,
 		createHealthcheckRoutes,
 		createWatchlistRoutes,
-		createTradierRoutes
+		createTradierRoutes,
+		createCoinGeckoRoutes
 	]);
