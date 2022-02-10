@@ -8,7 +8,6 @@ import * as RNonEmptyArray from 'fp-ts/ReadonlyNonEmptyArray';
 const getCoinGeckoEnv = (): TryT<string> =>
 	pipe(
 		getRequiredValues([process.env.COIN_GECKO_BASE_URL]),
-		Either.map(RNonEmptyArray.fromReadonlyArray),
 		Either.map((a) => RNonEmptyArray.head(a))
 	);
 
