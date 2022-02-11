@@ -1,8 +1,9 @@
 import { pipe } from 'fp-ts/function';
-import * as E from 'fp-ts/Either';
-import * as O from 'fp-ts/Option';
-import * as A from 'fp-ts/Array';
-import { UnauthorizedError } from '../../error/UnauthorizedError';
+import { IOT, IOTryT, OptionT } from '@craigmiller160/ts-functions/types';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
+import { getRequiredValues } from '../../function/Values';
+import * as IOEither from 'fp-ts/IOEither';
 
 const createCookie = (
 	cookieName: string,
@@ -12,40 +13,28 @@ const createCookie = (
 ): string =>
 	`${cookieName}=${value}; Max-Age=${maxAgeSecs}; Secure; HttpOnly; SameSite=strict; Path=${cookiePath}`;
 
-export const getEmptyCookie = (): E.Either<Error, string> =>
+export const getEmptyCookie = (): IOTryT<string> =>
 	pipe(
 		getCookieEnv(),
-		E.map(([cookieName, , cookiePath]) =>
+		IOEither.map(([cookieName, , cookiePath]) =>
 			createCookie(cookieName, '', '0', cookiePath)
 		)
 	);
 
-const getCookieEnv = (): E.Either<Error, readonly string[]> => {
-	const nullableEnvArray: Array<string | undefined> = [
-		process.env.COOKIE_NAME,
-		process.env.COOKIE_MAX_AGE_SECS,
-		process.env.COOKIE_PATH
+const getCookieEnv = (): IOTryT<ReadonlyArray<string>> => {
+	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('COOKIE_NAME'),
+		Process.envLookupO('COOKIE_MAX_AGE_SECS'),
+		Process.envLookupO('COOKIE_PATH')
 	];
 
-	return pipe(
-		nullableEnvArray,
-		A.map(O.fromNullable),
-		O.sequenceArray,
-		E.fromOption(
-			() =>
-				new UnauthorizedError(
-					`Missing environment variables for setting cookie: ${nullableEnvArray}`
-				)
-		)
-	);
+	return pipe(IO.sequenceArray(envArray), IO.map(getRequiredValues));
 };
 
-export const createTokenCookie = (
-	accessToken: string
-): E.Either<Error, string> =>
+export const createTokenCookie = (accessToken: string): IOTryT<string> =>
 	pipe(
 		getCookieEnv(),
-		E.map(([cookieName, cookieMaxAgeSecs, cookiePath]) =>
+		IOEither.map(([cookieName, cookieMaxAgeSecs, cookiePath]) =>
 			createCookie(cookieName, accessToken, cookieMaxAgeSecs, cookiePath)
 		)
 	);
