@@ -21,13 +21,22 @@ interface MongoEnv {
 const createConnectionString = (env: MongoEnv): string =>
 	`mongodb://${env.user}:${env.password}@${env.hostname}:${env.port}/${env.db}?authSource=${env.adminDb}&tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true`;
 
-const logConnectionStringInDev = (connectionString: string): string =>
-	match(process.env.NODE_ENV)
+interface ConnStringAndEnv {
+	readonly connectionString: string;
+	readonly nodeEnv: string;
+}
+
+const logConnectionStringInDev = (
+	connStringAndEnv: ConnStringAndEnv
+): ConnStringAndEnv =>
+	match(connStringAndEnv.nodeEnv)
 		.with('development', () => {
-			logger.debug(`Mongo Connection String: ${connectionString}`);
-			return connectionString;
+			logger.debug(
+				`Mongo Connection String: ${connStringAndEnv.connectionString}`
+			);
+			return connStringAndEnv;
 		})
-		.otherwise(() => connectionString);
+		.otherwise(() => connStringAndEnv);
 
 const envToMongoEnv = ([
 	hostname,
@@ -76,6 +85,9 @@ export const getConnectionString = (): IOTryT<string> => {
 				Either.map(createConnectionString)
 			)
 		),
-		IOEither.map(logConnectionStringInDev)
+		IOEither.bindTo('connectionString'),
+		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
+		IOEither.map(logConnectionStringInDev),
+		IOEither.map(({ connectionString }) => connectionString)
 	);
 };
