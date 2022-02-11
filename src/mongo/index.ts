@@ -13,7 +13,7 @@ const connectToMongoose = (
 export const connectToMongo = (): TaskTry.TaskTry<Mongoose> =>
 	pipe(
 		getConnectionString(),
-		TaskEither.fromEither,
+		TaskEither.fromIOEither,
 		TaskEither.map(logAndReturn('debug', 'Connecting to MongoDB')),
 		TaskEither.chain(connectToMongoose),
 		TaskEither.map(logAndReturn('info', 'Connected to MongoDB'))

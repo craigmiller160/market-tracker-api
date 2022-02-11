@@ -182,7 +182,7 @@ export const authenticateWithAuthCode = (
 		),
 		ReaderTaskEither.chainFirst(handleRefreshToken),
 		ReaderTaskEither.chain((_) =>
-			ReaderTaskEither.fromEither(createTokenCookie(_.accessToken))
+			ReaderTaskEither.fromIOEither(createTokenCookie(_.accessToken))
 		),
 		ReaderTaskEither.bindTo('cookie'),
 		ReaderTaskEither.bind('postAuthRedirect', () =>
