@@ -6,6 +6,7 @@ import { match } from 'ts-pattern';
 import { IOT, IOTryT, OptionT } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import * as IO from 'fp-ts/IO';
+import { getRequiredValues } from '../function/Values';
 
 interface MongoEnv {
 	readonly hostname: string;
@@ -69,16 +70,10 @@ export const getConnectionString = (): IOTryT<string> => {
 		IO.sequenceArray,
 		IO.map(
 			flow(
-				Option.sequenceArray,
-				Option.map(envToMongoEnv),
-				Option.map(createConnectionString),
-				Option.map(logConnectionStringInDev),
-				Either.fromOption(
-					() =>
-						new Error(
-							'Missing environment variables for Mongo connection'
-						)
-				)
+				getRequiredValues,
+				Either.map(envToMongoEnv),
+				Either.map(createConnectionString),
+				Either.map(logConnectionStringInDev)
 			)
 		)
 	);

@@ -9,7 +9,7 @@ import qs from 'qs';
 import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
 import { logAndReturn } from '../../logger';
-import { getRequiredValues } from '../../function/Values';
+import { getRequiredValues2 } from '../../function/Values';
 import { TaskTryT } from '@craigmiller160/ts-functions/types';
 
 const TOKEN_PATH = '/oauth/token';
@@ -21,7 +21,7 @@ const getBasicAuth = (): Try.Try<string> => {
 	];
 
 	return pipe(
-		getRequiredValues(envArray),
+		getRequiredValues2(envArray),
 		Either.chain(([clientKey, clientSecret]) =>
 			Try.tryCatch(() =>
 				Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { isAxiosError, restClient } from '../RestClient';
-import { getRequiredValues } from '../../function/Values';
+import { getRequiredValues2 } from '../../function/Values';
 import { flow, identity, pipe } from 'fp-ts/function';
 import { TaskT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import { TaskTry } from '@craigmiller160/ts-functions';
@@ -15,7 +15,7 @@ import * as Option from 'fp-ts/Option';
 import * as Json from '@craigmiller160/ts-functions/Json';
 
 const getTradierEnv = (): TryT<ReadonlyArray<string>> =>
-	getRequiredValues([
+	getRequiredValues2([
 		process.env.TRADIER_BASE_URL,
 		process.env.TRADIER_API_KEY
 	]);

@@ -8,7 +8,7 @@ import { AccessToken } from './AccessToken';
 import * as Pred from 'fp-ts/Predicate';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { jwtFromRequest } from './jwt';
-import { getRequiredValues } from '../../function/Values';
+import { getRequiredValues2 } from '../../function/Values';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../ExpressDependencies';
 
@@ -24,7 +24,7 @@ const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
 	];
 
 	return pipe(
-		getRequiredValues(envArray),
+		getRequiredValues2(envArray),
 		Either.map(
 			([clientKey, clientName]): ClientKeyName => ({
 				clientKey,

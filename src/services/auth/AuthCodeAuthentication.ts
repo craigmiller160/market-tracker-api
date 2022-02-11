@@ -11,7 +11,7 @@ import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
-import { getRequiredValues } from '../../function/Values';
+import { getRequiredValues2 } from '../../function/Values';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { IOT, ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
@@ -122,7 +122,7 @@ const getCodeAndState = (req: Request): TryT<[string, number]> => {
 	];
 
 	return pipe(
-		getRequiredValues(nullableQueryArray),
+		getRequiredValues2(nullableQueryArray),
 		Either.mapLeft(
 			() =>
 				new UnauthorizedError(
@@ -165,7 +165,7 @@ const createAuthCodeBody = (
 	];
 
 	return pipe(
-		getRequiredValues(envArray),
+		getRequiredValues2(envArray),
 		Either.map(
 			([clientKey, redirectUri]): AuthCodeBody => ({
 				grant_type: 'authorization_code',
