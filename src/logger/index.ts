@@ -1,7 +1,12 @@
 import { createLogger, transports, format } from 'winston';
+import TransportStream from 'winston-transport';
 import { instanceOf, match } from 'ts-pattern';
 import { Json } from '@craigmiller160/ts-functions';
 import * as Either from 'fp-ts/Either';
+import path from 'path';
+import * as RArray from 'fp-ts/ReadonlyArray';
+import * as RArrayExt from '@craigmiller160/ts-functions/ReadonlyArrayExt';
+import { pipe } from 'fp-ts/function';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'verbose';
 
@@ -9,6 +14,26 @@ const myFormat = format.printf(
 	({ level, message, timestamp, stack }) =>
 		`[${timestamp}] [${level}] - ${stack ?? message}`
 );
+
+const isNotProduction = (): boolean => process.env.NODE_ENV !== 'production';
+
+const theTransports: ReadonlyArray<TransportStream> = pipe(
+	[
+		new transports.Console(),
+		isNotProduction()
+			? new transports.File({
+					filename: path.join(
+						process.cwd(),
+						'logs',
+						'market-tracker.log'
+					),
+					maxsize: 100_000,
+					maxFiles: 10
+			  })
+			: null
+	],
+	RArray.filter((_) => _ !== null)
+) as ReadonlyArray<TransportStream>;
 
 export const logger = createLogger({
 	level: 'debug',
@@ -33,7 +58,7 @@ export const logger = createLogger({
 		format.colorize(),
 		myFormat
 	),
-	transports: [new transports.Console()]
+	transports: RArrayExt.toMutable(theTransports)
 });
 
 export const logAndReturn =

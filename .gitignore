@@ -9,4 +9,4 @@ deploy/build
 coverage
 build
 .env.private
-emergency-log.txt
+logs/
