@@ -3,7 +3,6 @@ import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
-import * as IOEither from 'fp-ts/IOEither';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from './Cookie';
@@ -11,12 +10,20 @@ import * as Time from '@craigmiller160/ts-functions/Time';
 import { STATE_EXP_FORMAT } from './constants';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
-import { getRequiredValues2 } from '../../function/Values';
+import { getRequiredValues } from '../../function/Values';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
-import { IOT, ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import {
+	IOT,
+	IOTryT,
+	OptionT,
+	ReaderTaskTryT,
+	TryT
+} from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
+import * as IOEither from 'fp-ts/IOEither';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -106,19 +113,13 @@ const handleRefreshToken =
 	};
 
 const getCodeAndState = (req: Request): TryT<[string, number]> => {
-	const nullableQueryArray: ReadonlyArray<string | undefined> = [
-		req.query.code as string | undefined,
-		req.query.state as string | undefined
+	const nullableQueryArray: ReadonlyArray<OptionT<string>> = [
+		Option.fromNullable(req.query.code as string | undefined),
+		Option.fromNullable(req.query.state as string | undefined)
 	];
 
 	return pipe(
-		getRequiredValues2(nullableQueryArray),
-		Either.mapLeft(
-			() =>
-				new UnauthorizedError(
-					`Missing required query params for authentication: ${nullableQueryArray}`
-				)
-		),
+		getRequiredValues(nullableQueryArray),
 		Either.bindTo('parts'),
 		Either.bind('state', ({ parts: [, stateString] }) =>
 			Try.tryCatch(() => parseInt(stateString))
@@ -148,15 +149,16 @@ const getAndValidateCodeOriginAndState = (req: Request): TryT<CodeAndOrigin> =>
 const createAuthCodeBody = (
 	origin: string,
 	code: string
-): TryT<AuthCodeBody> => {
-	const envArray: ReadonlyArray<string | undefined> = [
-		process.env.CLIENT_KEY,
-		process.env.AUTH_CODE_REDIRECT_URI
+): IOTryT<AuthCodeBody> => {
+	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('CLIENT_KEY'),
+		Process.envLookupO('AUTH_CODE_REDIRECT_URI')
 	];
 
 	return pipe(
-		getRequiredValues2(envArray),
-		Either.map(
+		IO.sequenceArray(envArray),
+		IO.map(getRequiredValues),
+		IOEither.map(
 			([clientKey, redirectUri]): AuthCodeBody => ({
 				grant_type: 'authorization_code',
 				client_id: clientKey,
@@ -172,8 +174,9 @@ export const authenticateWithAuthCode = (
 ): ReaderTaskTryT<ExpressDependencies, AuthCodeSuccess> =>
 	pipe(
 		getAndValidateCodeOriginAndState(req),
-		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
-		ReaderTaskEither.fromEither,
+		IOEither.fromEither,
+		IOEither.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
+		ReaderTaskEither.fromIOEither,
 		ReaderTaskEither.chain(
 			flow(sendTokenRequest, ReaderTaskEither.fromTaskEither)
 		),
