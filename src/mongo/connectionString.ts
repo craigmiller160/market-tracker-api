@@ -7,6 +7,7 @@ import { IOT, IOTryT, OptionT } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import * as IO from 'fp-ts/IO';
 import { getRequiredValues } from '../function/Values';
+import * as IOEither from 'fp-ts/IOEither';
 
 interface MongoEnv {
 	readonly hostname: string;
@@ -72,9 +73,9 @@ export const getConnectionString = (): IOTryT<string> => {
 			flow(
 				getRequiredValues,
 				Either.map(envToMongoEnv),
-				Either.map(createConnectionString),
-				Either.map(logConnectionStringInDev)
+				Either.map(createConnectionString)
 			)
-		)
+		),
+		IOEither.map(logConnectionStringInDev)
 	);
 };
