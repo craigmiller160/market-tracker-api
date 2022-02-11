@@ -26,22 +26,27 @@ const isNotProduction: PredicateT<void> = pipe(
 );
 
 const theTransports: ReadonlyArray<TransportStream> = pipe(
-	[
-		new transports.Console(),
-		isNotProduction()
-			? new transports.File({
-					filename: path.join(
-						process.cwd(),
-						'logs',
-						'market-tracker.log'
-					),
-					maxsize: 100_000,
-					maxFiles: 10
-			  })
-			: null
-	],
-	RArray.filter((_) => _ !== null)
-) as ReadonlyArray<TransportStream>;
+	Process.cwd(),
+	IO.map((cwd) =>
+		pipe(
+			[
+				new transports.Console(),
+				isNotProduction()
+					? new transports.File({
+							filename: path.join(
+								cwd,
+								'logs',
+								'market-tracker.log'
+							),
+							maxsize: 100_000,
+							maxFiles: 10
+					  })
+					: null
+			],
+			RArray.filter((_) => _ !== null)
+		)
+	)
+)() as ReadonlyArray<TransportStream>;
 
 export const logger = createLogger({
 	level: 'debug',
