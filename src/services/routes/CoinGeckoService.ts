@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { TaskT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
-import { getRequiredValues2 } from '../../function/Values';
+import { IOTryT, TaskT, TaskTryT } from '@craigmiller160/ts-functions/types';
+import { getRequiredValues } from '../../function/Values';
 import { pipe, identity, flow } from 'fp-ts/function';
-import * as Either from 'fp-ts/Either';
-import * as RNonEmptyArray from 'fp-ts/ReadonlyNonEmptyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { match, when } from 'ts-pattern';
 import qs from 'qs';
@@ -14,11 +12,23 @@ import { AxiosError } from 'axios';
 import * as Option from 'fp-ts/Option';
 import { CryptoGeckoError } from '../../error/CryptoGeckoError';
 import * as Json from '@craigmiller160/ts-functions/Json';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
+import * as IOEither from 'fp-ts/IOEither';
+import * as RArray from 'fp-ts/ReadonlyArray';
 
-const getCoinGeckoEnv = (): TryT<string> =>
+const getCoinGeckoEnv = (): IOTryT<string> =>
 	pipe(
-		getRequiredValues2([process.env.COIN_GECKO_BASE_URL]),
-		Either.map(RNonEmptyArray.head)
+		IO.sequenceArray([Process.envLookupO('COIN_GECKO_BASE_URL')]),
+		IO.map(getRequiredValues),
+		IOEither.chain(
+			flow(
+				RArray.head,
+				IOEither.fromOption(
+					() => new Error('Cannot find CoinGecko env')
+				)
+			)
+		)
 	);
 
 const isNotEmpty = (text: string) => text.length > 0;
@@ -90,7 +100,7 @@ export const queryCoinGecko = (
 ): TaskT<void> =>
 	pipe(
 		getCoinGeckoEnv(),
-		TaskEither.fromEither,
+		TaskEither.fromIOEither,
 		TaskEither.chain((baseUrl) =>
 			sendCryptoGeckoRequest(baseUrl, req.path, req.query)
 		),
