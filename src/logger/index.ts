@@ -11,6 +11,7 @@ import { PredicateT } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import * as Option from 'fp-ts/Option';
 import * as IO from 'fp-ts/IO';
+import * as Logger from '@craigmiller160/ts-functions/Logger';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'verbose';
 
@@ -74,6 +75,8 @@ export const logger2 = createLogger({
 	),
 	transports: RArrayExt.toMutable(theTransports)
 });
+
+export const logger = Logger.createLogger(logger2);
 
 // TODO delete this
 export const logAndReturn =
