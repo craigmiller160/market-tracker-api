@@ -16,6 +16,7 @@ import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { IOT, ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
+import * as Process from '@craigmiller160/ts-functions/Process';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -104,17 +105,6 @@ const handleRefreshToken =
 		return appRefreshTokenRepository.saveRefreshToken(refreshToken);
 	};
 
-const prepareRedirect = (): TryT<string> =>
-	pipe(
-		Option.fromNullable(process.env.POST_AUTH_REDIRECT),
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					'No post-auth redirect available for auth code login'
-				)
-		)
-	);
-
 const getCodeAndState = (req: Request): TryT<[string, number]> => {
 	const nullableQueryArray: ReadonlyArray<string | undefined> = [
 		req.query.code as string | undefined,
@@ -193,6 +183,8 @@ export const authenticateWithAuthCode = (
 		),
 		ReaderTaskEither.bindTo('cookie'),
 		ReaderTaskEither.bind('postAuthRedirect', () =>
-			ReaderTaskEither.fromEither(prepareRedirect())
+			ReaderTaskEither.fromIOEither(
+				Process.envLookupE('POST_AUTH_REDIRECT')
+			)
 		)
 	);
