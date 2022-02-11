@@ -1,11 +1,10 @@
 import * as Option from 'fp-ts/Option';
 import * as TaskEither from 'fp-ts/TaskEither';
-import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { TaskTryT, OptionT } from '@craigmiller160/ts-functions/types';
+import { TaskTryT, OptionT, TaskT } from '@craigmiller160/ts-functions/types';
 
 import bodyParer from 'body-parser';
 import { logger } from '../logger';
-import { pipe } from 'fp-ts/function';
+import { flow, pipe } from 'fp-ts/function';
 import express, { Express } from 'express';
 import { Server } from 'http';
 import { createRoutes } from './routes';
@@ -39,26 +38,29 @@ const expressListen = (app: Express, port: number): TaskTryT<Server> => {
 
 	return match(process.env.NODE_ENV)
 		.with('test', () => TaskEither.right(server))
-		.otherwise(() => TaskTry.tryCatch(() => wrapListen(server, port)));
+		.otherwise(() => wrapListen(server, port));
 };
 
-const wrapListen = (server: Server, port: number): Promise<Server> =>
-	new Promise((resolve, reject) => {
-		server.listen(port, (err?: Error) => {
-			pipe(
-				Option.fromNullable(err),
+const wrapListen = (server: Server, port: number): TaskTryT<Server> => {
+	const doListen: TaskT<OptionT<Error>> = () =>
+		new Promise((resolve) =>
+			server.listen(port, (err?: Error) =>
+				resolve(Option.fromNullable(err))
+			)
+		);
+	return pipe(
+		doListen,
+		TaskEither.fromTask,
+		TaskEither.chain(
+			flow(
 				Option.fold(
-					() => {
-						logger.info(
-							`Market Tracker API listening on port ${port}`
-						);
-						resolve(server);
-					},
-					(_) => reject(_)
+					() => TaskEither.right(server),
+					(err) => TaskEither.left(err)
 				)
-			);
-		});
-	});
+			)
+		)
+	);
+};
 
 export interface ExpressServer {
 	readonly server: Server;
