@@ -48,6 +48,7 @@ const theTransports: ReadonlyArray<TransportStream> = pipe(
 	)
 )() as ReadonlyArray<TransportStream>;
 
+// TODO do not expose this
 export const logger = createLogger({
 	level: 'debug',
 	levels: {
@@ -74,6 +75,7 @@ export const logger = createLogger({
 	transports: RArrayExt.toMutable(theTransports)
 });
 
+// TODO delete this
 export const logAndReturn =
 	(level: LogLevel, message: string, logNonErrorValue = false) =>
 	<T>(value: T): T => {
