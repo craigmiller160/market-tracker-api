@@ -70,7 +70,6 @@ export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 				),
 				IOEither.fold(
 					(ex) => () => {
-						// something
 						done(ex, null);
 					},
 					() => () => {
