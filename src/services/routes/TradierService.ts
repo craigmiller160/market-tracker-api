@@ -1,8 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { isAxiosError, restClient } from '../RestClient';
-import { getRequiredValues2 } from '../../function/Values';
+import { getRequiredValues } from '../../function/Values';
 import { flow, identity, pipe } from 'fp-ts/function';
-import { TaskT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import {
+	IOT,
+	IOTryT,
+	OptionT,
+	TaskT,
+	TaskTryT
+} from '@craigmiller160/ts-functions/types';
 import { TaskTry } from '@craigmiller160/ts-functions';
 import qs from 'qs';
 import { match, when } from 'ts-pattern';
@@ -13,12 +19,17 @@ import { AxiosError } from 'axios';
 import { TradierError } from '../../error/TradierError';
 import * as Option from 'fp-ts/Option';
 import * as Json from '@craigmiller160/ts-functions/Json';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
 
-const getTradierEnv = (): TryT<ReadonlyArray<string>> =>
-	getRequiredValues2([
-		process.env.TRADIER_BASE_URL,
-		process.env.TRADIER_API_KEY
-	]);
+const getTradierEnv = (): IOTryT<ReadonlyArray<string>> => {
+	const env: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('TRADIER_BASE_URL'),
+		Process.envLookupO('TRADIER_API_KEY')
+	];
+
+	return pipe(IO.sequenceArray(env), IO.map(getRequiredValues));
+};
 
 const isNotEmpty = (text: string) => text.length > 0;
 
@@ -91,7 +102,7 @@ export const queryTradier = (
 ): TaskT<void> =>
 	pipe(
 		getTradierEnv(),
-		TaskEither.fromEither,
+		TaskEither.fromIOEither,
 		TaskEither.chain(([baseUrl, apiKey]) =>
 			sendTradierRequest(baseUrl, apiKey, req.path, req.query)
 		),
