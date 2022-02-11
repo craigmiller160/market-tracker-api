@@ -6,7 +6,6 @@ import * as TaskEither from 'fp-ts/TaskEither';
 import { NextFunction, Request, Response } from 'express';
 import { Watchlist } from '../../data/modelTypes/Watchlist';
 import { errorTask } from '../../function/Route';
-import * as Task from 'fp-ts/Task';
 
 export const getWatchlistsByUser =
 	(
@@ -18,9 +17,8 @@ export const getWatchlistsByUser =
 		const token = req.user as AccessToken;
 		return pipe(
 			watchlistRepository.findWatchlistsForUser(token.userId),
-			TaskEither.fold(errorTask(next), (_) => {
+			TaskEither.fold(errorTask(next), (_) => async () => {
 				res.json(_);
-				return Task.of('');
 			})
 		);
 	};
@@ -38,9 +36,8 @@ export const saveWatchlistsByUser =
 			TaskEither.chain(() =>
 				watchlistRepository.findWatchlistsForUser(token.userId)
 			),
-			TaskEither.fold(errorTask(next), (_) => {
+			TaskEither.fold(errorTask(next), (_) => async () => {
 				res.json(_);
-				return Task.of('');
 			})
 		);
 	};

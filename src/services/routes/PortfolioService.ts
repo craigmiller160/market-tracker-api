@@ -6,7 +6,6 @@ import { Portfolio } from '../../data/modelTypes/Portfolio';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import { ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { errorTask } from '../../function/Route';
-import * as Task from 'fp-ts/Task';
 
 export const getPortfoliosByUser =
 	(
@@ -18,9 +17,8 @@ export const getPortfoliosByUser =
 		const token = req.user as AccessToken;
 		return pipe(
 			portfolioRepository.findPortfoliosForUser(token.userId),
-			TaskEither.fold(errorTask(next), (_) => {
+			TaskEither.fold(errorTask(next), (_) => async () => {
 				res.json(_);
-				return Task.of('');
 			})
 		);
 	};
@@ -38,9 +36,8 @@ export const savePortfoliosByUser =
 			TaskEither.chain(() =>
 				portfolioRepository.findPortfoliosForUser(token.userId)
 			),
-			TaskEither.fold(errorTask(next), (_) => {
+			TaskEither.fold(errorTask(next), (_) => async () => {
 				res.json(_);
-				return Task.of('');
 			})
 		);
 	};

@@ -143,7 +143,6 @@ const tryToRefreshExpiredToken = (
 					...deps,
 					hasRefreshed: true
 				})(req, res, next);
-				return '';
 			})
 		)
 	);
@@ -160,11 +159,7 @@ export const secure =
 	(dependencies) =>
 	(req, res, next) => {
 		const newDeps = createNewDependencies(dependencies);
-		passport.authenticate(
-			'jwt',
-			{ session: false },
-			secureCallback(req, res, next, fn)(newDeps)
-		)(req, res, next);
+		authenticate(req, res, next, fn, newDeps);
 	};
 
 export const secureTask =
@@ -177,12 +172,22 @@ export const secureTask =
 			res: Response,
 			next: NextFunction
 		) => fn(req, res, next)();
-		passport.authenticate(
-			'jwt',
-			{ session: false },
-			secureCallback(req, res, next, wrappedFn)(newDeps)
-		)(req, res, next);
+		authenticate(req, res, next, wrappedFn, newDeps);
 	};
+
+const authenticate = (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+	fn: Route,
+	deps: ExpressDependencies
+) => {
+	passport.authenticate(
+		'jwt',
+		{ session: false },
+		secureCallback(req, res, next, fn)(deps)
+	)(req, res, next);
+};
 
 export const secureReaderTask =
 	<T>(fn: ReaderTaskRoute<T>): ReaderT<SecureExpressDependencies, Route> =>
@@ -194,9 +199,5 @@ export const secureReaderTask =
 			res: Response,
 			next: NextFunction
 		) => fn(req, res, next)(newDeps)();
-		passport.authenticate(
-			'jwt',
-			{ session: false },
-			secureCallback(req, res, next, wrappedFn)(newDeps)
-		)(req, res, next);
+		authenticate(req, res, next, wrappedFn, newDeps);
 	};

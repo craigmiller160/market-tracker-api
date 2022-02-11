@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { restClient } from '../RestClient';
+import { isAxiosError, restClient } from '../RestClient';
 import { getRequiredValues } from '../../function/Values';
 import { flow, identity, pipe } from 'fp-ts/function';
 import { TaskT, TaskTryT, TryT } from '@craigmiller160/ts-functions/types';
@@ -50,13 +50,11 @@ const sendTradierRequest = (
 	);
 };
 
-const isAxiosError = (ex: Error): ex is AxiosError =>
-	(ex as unknown as { response: object | undefined }).response !== undefined;
-
 const buildTradierErrorMessage = (ex: AxiosError): string =>
 	pipe(
-		Option.fromNullable(ex.response?.status),
-		Option.bindTo('status'),
+		Option.fromNullable(ex.response),
+		Option.bindTo('response'),
+		Option.bind('status', ({ response }) => Option.of(response.status)),
 		Option.bind(
 			'data',
 			flow(
