@@ -80,8 +80,4 @@ describe('coingecko route', () => {
 			})
 		);
 	});
-
-	it('formats the response for CoinGecko market chart requests', async () => {
-		throw new Error();
-	});
 });
