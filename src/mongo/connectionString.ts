@@ -60,7 +60,7 @@ const getMongoPasswordEnv = (): IOT<OptionT<string>> =>
 		IO.chain(
 			Option.fold(
 				() => Process.envLookupO('MONGO_ROOT_PASSWORD'),
-				(_) => IO.of(Option.of(_))
+				(_) => () => _
 			)
 		)
 	);
