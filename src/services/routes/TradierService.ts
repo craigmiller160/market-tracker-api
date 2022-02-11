@@ -44,7 +44,9 @@ const sendTradierRequest = (
 			})
 		),
 		TaskEither.map((_) => _.data),
-		TaskEither.map(logAndReturn('debug', 'Tradier request completed', true))
+		TaskEither.map(
+			logAndReturn('verbose', 'Tradier request completed', true)
+		)
 	);
 };
 
