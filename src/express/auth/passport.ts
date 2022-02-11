@@ -69,8 +69,13 @@ export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 						)
 				),
 				IOEither.fold(
-					(ex) => IO.of(done(ex, null)),
-					() => IO.of(done(null, payload))
+					(ex) => () => {
+						// something
+						done(ex, null);
+					},
+					() => () => {
+						done(null, payload);
+					}
 				)
 			)();
 		})
