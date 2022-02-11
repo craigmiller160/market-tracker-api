@@ -9,7 +9,7 @@ import { match, when } from 'ts-pattern';
 import qs from 'qs';
 import { logAndReturn, logger } from '../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { restClient } from '../RestClient';
+import { isAxiosError, restClient } from '../RestClient';
 import { AxiosError } from 'axios';
 import * as Option from 'fp-ts/Option';
 import { CryptoGeckoError } from '../../error/CryptoGeckoError';
@@ -42,9 +42,6 @@ const sendCryptoGeckoRequest = (
 		)
 	);
 };
-
-const isAxiosError = (ex: Error): ex is AxiosError =>
-	(ex as unknown as { response: object | undefined }).response !== undefined;
 
 const buildCryptoGeckoErrorMessage = (ex: AxiosError): string =>
 	pipe(
