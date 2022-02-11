@@ -55,8 +55,9 @@ const isAxiosError = (ex: Error): ex is AxiosError =>
 
 const buildTradierErrorMessage = (ex: AxiosError): string =>
 	pipe(
-		Option.fromNullable(ex.response?.status),
-		Option.bindTo('status'),
+		Option.fromNullable(ex.response),
+		Option.bindTo('response'),
+		Option.bind('status', ({ response }) => Option.of(response.status)),
 		Option.bind(
 			'data',
 			flow(
