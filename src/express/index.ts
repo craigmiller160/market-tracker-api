@@ -8,7 +8,7 @@ import {
 } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import bodyParer from 'body-parser';
-import { logger2 } from '../logger';
+import { logger } from '../logger';
 import { flow, pipe } from 'fp-ts/function';
 import express, { Express } from 'express';
 import { Server } from 'http';
@@ -123,22 +123,23 @@ const getPort = (): IOT<number> =>
 
 export const startExpressServer = (
 	tokenKey: TokenKey
-): TaskTryT<ExpressServer> => {
-	logger2.debug('Starting server');
-
-	const app = createExpressApp(tokenKey);
-
-	return pipe(
-		IOEither.fromIO<number, Error>(getPort()),
-		IOEither.bindTo('port'),
+): TaskTryT<ExpressServer> =>
+	pipe(
+		logger.debug('Starting server'),
+		IO.map(() => createExpressApp(tokenKey)),
+		IOEither.rightIO,
+		IOEither.bindTo('app'),
+		IOEither.bind('port', () => IOEither.rightIO(getPort())),
 		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
 		TaskEither.fromIOEither,
-		TaskEither.chain(({ port, nodeEnv }) =>
+		TaskEither.bind('server', ({ app, port, nodeEnv }) =>
 			expressListen(app, port, nodeEnv)
 		),
-		TaskEither.map((_) => ({
-			server: _,
+		TaskEither.chainFirstIOK(({ port }) =>
+			logger.info(`Express server listening on port ${port}`)
+		),
+		TaskEither.map(({ app, server }) => ({
+			server,
 			app
 		}))
 	);
-};
