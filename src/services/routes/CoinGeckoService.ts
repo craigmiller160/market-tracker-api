@@ -81,6 +81,11 @@ const handleCryptoGeckoError =
 		};
 	};
 
+const handleCryptoGeckoData =
+	(req: Request, res: Response) => (data: object) => async () => {
+		res.json(data);
+	};
+
 export const queryCoinGecko = (
 	req: Request,
 	res: Response,
@@ -92,17 +97,8 @@ export const queryCoinGecko = (
 		TaskEither.chain((baseUrl) =>
 			sendCryptoGeckoRequest(baseUrl, req.path, req.query)
 		),
-		TaskEither.fold(handleCryptoGeckoError(next), (data) => async () => {
-			res.json(data);
-		})
+		TaskEither.fold(
+			handleCryptoGeckoError(next),
+			handleCryptoGeckoData(req, res)
+		)
 	);
-
-// TODO instead of unique method, test original URI to see if it's the market chart and then filter it
-export const getCoinGeckoMarketChart = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-): TaskT<void> => {
-	pipe(getCoinGeckoEnv(), TaskEither.fromEither);
-	throw new Error();
-};
