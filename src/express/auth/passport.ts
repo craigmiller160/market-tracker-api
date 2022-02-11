@@ -2,30 +2,37 @@ import { logger } from '../../logger';
 import { Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
 import passport from 'passport';
 import { pipe } from 'fp-ts/function';
-import * as Either from 'fp-ts/Either';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { AccessToken } from './AccessToken';
 import * as Pred from 'fp-ts/Predicate';
-import * as Try from '@craigmiller160/ts-functions/Try';
 import { jwtFromRequest } from './jwt';
-import { getRequiredValues2 } from '../../function/Values';
-import { ReaderT } from '@craigmiller160/ts-functions/types';
+import {
+	IOT,
+	IOTryT,
+	OptionT,
+	ReaderT
+} from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../ExpressDependencies';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import { getRequiredValues } from '../../function/Values';
+import * as IO from 'fp-ts/IO';
+import * as IOEither from 'fp-ts/IOEither';
 
 interface ClientKeyName {
 	readonly clientKey: string;
 	readonly clientName: string;
 }
 
-const getClientKeyAndName = (): Try.Try<ClientKeyName> => {
-	const envArray: ReadonlyArray<string | undefined> = [
-		process.env.CLIENT_KEY,
-		process.env.CLIENT_NAME
+const getClientKeyAndName = (): IOTryT<ClientKeyName> => {
+	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('CLIENT_KEY'),
+		Process.envLookupO('CLIENT_NAME')
 	];
 
 	return pipe(
-		getRequiredValues2(envArray),
-		Either.map(
+		IO.sequenceArray(envArray),
+		IO.map(getRequiredValues),
+		IOEither.map(
 			([clientKey, clientName]): ClientKeyName => ({
 				clientKey,
 				clientName
@@ -54,18 +61,18 @@ export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 			const doValidatePayload = validatePayload(payload);
 			pipe(
 				getClientKeyAndName(),
-				Either.filterOrElse<ClientKeyName, Error>(
+				IOEither.filterOrElse<Error, ClientKeyName>(
 					doValidatePayload,
 					() =>
 						new UnauthorizedError(
 							'Invalid token payload attributes'
 						)
 				),
-				Either.fold(
-					(ex) => done(ex, null),
-					() => done(null, payload)
+				IOEither.fold(
+					(ex) => IO.of(done(ex, null)),
+					() => IO.of(done(null, payload))
 				)
-			);
+			)();
 		})
 	);
 };
