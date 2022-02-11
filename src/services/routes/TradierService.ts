@@ -44,7 +44,9 @@ const sendTradierRequest = (
 			})
 		),
 		TaskEither.map((_) => _.data),
-		TaskEither.map(logAndReturn('debug', 'Tradier request completed', true))
+		TaskEither.map(
+			logAndReturn('verbose', 'Tradier request completed', true)
+		)
 	);
 };
 
@@ -53,17 +55,14 @@ const isAxiosError = (ex: Error): ex is AxiosError =>
 
 const buildTradierErrorMessage = (ex: AxiosError): string =>
 	pipe(
-		Option.of(ex.response?.status),
+		Option.fromNullable(ex.response?.status),
 		Option.bindTo('status'),
 		Option.bind(
 			'data',
 			flow(
 				() => Option.of(ex.response?.data),
 				Option.fold(() => ({}), identity),
-				Json.stringify,
-				Option.fromEither,
-				Option.getOrElse(() => ''),
-				Option.of
+				Json.stringifyO
 			)
 		),
 		Option.map(

@@ -3,7 +3,7 @@ import { instanceOf, match } from 'ts-pattern';
 import { Json } from '@craigmiller160/ts-functions';
 import * as Either from 'fp-ts/Either';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'verbose';
 
 const myFormat = format.printf(
 	({ level, message, timestamp, stack }) =>
@@ -12,6 +12,13 @@ const myFormat = format.printf(
 
 export const logger = createLogger({
 	level: 'debug',
+	levels: {
+		error: 1,
+		warn: 2,
+		info: 3,
+		debug: 4,
+		verbose: 5
+	},
 	format: format.combine(
 		format((info) => {
 			info.level = info.level.toUpperCase();
@@ -38,7 +45,7 @@ export const logAndReturn =
 				() => (value as unknown as Error).stack ?? ''
 			)
 			.with({ logNonErrorValue: true }, () =>
-				Either.getOrElse(() => '')(Json.stringify(value))
+				Either.getOrElse(() => '')(Json.stringifyE(value))
 			)
 			.otherwise(() => '');
 
