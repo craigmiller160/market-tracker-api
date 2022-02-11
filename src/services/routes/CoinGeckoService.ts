@@ -10,7 +10,6 @@ import qs from 'qs';
 import { logAndReturn, logger } from '../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { restClient } from '../RestClient';
-import { Error } from 'mongoose';
 import { AxiosError } from 'axios';
 import * as Option from 'fp-ts/Option';
 import { CryptoGeckoError } from '../../error/CryptoGeckoError';
@@ -99,3 +98,11 @@ export const queryCoinGecko = (
 			res.json(data);
 		})
 	);
+
+export const getCoinGecokMarketChart = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+): TaskT<void> => {
+	pipe(getCoinGeckoEnv(), TaskEither.fromEither);
+};
