@@ -99,6 +99,7 @@ export const queryCoinGecko = (
 		})
 	);
 
+// TODO instead of unique method, test original URI to see if it's the market chart and then filter it
 export const getCoinGeckoMarketChart = (
 	req: Request,
 	res: Response,
