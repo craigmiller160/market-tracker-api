@@ -202,7 +202,7 @@ describe('oauth routes', () => {
 				.post('/oauth/authcode/login')
 				.set('Origin', 'origin')
 				.timeout(2000)
-				.expect(401);
+				.expect(500);
 		});
 	});
 
