@@ -1,12 +1,12 @@
 import jwkToPem, { JWK } from 'jwk-to-pem';
-import * as E from 'fp-ts/Either';
+import * as Either from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
 import * as TaskEither from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { restClient } from '../RestClient';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { logAndReturn } from '../../logger';
+import * as Process from '@craigmiller160/ts-functions/Process';
 
 export interface TokenKey {
 	readonly key: string;
@@ -17,14 +17,6 @@ const JWK_URI = '/jwk';
 export interface JwkSet {
 	readonly keys: JWK[];
 }
-
-const getAuthServerHost = (): E.Either<Error, string> =>
-	pipe(
-		O.fromNullable(process.env.AUTH_SERVER_HOST),
-		E.fromOption(
-			() => new Error('Auth Server Host variable is not available')
-		)
-	);
 
 const getJwkSetFromAuthServer = (
 	authServerHost: string
@@ -41,7 +33,7 @@ const convertJwkToPem = (
 ): TaskEither.TaskEither<Error, TokenKey> =>
 	pipe(
 		Try.tryCatch(() => jwkToPem(jwkSet.keys[0])),
-		E.map(
+		Either.map(
 			(_): TokenKey => ({
 				key: _
 			})
@@ -51,8 +43,8 @@ const convertJwkToPem = (
 
 export const loadTokenKey = (): TaskEither.TaskEither<Error, TokenKey> =>
 	pipe(
-		getAuthServerHost(),
-		TaskEither.fromEither,
+		Process.envLookupE('AUTH_SERVER_HOST'),
+		TaskEither.fromIOEither,
 		TaskEither.map(logAndReturn('debug', 'Loading JWK')),
 		TaskEither.chain(getJwkSetFromAuthServer),
 		TaskEither.chain(convertJwkToPem),

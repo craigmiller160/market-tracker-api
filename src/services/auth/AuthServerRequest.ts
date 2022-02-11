@@ -1,6 +1,3 @@
-import * as Option from 'fp-ts/Option';
-import * as Either from 'fp-ts/Either';
-import * as Try from '@craigmiller160/ts-functions/Try';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { pipe } from 'fp-ts/function';
@@ -10,33 +7,35 @@ import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
 import { logAndReturn } from '../../logger';
 import { getRequiredValues } from '../../function/Values';
-import { TaskTryT } from '@craigmiller160/ts-functions/types';
+import {
+	IOT,
+	IOTryT,
+	OptionT,
+	TaskTryT
+} from '@craigmiller160/ts-functions/types';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
+import * as IOEither from 'fp-ts/IOEither';
+import * as IOTry from '@craigmiller160/ts-functions/IOTry';
 
 const TOKEN_PATH = '/oauth/token';
 
-const getBasicAuth = (): Try.Try<string> => {
-	const envArray: ReadonlyArray<string | undefined> = [
-		process.env.CLIENT_KEY,
-		process.env.CLIENT_SECRET
+const getBasicAuth = (): IOTryT<string> => {
+	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('CLIENT_KEY'),
+		Process.envLookupO('CLIENT_SECRET')
 	];
 
 	return pipe(
-		getRequiredValues(envArray),
-		Either.chain(([clientKey, clientSecret]) =>
-			Try.tryCatch(() =>
+		IO.sequenceArray(envArray),
+		IO.map(getRequiredValues),
+		IOEither.chain(([clientKey, clientSecret]) =>
+			IOTry.tryCatch(() =>
 				Buffer.from(`${clientKey}:${clientSecret}`).toString('base64')
 			)
 		)
 	);
 };
-
-const getAuthServerHost = (): Try.Try<string> =>
-	pipe(
-		Option.fromNullable(process.env.AUTH_SERVER_HOST),
-		Either.fromOption(
-			() => new UnauthorizedError('Missing authorization server host')
-		)
-	);
 
 const executeTokenRestCall = (
 	authServerHost: string,
@@ -70,10 +69,10 @@ export const sendTokenRequest = (
 ): TaskTryT<TokenResponse> => {
 	const formattedRequestBody = qs.stringify(requestBody);
 	return pipe(
-		getAuthServerHost(),
-		Either.bindTo('authServerHost'),
-		Either.bind('basicAuth', getBasicAuth),
-		TaskEither.fromEither,
+		Process.envLookupE('AUTH_SERVER_HOST'),
+		IOEither.bindTo('authServerHost'),
+		IOEither.bind('basicAuth', getBasicAuth),
+		TaskEither.fromIOEither,
 		TaskEither.chain(({ basicAuth, authServerHost }) =>
 			executeTokenRestCall(
 				authServerHost,

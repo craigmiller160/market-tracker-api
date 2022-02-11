@@ -26,6 +26,6 @@ export const logout = (
 		),
 		ReaderTaskEither.chainFirst(deleteRefreshToken),
 		ReaderTaskEither.chain(() =>
-			ReaderTaskEither.fromEither(getEmptyCookie())
+			ReaderTaskEither.fromIOEither(getEmptyCookie())
 		)
 	);

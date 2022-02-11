@@ -3,7 +3,6 @@ import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
 import { flow, pipe } from 'fp-ts/function';
-import * as IOEither from 'fp-ts/IOEither';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from './Cookie';
@@ -13,9 +12,18 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
 import { getRequiredValues } from '../../function/Values';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
-import { IOT, ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
+import {
+	IOT,
+	IOTryT,
+	OptionT,
+	ReaderTaskTryT,
+	TryT
+} from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
+import * as IOEither from 'fp-ts/IOEither';
 
 export interface AuthCodeSuccess {
 	readonly cookie: string;
@@ -104,31 +112,14 @@ const handleRefreshToken =
 		return appRefreshTokenRepository.saveRefreshToken(refreshToken);
 	};
 
-const prepareRedirect = (): TryT<string> =>
-	pipe(
-		Option.fromNullable(process.env.POST_AUTH_REDIRECT),
-		Either.fromOption(
-			() =>
-				new UnauthorizedError(
-					'No post-auth redirect available for auth code login'
-				)
-		)
-	);
-
 const getCodeAndState = (req: Request): TryT<[string, number]> => {
-	const nullableQueryArray: ReadonlyArray<string | undefined> = [
-		req.query.code as string | undefined,
-		req.query.state as string | undefined
+	const nullableQueryArray: ReadonlyArray<OptionT<string>> = [
+		Option.fromNullable(req.query.code as string | undefined),
+		Option.fromNullable(req.query.state as string | undefined)
 	];
 
 	return pipe(
 		getRequiredValues(nullableQueryArray),
-		Either.mapLeft(
-			() =>
-				new UnauthorizedError(
-					`Missing required query params for authentication: ${nullableQueryArray}`
-				)
-		),
 		Either.bindTo('parts'),
 		Either.bind('state', ({ parts: [, stateString] }) =>
 			Try.tryCatch(() => parseInt(stateString))
@@ -158,15 +149,16 @@ const getAndValidateCodeOriginAndState = (req: Request): TryT<CodeAndOrigin> =>
 const createAuthCodeBody = (
 	origin: string,
 	code: string
-): TryT<AuthCodeBody> => {
-	const envArray: ReadonlyArray<string | undefined> = [
-		process.env.CLIENT_KEY,
-		process.env.AUTH_CODE_REDIRECT_URI
+): IOTryT<AuthCodeBody> => {
+	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('CLIENT_KEY'),
+		Process.envLookupO('AUTH_CODE_REDIRECT_URI')
 	];
 
 	return pipe(
-		getRequiredValues(envArray),
-		Either.map(
+		IO.sequenceArray(envArray),
+		IO.map(getRequiredValues),
+		IOEither.map(
 			([clientKey, redirectUri]): AuthCodeBody => ({
 				grant_type: 'authorization_code',
 				client_id: clientKey,
@@ -182,17 +174,20 @@ export const authenticateWithAuthCode = (
 ): ReaderTaskTryT<ExpressDependencies, AuthCodeSuccess> =>
 	pipe(
 		getAndValidateCodeOriginAndState(req),
-		Either.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
-		ReaderTaskEither.fromEither,
+		IOEither.fromEither,
+		IOEither.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
+		ReaderTaskEither.fromIOEither,
 		ReaderTaskEither.chain(
 			flow(sendTokenRequest, ReaderTaskEither.fromTaskEither)
 		),
 		ReaderTaskEither.chainFirst(handleRefreshToken),
 		ReaderTaskEither.chain((_) =>
-			ReaderTaskEither.fromEither(createTokenCookie(_.accessToken))
+			ReaderTaskEither.fromIOEither(createTokenCookie(_.accessToken))
 		),
 		ReaderTaskEither.bindTo('cookie'),
 		ReaderTaskEither.bind('postAuthRedirect', () =>
-			ReaderTaskEither.fromEither(prepareRedirect())
+			ReaderTaskEither.fromIOEither(
+				Process.envLookupE('POST_AUTH_REDIRECT')
+			)
 		)
 	);

@@ -202,7 +202,7 @@ describe('oauth routes', () => {
 				.post('/oauth/authcode/login')
 				.set('Origin', 'origin')
 				.timeout(2000)
-				.expect(401);
+				.expect(500);
 		});
 	});
 
@@ -274,7 +274,7 @@ describe('oauth routes', () => {
 				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
 				.set('Cookie', sessionCookie)
 				.timeout(2000)
-				.expect(401);
+				.expect(500);
 
 			const count = await AppRefreshTokenModel.count().exec();
 			expect(count).toEqual(1);

@@ -1,7 +1,12 @@
 import * as Option from 'fp-ts/Option';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { TaskTryT, OptionT, TaskT } from '@craigmiller160/ts-functions/types';
-
+import {
+	TaskTryT,
+	OptionT,
+	TaskT,
+	IOT
+} from '@craigmiller160/ts-functions/types';
+import * as Process from '@craigmiller160/ts-functions/Process';
 import bodyParer from 'body-parser';
 import { logger } from '../logger';
 import { flow, pipe } from 'fp-ts/function';
@@ -27,16 +32,22 @@ import {
 	watchlistRepository
 } from '../data/repo';
 import * as Reader from 'fp-ts/Reader';
+import * as IO from 'fp-ts/IO';
+import * as IOEither from 'fp-ts/IOEither';
 
 const safeParseInt = (text: string): OptionT<number> =>
 	match(parseInt(text))
 		.with(__.NaN, () => Option.none)
 		.otherwise((_) => Option.some(_));
 
-const expressListen = (app: Express, port: number): TaskTryT<Server> => {
+const expressListen = (
+	app: Express,
+	port: number,
+	nodeEnv: string
+): TaskTryT<Server> => {
 	const server = https.createServer(httpsOptions, app);
 
-	return match(process.env.NODE_ENV)
+	return match(nodeEnv)
 		.with('test', () => TaskEither.right(server))
 		.otherwise(() => wrapListen(server, port));
 };
@@ -99,24 +110,32 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	return app;
 };
 
-const getPort = (): number =>
+const getPort = (): IOT<number> =>
 	pipe(
-		Option.fromNullable(process.env.EXPRESS_PORT),
-		Option.chain(safeParseInt),
-		Option.getOrElse(() => 8080)
+		Process.envLookupO('EXPRESS_PORT'),
+		IO.map(
+			flow(
+				Option.chain(safeParseInt),
+				Option.getOrElse(() => 8080)
+			)
+		)
 	);
 
 export const startExpressServer = (
 	tokenKey: TokenKey
 ): TaskTryT<ExpressServer> => {
-	const port = getPort();
-
 	logger.debug('Starting server');
 
 	const app = createExpressApp(tokenKey);
 
 	return pipe(
-		expressListen(app, port),
+		IOEither.fromIO<number, Error>(getPort()),
+		IOEither.bindTo('port'),
+		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
+		TaskEither.fromIOEither,
+		TaskEither.chain(({ port, nodeEnv }) =>
+			expressListen(app, port, nodeEnv)
+		),
 		TaskEither.map((_) => ({
 			server: _,
 			app

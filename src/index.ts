@@ -5,6 +5,8 @@ import * as TaskEither from 'fp-ts/TaskEither';
 import { startExpressServer } from './express';
 import { logAndReturn, logger } from './logger';
 import { loadTokenKey } from './services/auth/TokenKey';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as Task from 'fp-ts/Task';
 
 logger.info('Starting application');
 
@@ -13,8 +15,8 @@ pipe(
 	TaskEither.chainFirst(connectToMongo),
 	TaskEither.chain(startExpressServer),
 	TaskEither.mapLeft(logAndReturn('error', 'Error starting application')),
-	TaskEither.mapLeft((_) => {
-		process.exit(1);
-		return _;
-	})
+	TaskEither.fold(
+		() => Task.fromIO(Process.exit(1)),
+		() => async () => ''
+	)
 )();

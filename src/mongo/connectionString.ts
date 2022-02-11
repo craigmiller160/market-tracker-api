@@ -1,10 +1,13 @@
-import * as Try from '@craigmiller160/ts-functions/Try';
-import { pipe } from 'fp-ts/function';
-import * as O from 'fp-ts/Option';
-import * as E from 'fp-ts/Either';
+import { flow, pipe } from 'fp-ts/function';
+import * as Option from 'fp-ts/Option';
+import * as Either from 'fp-ts/Either';
 import { logger } from '../logger';
-import * as A from 'fp-ts/Array';
 import { match } from 'ts-pattern';
+import { IOT, IOTryT, OptionT } from '@craigmiller160/ts-functions/types';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
+import { getRequiredValues } from '../function/Values';
+import * as IOEither from 'fp-ts/IOEither';
 
 interface MongoEnv {
 	readonly hostname: string;
@@ -18,13 +21,22 @@ interface MongoEnv {
 const createConnectionString = (env: MongoEnv): string =>
 	`mongodb://${env.user}:${env.password}@${env.hostname}:${env.port}/${env.db}?authSource=${env.adminDb}&tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true`;
 
-const logConnectionStringInDev = (connectionString: string): string =>
-	match(process.env.NODE_ENV)
+interface ConnStringAndEnv {
+	readonly connectionString: string;
+	readonly nodeEnv: string;
+}
+
+const logConnectionStringInDev = (
+	connStringAndEnv: ConnStringAndEnv
+): ConnStringAndEnv =>
+	match(connStringAndEnv.nodeEnv)
 		.with('development', () => {
-			logger.debug(`Mongo Connection String: ${connectionString}`);
-			return connectionString;
+			logger.debug(
+				`Mongo Connection String: ${connStringAndEnv.connectionString}`
+			);
+			return connStringAndEnv;
 		})
-		.otherwise(() => connectionString);
+		.otherwise(() => connStringAndEnv);
 
 const envToMongoEnv = ([
 	hostname,
@@ -42,52 +54,40 @@ const envToMongoEnv = ([
 	db
 });
 
-const nullableEnvToMongoEnv = ([
-	hostname,
-	port,
-	user,
-	password,
-	adminDb,
-	db
-]: ReadonlyArray<string | undefined>): Partial<MongoEnv> => ({
-	hostname,
-	port,
-	user,
-	password,
-	adminDb,
-	db
-});
-
-const getMongoPasswordEnv = (): string | undefined =>
+const getMongoPasswordEnv = (): IOT<OptionT<string>> =>
 	pipe(
-		O.fromNullable(process.env.MONGO_PASSWORD),
-		O.getOrElse(() => process.env.MONGO_ROOT_PASSWORD)
+		Process.envLookupO('MONGO_PASSWORD'),
+		IO.chain(
+			Option.fold(
+				() => Process.envLookupO('MONGO_ROOT_PASSWORD'),
+				(_) => () => Option.some(_)
+			)
+		)
 	);
 
-export const getConnectionString = (): Try.Try<string> => {
-	const nullableEnvArray: Array<string | undefined> = [
-		process.env.MONGO_HOSTNAME,
-		process.env.MONGO_PORT,
-		process.env.MONGO_USER,
+export const getConnectionString = (): IOTryT<string> => {
+	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
+		Process.envLookupO('MONGO_HOSTNAME'),
+		Process.envLookupO('MONGO_PORT'),
+		Process.envLookupO('MONGO_USER'),
 		getMongoPasswordEnv(),
-		process.env.MONGO_AUTH_DB,
-		process.env.MONGO_DB
+		Process.envLookupO('MONGO_AUTH_DB'),
+		Process.envLookupO('MONGO_DB')
 	];
 
 	return pipe(
-		nullableEnvArray,
-		A.map(O.fromNullable),
-		O.sequenceArray,
-		O.map(envToMongoEnv),
-		O.map(createConnectionString),
-		O.map(logConnectionStringInDev),
-		E.fromOption(
-			() =>
-				new Error(
-					`Missing environment variables for Mongo connection: ${JSON.stringify(
-						nullableEnvToMongoEnv(nullableEnvArray)
-					)}`
-				)
-		)
+		envArray,
+		IO.sequenceArray,
+		IO.map(
+			flow(
+				getRequiredValues,
+				Either.map(envToMongoEnv),
+				Either.map(createConnectionString)
+			)
+		),
+		IOEither.bindTo('connectionString'),
+		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
+		IOEither.map(logConnectionStringInDev),
+		IOEither.map(({ connectionString }) => connectionString)
 	);
 };

@@ -1,17 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
 import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
-import * as Either from 'fp-ts/Either';
 import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
-import { ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import { IOT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
 import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
+import * as IOEither from 'fp-ts/IOEither';
 
 export const getAuthUser = (req: Request, res: Response): void => {
 	const token = req.user as AccessToken;
@@ -30,12 +30,12 @@ export const getAuthCodeLogin = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): void =>
+): IOT<void> =>
 	pipe(
 		prepareAuthCodeLogin(req),
-		Either.fold(
-			(ex) => next(ex),
-			(url) => {
+		IOEither.fold(
+			(ex) => () => next(ex),
+			(url) => () => {
 				const response: AuthCodeLoginResponse = {
 					url
 				};

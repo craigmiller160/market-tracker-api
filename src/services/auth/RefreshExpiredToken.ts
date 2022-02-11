@@ -108,7 +108,7 @@ export const refreshExpiredToken = (
 				handleRefreshToken(existingTokenId, tokenResponse)
 		),
 		ReaderTaskEither.chain(({ tokenResponse: { accessToken } }) =>
-			ReaderTaskEither.fromEither(createTokenCookie(accessToken))
+			ReaderTaskEither.fromIOEither(createTokenCookie(accessToken))
 		)
 	);
 };
