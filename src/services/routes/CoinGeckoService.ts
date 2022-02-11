@@ -99,7 +99,7 @@ export const queryCoinGecko = (
 		})
 	);
 
-export const getCoinGecokMarketChart = (
+export const getCoinGeckoMarketChart = (
 	req: Request,
 	res: Response,
 	next: NextFunction
