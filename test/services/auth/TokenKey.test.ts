@@ -53,7 +53,7 @@ describe('TokenKey', () => {
 
 		const result = await loadTokenKey()();
 		expect(result).toEqualLeft(
-			new Error('Auth Server Host variable is not available')
+			new Error('Env not found: AUTH_SERVER_HOST')
 		);
 
 		expect(jwkToPemMock).not.toHaveBeenCalled();

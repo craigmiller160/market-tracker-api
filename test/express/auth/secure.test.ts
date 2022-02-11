@@ -82,7 +82,7 @@ describe('TokenValidation', () => {
 		process.env.COOKIE_MAX_AGE_SECS = '8600';
 		process.env.COOKIE_PATH = '/cookie-path';
 		const token = createAccessToken(fullTestServer.keyPair.privateKey);
-		const tokenCookie = pipe(createTokenCookie(token), Try.getOrThrow);
+		const tokenCookie = pipe(createTokenCookie(token)(), Try.getOrThrow);
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
@@ -198,7 +198,7 @@ describe('TokenValidation', () => {
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
-		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token)());
 		await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
@@ -233,7 +233,7 @@ describe('TokenValidation', () => {
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
-		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token)());
 		const res = await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
@@ -251,7 +251,7 @@ describe('TokenValidation', () => {
 			})
 		);
 
-		const newTokenCookie = Try.getOrThrow(createTokenCookie(newToken));
+		const newTokenCookie = Try.getOrThrow(createTokenCookie(newToken)());
 		const returnedTokenCookie = (
 			res.headers['set-cookie'] as string[]
 		).find((cookie) => cookie.startsWith('cookieName'));
@@ -273,7 +273,7 @@ describe('TokenValidation', () => {
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
-		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token)());
 		await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
@@ -302,7 +302,7 @@ describe('TokenValidation', () => {
 		const token = createAccessToken(fullTestServer.keyPair.privateKey, {
 			expiresIn: '-10m'
 		});
-		const tokenCookie = Try.getOrThrow(createTokenCookie(token));
+		const tokenCookie = Try.getOrThrow(createTokenCookie(token)());
 		await request(fullTestServer.expressServer.server)
 			.get('/portfolios')
 			.timeout(2000)
