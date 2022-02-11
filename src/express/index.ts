@@ -128,15 +128,17 @@ export const startExpressServer = (
 
 	const app = createExpressApp(tokenKey);
 
-	pipe(
+	return pipe(
 		IOEither.fromIO<number, Error>(getPort()),
 		IOEither.bindTo('port'),
-		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV'))
-		// TaskEither.fromIOEither,
-		// TaskEither.chain((_) => expressListen(app, port, _)),
-		// TaskEither.map((_) => ({
-		// 	server: _,
-		// 	app
-		// }))
+		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
+		TaskEither.fromIOEither,
+		TaskEither.chain(({ port, nodeEnv }) =>
+			expressListen(app, port, nodeEnv)
+		),
+		TaskEither.map((_) => ({
+			server: _,
+			app
+		}))
 	);
 };
