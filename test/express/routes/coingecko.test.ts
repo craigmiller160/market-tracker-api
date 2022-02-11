@@ -8,8 +8,6 @@ import {
 } from '../../testutils/fullTestServer';
 import request from 'supertest';
 
-export {};
-
 const baseUrl = 'https://coingecko.com';
 
 const clearEnv = () => {
