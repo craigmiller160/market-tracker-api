@@ -99,14 +99,17 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	return app;
 };
 
-export const startExpressServer = (
-	tokenKey: TokenKey
-): TaskTryT<ExpressServer> => {
-	const port = pipe(
+const getPort = (): number =>
+	pipe(
 		Option.fromNullable(process.env.EXPRESS_PORT),
 		Option.chain(safeParseInt),
 		Option.getOrElse(() => 8080)
 	);
+
+export const startExpressServer = (
+	tokenKey: TokenKey
+): TaskTryT<ExpressServer> => {
+	const port = getPort();
 
 	logger.debug('Starting server');
 
