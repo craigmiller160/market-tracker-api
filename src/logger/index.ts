@@ -49,7 +49,7 @@ const theTransports: ReadonlyArray<TransportStream> = pipe(
 )() as ReadonlyArray<TransportStream>;
 
 // TODO do not expose this
-export const logger = createLogger({
+export const logger2 = createLogger({
 	level: 'debug',
 	levels: {
 		error: 1,
@@ -89,7 +89,7 @@ export const logAndReturn =
 			)
 			.otherwise(() => '');
 
-		logger[level](`${message} ${valueMsg}`);
+		logger2[level](`${message} ${valueMsg}`);
 
 		return value;
 	};

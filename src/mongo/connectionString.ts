@@ -1,7 +1,7 @@
 import { flow, pipe } from 'fp-ts/function';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
-import { logger } from '../logger';
+import { logger2 } from '../logger';
 import { match } from 'ts-pattern';
 import { IOT, IOTryT, OptionT } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
@@ -31,7 +31,7 @@ const logConnectionStringInDev = (
 ): ConnStringAndEnv =>
 	match(connStringAndEnv.nodeEnv)
 		.with('development', () => {
-			logger.debug(
+			logger2.debug(
 				`Mongo Connection String: ${connStringAndEnv.connectionString}`
 			);
 			return connStringAndEnv;

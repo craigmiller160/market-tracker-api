@@ -11,7 +11,7 @@ import {
 import { AppRefreshToken } from '../../modelTypes/AppRefreshToken';
 import { pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { logger } from '../../../logger';
+import { logger2 } from '../../../logger';
 
 export const deleteByTokenId: DeleteByTokenId = (tokenId) =>
 	TaskTry.tryCatch(() => AppRefreshTokenModel.deleteOne({ tokenId }).exec());
@@ -51,8 +51,8 @@ export const saveRefreshToken: SaveRefreshToken = (
 			TaskTry.tryCatch(() => session.endSession())
 		),
 		TaskEither.mapLeft((ex) => {
-			logger.error('Error closing session');
-			logger.error(ex);
+			logger2.error('Error closing session');
+			logger2.error(ex);
 			return ex;
 		})
 	);

@@ -8,7 +8,7 @@ import {
 } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import bodyParer from 'body-parser';
-import { logger } from '../logger';
+import { logger2 } from '../logger';
 import { flow, pipe } from 'fp-ts/function';
 import express, { Express } from 'express';
 import { Server } from 'http';
@@ -124,7 +124,7 @@ const getPort = (): IOT<number> =>
 export const startExpressServer = (
 	tokenKey: TokenKey
 ): TaskTryT<ExpressServer> => {
-	logger.debug('Starting server');
+	logger2.debug('Starting server');
 
 	const app = createExpressApp(tokenKey);
 

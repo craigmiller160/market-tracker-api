@@ -2,7 +2,7 @@ import {
 	FindWatchlistsForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
-import { logAndReturn, logger } from '../../../logger';
+import { logAndReturn, logger2 } from '../../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import {
 	WatchlistModel,
@@ -14,7 +14,7 @@ import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 
 export const findWatchlistsForUser: FindWatchlistsForUser = (userId) => {
-	logger.info(`Finding watchlists for user. ID: ${userId}`);
+	logger2.info(`Finding watchlists for user. ID: ${userId}`);
 	return TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
 };
 
@@ -30,7 +30,7 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 	userId,
 	watchlists
 ) => {
-	logger.info(`Saving watchlists for user. ID: ${userId}`);
+	logger2.info(`Saving watchlists for user. ID: ${userId}`);
 	const watchlistModels = pipe(
 		watchlists,
 		RArray.map((_) =>
