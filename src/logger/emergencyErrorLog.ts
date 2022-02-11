@@ -2,7 +2,7 @@ import path from 'path';
 import * as Option from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
 import * as File from '@craigmiller160/ts-functions/File';
-import * as Either from 'fp-ts/Either';
+import * as IOEither from 'fp-ts/IOEither';
 import { logAndReturn } from './index';
 
 const LOG_FILE_PATH = path.join(process.cwd(), 'emergency-log.txt');
@@ -16,16 +16,16 @@ const useEmergencyErrorLog = (): BooleanString =>
 		Option.getOrElse((): BooleanString => 'false')
 	);
 
+const appendToLogFile = File.appendFileSync(LOG_FILE_PATH);
+
 export const emergencyErrorLog = (timestamp: string, err: Error) => {
 	if (useEmergencyErrorLog() === 'true') {
 		pipe(
-			File.appendFileSync(LOG_FILE_PATH, `${timestamp}\n`),
-			Either.chain(() =>
-				File.appendFileSync(LOG_FILE_PATH, `${err.stack ?? ''}\n`)
-			),
-			Either.mapLeft(
+			appendToLogFile(`${timestamp}\n`),
+			IOEither.chain(() => appendToLogFile(`${err.stack ?? ''}\n`)),
+			IOEither.mapLeft(
 				logAndReturn('error', 'Error writing to emergency error log')
 			)
-		);
+		)();
 	}
 };

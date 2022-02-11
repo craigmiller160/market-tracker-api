@@ -56,9 +56,7 @@ const buildCryptoGeckoErrorMessage = (ex: AxiosError): string =>
 			flow(
 				({ response }) => Option.of(response.data),
 				Option.fold(() => ({}), identity),
-				Json.stringify,
-				Either.fold(() => '', identity),
-				Option.of
+				Json.stringifyO
 			)
 		),
 		Option.map(
@@ -106,4 +104,5 @@ export const getCoinGeckoMarketChart = (
 	next: NextFunction
 ): TaskT<void> => {
 	pipe(getCoinGeckoEnv(), TaskEither.fromEither);
+	throw new Error();
 };

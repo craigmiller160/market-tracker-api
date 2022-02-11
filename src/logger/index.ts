@@ -38,7 +38,7 @@ export const logAndReturn =
 				() => (value as unknown as Error).stack ?? ''
 			)
 			.with({ logNonErrorValue: true }, () =>
-				Either.getOrElse(() => '')(Json.stringify(value))
+				Either.getOrElse(() => '')(Json.stringifyE(value))
 			)
 			.otherwise(() => '');
 
