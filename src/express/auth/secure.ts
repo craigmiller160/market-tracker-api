@@ -143,7 +143,6 @@ const tryToRefreshExpiredToken = (
 					...deps,
 					hasRefreshed: true
 				})(req, res, next);
-				return '';
 			})
 		)
 	);

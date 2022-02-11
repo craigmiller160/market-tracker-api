@@ -12,7 +12,6 @@ import { logout } from '../auth/Logout';
 import { errorReaderTask } from '../../function/Route';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
-import * as ReaderTask from 'fp-ts/ReaderTask';
 
 export const getAuthUser = (req: Request, res: Response): void => {
 	const token = req.user as AccessToken;
@@ -49,29 +48,35 @@ export const authCodeAuthentication = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): ReaderTaskT<ExpressDependencies, string> =>
+): ReaderTaskT<ExpressDependencies, void> =>
 	pipe(
 		authenticateWithAuthCode(req),
-		ReaderTaskEither.fold(errorReaderTask(next), (authCodeSuccess) => {
-			res.setHeader('Set-Cookie', authCodeSuccess.cookie);
-			res.setHeader('Location', authCodeSuccess.postAuthRedirect);
-			res.status(302);
-			res.end();
-			return ReaderTask.of('');
-		})
+		ReaderTaskEither.fold(
+			errorReaderTask(next),
+			(authCodeSuccess) => () => async () => {
+				res.setHeader('Set-Cookie', authCodeSuccess.cookie);
+				res.setHeader('Location', authCodeSuccess.postAuthRedirect);
+				res.status(302);
+				res.end();
+			}
+		)
 	);
 
 export const logoutAndClearAuth = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-): ReaderTaskT<ExpressDependencies, string> =>
+): ReaderTaskT<ExpressDependencies, void> =>
 	pipe(
 		logout(req),
-		ReaderTaskEither.fold(errorReaderTask(next), (cookie) => {
-			res.setHeader('Set-Cookie', cookie);
-			res.status(204);
-			res.end();
-			return ReaderTask.of('');
-		})
+		ReaderTaskEither.fold(
+			errorReaderTask(next),
+			(cookie): ReaderTaskT<ExpressDependencies, void> =>
+				() =>
+				async () => {
+					res.setHeader('Set-Cookie', cookie);
+					res.status(204);
+					res.end();
+				}
+		)
 	);
