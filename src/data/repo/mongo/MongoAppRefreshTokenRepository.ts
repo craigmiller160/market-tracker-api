@@ -51,6 +51,7 @@ export const saveRefreshToken: SaveRefreshToken = (
 			TaskTry.tryCatch(() => session.endSession())
 		),
 		TaskEither.mapLeft((ex) => {
+			// TODO not sure how to address this
 			logger2.error('Error closing session');
 			logger2.error(ex);
 			return ex;

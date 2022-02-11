@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { logger2 } from '../logger';
+import { logger } from '../logger';
 import qs from 'qs';
 import { format } from 'date-fns';
 import { match, when } from 'ts-pattern';
@@ -63,8 +63,7 @@ export const expressErrorHandler = (
 	res: Response,
 	next: NextFunction
 ): void => {
-	logger2.error('Error while processing request');
-	logger2.error(err);
+	logger.errorWithStack('Error while processing request', err);
 
 	const status = getErrorStatus(err);
 	const errorResponse = createErrorResponse(err, req, status);
