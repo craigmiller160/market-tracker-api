@@ -2,20 +2,22 @@ import { Request } from 'express';
 import * as Option from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
 import { ExtractJwt, JwtFromRequestFunction } from 'passport-jwt';
-import * as Pred from 'fp-ts/Predicate';
+import { PredicateT, OptionT } from '@craigmiller160/ts-functions/types';
+import * as Process from '@craigmiller160/ts-functions/Process';
+import * as IO from 'fp-ts/IO';
 
-export const isJwtInCookie: Pred.Predicate<Request> = (req) =>
+export const isJwtInCookie: PredicateT<Request> = (req) =>
 	pipe(
-		Option.fromNullable(process.env.COOKIE_NAME),
-		Option.chain((_) => Option.fromNullable(req.cookies[_])),
-		Option.isSome
-	);
+		Process.envLookupO('COOKIE_NAME'),
+		IO.map(Option.chain((_) => Option.fromNullable(req.cookies[_]))),
+		IO.map(Option.isSome)
+	)();
 
-const getJwtFromCookie = (req: Request): Option.Option<string> =>
+const getJwtFromCookie = (req: Request): OptionT<string> =>
 	pipe(
-		Option.fromNullable(process.env.COOKIE_NAME),
-		Option.chain((_) => Option.fromNullable(req.cookies[_]))
-	);
+		Process.envLookupO('COOKIE_NAME'),
+		IO.map(Option.chain((_) => Option.fromNullable(req.cookies[_])))
+	)();
 
 export const jwtFromRequest: JwtFromRequestFunction = (req) =>
 	pipe(
