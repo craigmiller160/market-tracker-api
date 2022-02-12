@@ -343,9 +343,9 @@
     prettier "^2.5.1"
 
 "@craigmiller160/ts-functions@^1.1.0-beta":
-  version "1.1.0-beta.9"
-  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.1.0-beta.9.tgz#a388a0b184c4f6a0ea91befcfb896628e45508aa"
-  integrity sha512-Kf1NqZEp6sTOEqKHDyS4PznRmit+zSv2WHAPfes+JcorWKfLxI+nbzEQKSZRr7AGJSeWjV0W1hAH658gXz6pmw==
+  version "1.1.0-beta.10"
+  resolved "https://craigmiller160.ddns.net:30003/repository/npm-group/@craigmiller160/ts-functions/-/ts-functions-1.1.0-beta.10.tgz#3dd5f0a8ff87094172c0048a8d6e276d249a0715"
+  integrity sha512-FflYbwTkTs6XsF4tS+nZEE2/PHENZiBOLxY3R/zPvevJfTr11n1HKnp3cFSMdHbApcyF4JLRXEH7Dqbn93Zanw==
 
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
