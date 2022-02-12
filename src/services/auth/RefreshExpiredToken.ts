@@ -11,7 +11,7 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
 import { TokenResponse } from '../../types/TokenResponse';
 import { createTokenCookie } from './Cookie';
-import { logger2 } from '../../logger';
+import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
@@ -88,10 +88,11 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 
 export const refreshExpiredToken = (
 	token: string | null
-): ReaderTaskTryT<ExpressDependencies, string> => {
-	logger2.debug('Attempting to refresh expired token');
-	return pipe(
-		getRefreshToken(token),
+): ReaderTaskTryT<ExpressDependencies, string> =>
+	pipe(
+		logger.debug('Attempting to refresh expired token'),
+		ReaderTaskEither.rightIO,
+		ReaderTaskEither.chain(() => getRefreshToken(token)),
 		ReaderTaskEither.bindTo('tokenAndId'),
 		ReaderTaskEither.bind(
 			'refreshBody',
@@ -111,4 +112,3 @@ export const refreshExpiredToken = (
 			ReaderTaskEither.fromIOEither(createTokenCookie(accessToken))
 		)
 	);
-};
