@@ -65,7 +65,11 @@ export const saveRefreshToken: SaveRefreshToken = (
 							closeSession(session),
 							Task.map(() => Either.left(ex))
 						),
-					() => async () => Either.right(constVoid())
+					() =>
+						pipe(
+							closeSession(session),
+							Task.map(() => Either.right(constVoid()))
+						)
 				)
 			)
 		)
