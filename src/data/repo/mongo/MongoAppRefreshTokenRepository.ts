@@ -9,13 +9,9 @@ import {
 	appRefreshTokenToModel
 } from '../../../mongo/models/AppRefreshTokenModel';
 import { AppRefreshToken } from '../../modelTypes/AppRefreshToken';
-import { constVoid, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { logger } from '../../../logger';
-import { ClientSession } from 'mongoose';
-import { TaskT, TaskTryT } from '@craigmiller160/ts-functions/types';
-import * as Task from 'fp-ts/Task';
-import * as Either from 'fp-ts/Either';
+import { closeSessionAfterTransaction } from '../../../mongo/Session';
 
 export const deleteByTokenId: DeleteByTokenId = (tokenId) =>
 	TaskTry.tryCatch(() => AppRefreshTokenModel.deleteOne({ tokenId }).exec());
@@ -29,35 +25,6 @@ const removeExistingAndInsertToken = async (
 	}).exec();
 	await appRefreshTokenToModel(refreshToken).save();
 };
-
-const closeSession = (session: ClientSession): TaskT<void> =>
-	pipe(
-		TaskTry.tryCatch(() => session.endSession()),
-		TaskEither.fold(
-			(ex) =>
-				pipe(
-					logger.errorWithStack('Error closing session', ex),
-					Task.fromIO
-				),
-			() => async () => constVoid()
-		)
-	);
-
-const closeSessionAfterTransaction = (
-	session: ClientSession
-): ((te: TaskTryT<void>) => TaskTryT<void>) =>
-	TaskEither.fold(
-		(ex) =>
-			pipe(
-				closeSession(session),
-				Task.map(() => Either.left(ex))
-			),
-		() =>
-			pipe(
-				closeSession(session),
-				Task.map(() => Either.right(constVoid()))
-			)
-	);
 
 export const saveRefreshToken: SaveRefreshToken = (
 	refreshToken,
