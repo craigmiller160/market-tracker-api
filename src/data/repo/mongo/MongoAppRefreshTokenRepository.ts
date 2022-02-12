@@ -13,7 +13,7 @@ import { constVoid, pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { logger } from '../../../logger';
 import { ClientSession } from 'mongoose';
-import { TaskT } from '@craigmiller160/ts-functions/types';
+import { TaskT, TaskTryT } from '@craigmiller160/ts-functions/types';
 import * as Task from 'fp-ts/Task';
 import * as Either from 'fp-ts/Either';
 
@@ -43,6 +43,22 @@ const closeSession = (session: ClientSession): TaskT<void> =>
 		)
 	);
 
+const closeSessionAfterTransaction = (
+	session: ClientSession
+): ((te: TaskTryT<void>) => TaskTryT<void>) =>
+	TaskEither.fold(
+		(ex) =>
+			pipe(
+				closeSession(session),
+				Task.map(() => Either.left(ex))
+			),
+		() =>
+			pipe(
+				closeSession(session),
+				Task.map(() => Either.right(constVoid()))
+			)
+	);
+
 export const saveRefreshToken: SaveRefreshToken = (
 	refreshToken,
 	existingTokenId
@@ -59,18 +75,7 @@ export const saveRefreshToken: SaveRefreshToken = (
 						)
 					)
 				),
-				TaskEither.fold(
-					(ex) =>
-						pipe(
-							closeSession(session),
-							Task.map(() => Either.left(ex))
-						),
-					() =>
-						pipe(
-							closeSession(session),
-							Task.map(() => Either.right(constVoid()))
-						)
-				)
+				closeSessionAfterTransaction(session)
 			)
 		)
 	);
