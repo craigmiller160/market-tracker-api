@@ -9,9 +9,12 @@ import {
 	appRefreshTokenToModel
 } from '../../../mongo/models/AppRefreshTokenModel';
 import { AppRefreshToken } from '../../modelTypes/AppRefreshToken';
-import { pipe } from 'fp-ts/function';
+import { constVoid, pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { logger2 } from '../../../logger';
+import { logger, logger2 } from '../../../logger';
+import { ClientSession } from 'mongoose';
+import { TaskT } from '@craigmiller160/ts-functions/types';
+import * as Task from 'fp-ts/Task';
 
 export const deleteByTokenId: DeleteByTokenId = (tokenId) =>
 	TaskTry.tryCatch(() => AppRefreshTokenModel.deleteOne({ tokenId }).exec());
@@ -25,6 +28,19 @@ const removeExistingAndInsertToken = async (
 	}).exec();
 	await appRefreshTokenToModel(refreshToken).save();
 };
+
+const closeSession = (session: ClientSession): TaskT<void> =>
+	pipe(
+		TaskTry.tryCatch(() => session.endSession()),
+		TaskEither.fold(
+			(ex) =>
+				pipe(
+					logger.errorWithStack('Error closing session', ex),
+					Task.fromIO
+				),
+			constVoid
+		)
+	);
 
 export const saveRefreshToken: SaveRefreshToken = (
 	refreshToken,
