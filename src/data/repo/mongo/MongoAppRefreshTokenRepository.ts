@@ -12,9 +12,18 @@ import { AppRefreshToken } from '../../modelTypes/AppRefreshToken';
 import { pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
+import { logger } from '../../../logger';
 
 export const deleteByTokenId: DeleteByTokenId = (tokenId) =>
-	TaskTry.tryCatch(() => AppRefreshTokenModel.deleteOne({ tokenId }).exec());
+	pipe(
+		logger.debug(`Deleting refresh tokens by ID: ${tokenId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() =>
+				AppRefreshTokenModel.deleteOne({ tokenId }).exec()
+			)
+		)
+	);
 
 const removeExistingAndInsertToken = async (
 	refreshToken: AppRefreshToken,
@@ -31,7 +40,11 @@ export const saveRefreshToken: SaveRefreshToken = (
 	existingTokenId
 ) =>
 	pipe(
-		TaskTry.tryCatch(() => AppRefreshTokenModel.startSession()),
+		logger.debug('Saving refresh token'),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => AppRefreshTokenModel.startSession())
+		),
 		TaskEither.chain((session) =>
 			pipe(
 				TaskTry.tryCatch(() =>
@@ -48,4 +61,12 @@ export const saveRefreshToken: SaveRefreshToken = (
 	);
 
 export const findByTokenId: FindByTokenId = (tokenId) =>
-	TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec());
+	pipe(
+		logger.debug(`Finding refresh token by ID: ${tokenId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() =>
+				AppRefreshTokenModel.find({ tokenId }).exec()
+			)
+		)
+	);
