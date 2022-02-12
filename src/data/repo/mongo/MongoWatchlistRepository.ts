@@ -2,7 +2,7 @@ import {
 	FindWatchlistsForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
-import { logAndReturn, logger2 } from '../../../logger';
+import { logger } from '../../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import {
 	WatchlistModel,
@@ -12,11 +12,16 @@ import {
 import { pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
+import { closeSessionAfterTransaction } from '../../../mongo/Session';
 
-export const findWatchlistsForUser: FindWatchlistsForUser = (userId) => {
-	logger2.info(`Finding watchlists for user. ID: ${userId}`);
-	return TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec());
-};
+export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
+	pipe(
+		logger.debug(`Finding watchlists for user. ID: ${userId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec())
+		)
+	);
 
 const replaceWatchlistsForUser = async (
 	userId: number,
@@ -30,7 +35,6 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 	userId,
 	watchlists
 ) => {
-	logger2.info(`Saving watchlists for user. ID: ${userId}`);
 	const watchlistModels = pipe(
 		watchlists,
 		RArray.map((_) =>
@@ -41,26 +45,21 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 		)
 	);
 
-	const sessionTE = TaskTry.tryCatch(() => WatchlistModel.startSession());
-
-	const postTxnTE = pipe(
-		sessionTE,
-		TaskEither.chainFirst((session) =>
-			TaskTry.tryCatch(() =>
-				session.withTransaction(() =>
-					replaceWatchlistsForUser(userId, watchlistModels)
-				)
+	return pipe(
+		logger.debug(`Saving watchlists for user. ID: ${userId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => WatchlistModel.startSession())
+		),
+		TaskEither.chain((session) =>
+			pipe(
+				TaskTry.tryCatch(() =>
+					session.withTransaction(() =>
+						replaceWatchlistsForUser(userId, watchlistModels)
+					)
+				),
+				closeSessionAfterTransaction(session)
 			)
 		)
 	);
-
-	pipe(
-		sessionTE,
-		TaskEither.chain((session) =>
-			TaskTry.tryCatch(() => session.endSession())
-		),
-		TaskEither.mapLeft(logAndReturn('error', 'Error closing session'))
-	);
-
-	return postTxnTE;
 };
