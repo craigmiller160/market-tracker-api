@@ -18,10 +18,8 @@ export const deleteByTokenId: DeleteByTokenId = (tokenId) =>
 	pipe(
 		logger.debug(`Deleting refresh tokens by ID: ${tokenId}`),
 		TaskEither.rightIO,
-		TaskEither.chain(() =>
-			TaskTry.tryCatch(() =>
-				AppRefreshTokenModel.deleteOne({ tokenId }).exec()
-			)
+		TaskTry.chainTryCatch(() =>
+			AppRefreshTokenModel.deleteOne({ tokenId }).exec()
 		)
 	);
 
@@ -42,9 +40,7 @@ export const saveRefreshToken: SaveRefreshToken = (
 	pipe(
 		logger.debug('Saving refresh token'),
 		TaskEither.rightIO,
-		TaskEither.chain(() =>
-			TaskTry.tryCatch(() => AppRefreshTokenModel.startSession())
-		),
+		TaskTry.chainTryCatch(() => AppRefreshTokenModel.startSession()),
 		TaskEither.chain((session) =>
 			pipe(
 				TaskTry.tryCatch(() =>

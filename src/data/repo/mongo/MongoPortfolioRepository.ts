@@ -18,9 +18,7 @@ export const findPortfoliosForUser: FindPortfoliosForUser = (userId) =>
 	pipe(
 		logger.debug(`Finding portfolios for user. ID: ${userId}`),
 		TaskEither.rightIO,
-		TaskEither.chain(() =>
-			TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec())
-		)
+		TaskTry.chainTryCatch(() => PortfolioModel.find({ userId }).exec())
 	);
 
 const replacePortfoliosForUser = async (
@@ -48,9 +46,7 @@ export const savePortfoliosForUser: SavePortfoliosForUser = (
 	return pipe(
 		logger.debug(`Saving portfolios for user. ID: ${userId}`),
 		TaskEither.rightIO,
-		TaskEither.chain(() =>
-			TaskTry.tryCatch(() => PortfolioModel.startSession())
-		),
+		TaskTry.chainTryCatch(() => PortfolioModel.startSession()),
 		TaskEither.chain((session) =>
 			pipe(
 				TaskTry.tryCatch(() =>

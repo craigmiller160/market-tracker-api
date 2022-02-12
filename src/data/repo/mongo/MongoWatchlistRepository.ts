@@ -18,9 +18,7 @@ export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	pipe(
 		logger.debug(`Finding watchlists for user. ID: ${userId}`),
 		TaskEither.rightIO,
-		TaskEither.chain(() =>
-			TaskTry.tryCatch(() => WatchlistModel.find({ userId }).exec())
-		)
+		TaskTry.chainTryCatch(() => WatchlistModel.find({ userId }).exec())
 	);
 
 const replaceWatchlistsForUser = async (
@@ -48,9 +46,7 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 	return pipe(
 		logger.debug(`Saving watchlists for user. ID: ${userId}`),
 		TaskEither.rightIO,
-		TaskEither.chain(() =>
-			TaskTry.tryCatch(() => WatchlistModel.startSession())
-		),
+		TaskTry.chainTryCatch(() => WatchlistModel.startSession()),
 		TaskEither.chain((session) =>
 			pipe(
 				TaskTry.tryCatch(() =>
