@@ -5,7 +5,7 @@ import { pipe, identity, flow } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { match, when } from 'ts-pattern';
 import qs from 'qs';
-import { logAndReturn, logger2 } from '../../logger';
+import { logger } from '../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { isAxiosError, restClient } from '../RestClient';
 import { AxiosError } from 'axios';
@@ -43,12 +43,18 @@ const sendCryptoGeckoRequest = (
 		.otherwise(identity);
 	const realUri = uri.replace(/^\/cryptogecko/, '');
 	const fullCryptoGeckoUrl = `${baseUrl}${realUri}${queryString}`;
-	logger2.debug(`Sending request to CryptoGecko: ${fullCryptoGeckoUrl}`);
 	return pipe(
-		TaskTry.tryCatch(() => restClient.get(fullCryptoGeckoUrl)),
+		logger.debug(`Sending request to CryptoGecko: ${fullCryptoGeckoUrl}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => restClient.get(fullCryptoGeckoUrl))
+		),
 		TaskEither.map((_) => _.data),
-		TaskEither.map(
-			logAndReturn('debug', 'CryptoGecko request completed', true)
+		TaskEither.chainIOK((data) =>
+			pipe(
+				logger.verboseWithJson('CoinGecko request completed', data),
+				IO.map(() => data)
+			)
 		)
 	);
 };

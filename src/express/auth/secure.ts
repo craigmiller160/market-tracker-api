@@ -1,5 +1,5 @@
 import passport from 'passport';
-import { logAndReturn } from '../../logger';
+import { logger } from '../../logger';
 import { NextFunction, Request, Response } from 'express';
 import { expressErrorHandler } from '../expressErrorHandler';
 import { pipe } from 'fp-ts/function';
@@ -131,8 +131,8 @@ const tryToRefreshExpiredToken = (
 	pipe(
 		refreshExpiredToken(jwtFromRequest(req)),
 		ReaderTaskEither.chainTaskEitherK(splitCookie),
-		ReaderTaskEither.map(
-			logAndReturn('debug', 'Successfully refreshed token')
+		ReaderTaskEither.chainFirstIOK(() =>
+			logger.debug('Successfully refreshed token')
 		),
 		ReaderTaskEither.fold(errorReaderTask(next), (cookieParts) =>
 			ReaderTask.asks((deps) => {
