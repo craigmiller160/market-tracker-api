@@ -1,4 +1,4 @@
-import { logger2 } from '../../logger';
+import { logger } from '../../logger';
 import { Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
 import passport from 'passport';
 import { pipe } from 'fp-ts/function';
@@ -50,7 +50,7 @@ const validatePayload = (token: AccessToken): Pred.Predicate<ClientKeyName> =>
 export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 	tokenKey
 }) => {
-	logger2.debug('Creating passport JWT validation strategy');
+	logger.debug('Creating passport JWT validation strategy')();
 	const options: StrategyOptions = {
 		secretOrKey: tokenKey.key,
 		jwtFromRequest
