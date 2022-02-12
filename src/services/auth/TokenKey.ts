@@ -5,7 +5,7 @@ import * as TaskEither from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { restClient } from '../RestClient';
 import * as Try from '@craigmiller160/ts-functions/Try';
-import { logAndReturn } from '../../logger';
+import { logger } from '../../logger';
 import * as Process from '@craigmiller160/ts-functions/Process';
 
 export interface TokenKey {
@@ -45,8 +45,8 @@ export const loadTokenKey = (): TaskEither.TaskEither<Error, TokenKey> =>
 	pipe(
 		Process.envLookupE('AUTH_SERVER_HOST'),
 		TaskEither.fromIOEither,
-		TaskEither.map(logAndReturn('debug', 'Loading JWK')),
+		TaskEither.chainFirstIOK(() => logger.debug('Loading JWK')),
 		TaskEither.chain(getJwkSetFromAuthServer),
 		TaskEither.chain(convertJwkToPem),
-		TaskEither.map(logAndReturn('info', 'JWK Loaded'))
+		TaskEither.chainFirstIOK(() => logger.debug('JWK Loaded'))
 	);

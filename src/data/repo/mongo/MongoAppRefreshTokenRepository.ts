@@ -11,10 +11,19 @@ import {
 import { AppRefreshToken } from '../../modelTypes/AppRefreshToken';
 import { pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
+import { closeSessionAfterTransaction } from '../../../mongo/Session';
 import { logger } from '../../../logger';
 
 export const deleteByTokenId: DeleteByTokenId = (tokenId) =>
-	TaskTry.tryCatch(() => AppRefreshTokenModel.deleteOne({ tokenId }).exec());
+	pipe(
+		logger.debug(`Deleting refresh tokens by ID: ${tokenId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() =>
+				AppRefreshTokenModel.deleteOne({ tokenId }).exec()
+			)
+		)
+	);
 
 const removeExistingAndInsertToken = async (
 	refreshToken: AppRefreshToken,
@@ -29,36 +38,35 @@ const removeExistingAndInsertToken = async (
 export const saveRefreshToken: SaveRefreshToken = (
 	refreshToken,
 	existingTokenId
-) => {
-	const sessionTE = TaskTry.tryCatch(() =>
-		AppRefreshTokenModel.startSession()
-	);
-
-	const postTxnTE = pipe(
-		sessionTE,
-		TaskEither.chainFirst((session) =>
-			TaskTry.tryCatch(() =>
-				session.withTransaction(() =>
-					removeExistingAndInsertToken(refreshToken, existingTokenId)
-				)
+) =>
+	pipe(
+		logger.debug('Saving refresh token'),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => AppRefreshTokenModel.startSession())
+		),
+		TaskEither.chain((session) =>
+			pipe(
+				TaskTry.tryCatch(() =>
+					session.withTransaction(() =>
+						removeExistingAndInsertToken(
+							refreshToken,
+							existingTokenId
+						)
+					)
+				),
+				closeSessionAfterTransaction(session)
 			)
 		)
 	);
 
-	pipe(
-		sessionTE,
-		TaskEither.chain((session) =>
-			TaskTry.tryCatch(() => session.endSession())
-		),
-		TaskEither.mapLeft((ex) => {
-			logger.error('Error closing session');
-			logger.error(ex);
-			return ex;
-		})
-	);
-
-	return postTxnTE;
-};
-
 export const findByTokenId: FindByTokenId = (tokenId) =>
-	TaskTry.tryCatch(() => AppRefreshTokenModel.find({ tokenId }).exec());
+	pipe(
+		logger.debug(`Finding refresh token by ID: ${tokenId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() =>
+				AppRefreshTokenModel.find({ tokenId }).exec()
+			)
+		)
+	);

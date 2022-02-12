@@ -50,7 +50,7 @@ const validatePayload = (token: AccessToken): Pred.Predicate<ClientKeyName> =>
 export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 	tokenKey
 }) => {
-	logger.debug('Creating passport JWT validation strategy');
+	logger.debug('Creating passport JWT validation strategy')();
 	const options: StrategyOptions = {
 		secretOrKey: tokenKey.key,
 		jwtFromRequest

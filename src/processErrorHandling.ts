@@ -1,6 +1,5 @@
 import { logger } from './logger';
 
 process.on('uncaughtException', (err) => {
-	logger.error('Uncaught Exception');
-	logger.error(err);
+	logger.errorWithStack('Uncaught Exception', err)();
 });

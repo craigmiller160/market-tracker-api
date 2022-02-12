@@ -2,7 +2,7 @@ import {
 	FindPortfoliosForUser,
 	SavePortfoliosForUser
 } from '../PortfolioRepository';
-import { logAndReturn, logger } from '../../../logger';
+import { logger } from '../../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import {
 	PortfolioModel,
@@ -12,11 +12,16 @@ import {
 import { pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
+import { closeSessionAfterTransaction } from '../../../mongo/Session';
 
-export const findPortfoliosForUser: FindPortfoliosForUser = (userId) => {
-	logger.info(`Finding portfolios for user. ID: ${userId}`);
-	return TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec());
-};
+export const findPortfoliosForUser: FindPortfoliosForUser = (userId) =>
+	pipe(
+		logger.debug(`Finding portfolios for user. ID: ${userId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => PortfolioModel.find({ userId }).exec())
+		)
+	);
 
 const replacePortfoliosForUser = async (
 	userId: number,
@@ -30,7 +35,6 @@ export const savePortfoliosForUser: SavePortfoliosForUser = (
 	userId,
 	portfolios
 ) => {
-	logger.info(`Saving portfolios for user. ID: ${userId}`);
 	const portfolioModels = pipe(
 		portfolios,
 		RArray.map((_) =>
@@ -41,26 +45,21 @@ export const savePortfoliosForUser: SavePortfoliosForUser = (
 		)
 	);
 
-	const sessionTE = TaskTry.tryCatch(() => PortfolioModel.startSession());
-
-	const postTxnTE = pipe(
-		sessionTE,
-		TaskEither.chainFirst((session) =>
-			TaskTry.tryCatch(() =>
-				session.withTransaction(() =>
-					replacePortfoliosForUser(userId, portfolioModels)
-				)
+	return pipe(
+		logger.debug(`Saving portfolios for user. ID: ${userId}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() => PortfolioModel.startSession())
+		),
+		TaskEither.chain((session) =>
+			pipe(
+				TaskTry.tryCatch(() =>
+					session.withTransaction(() =>
+						replacePortfoliosForUser(userId, portfolioModels)
+					)
+				),
+				closeSessionAfterTransaction(session)
 			)
 		)
 	);
-
-	pipe(
-		sessionTE,
-		TaskEither.chain((session) =>
-			TaskTry.tryCatch(() => session.endSession())
-		),
-		TaskEither.mapLeft(logAndReturn('error', 'Error closing session'))
-	);
-
-	return postTxnTE;
 };

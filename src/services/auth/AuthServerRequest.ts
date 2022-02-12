@@ -5,7 +5,7 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import qs from 'qs';
 import { TokenResponse } from '../../types/TokenResponse';
 import { restClient } from '../RestClient';
-import { logAndReturn } from '../../logger';
+import { logger } from '../../logger';
 import { getRequiredValues } from '../../function/Values';
 import {
 	IOT,
@@ -56,11 +56,19 @@ const executeTokenRestCall = (
 			)
 		),
 		TaskEither.map((_) => _.data),
-		TaskEither.mapLeft(
-			logAndReturn('error', 'Auth server returned error response')
-		),
-		TaskEither.mapLeft(
-			() => new UnauthorizedError('Error authenticating with AuthServer')
+		TaskEither.mapLeft((ex) =>
+			pipe(
+				logger.errorWithStack(
+					'Auth server returned error response',
+					ex
+				),
+				IO.map(
+					() =>
+						new UnauthorizedError(
+							'Error uathenticating with AuthServer'
+						)
+				)
+			)()
 		)
 	);
 

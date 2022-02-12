@@ -28,15 +28,17 @@ interface ConnStringAndEnv {
 
 const logConnectionStringInDev = (
 	connStringAndEnv: ConnStringAndEnv
-): ConnStringAndEnv =>
+): IOT<ConnStringAndEnv> =>
 	match(connStringAndEnv.nodeEnv)
-		.with('development', () => {
-			logger.debug(
-				`Mongo Connection String: ${connStringAndEnv.connectionString}`
-			);
-			return connStringAndEnv;
-		})
-		.otherwise(() => connStringAndEnv);
+		.with('development', () =>
+			pipe(
+				logger.debug(
+					`Mongo Connection String: ${connStringAndEnv.connectionString}`
+				),
+				IO.map(() => connStringAndEnv)
+			)
+		)
+		.otherwise(() => IO.of(connStringAndEnv));
 
 const envToMongoEnv = ([
 	hostname,
@@ -87,7 +89,7 @@ export const getConnectionString = (): IOTryT<string> => {
 		),
 		IOEither.bindTo('connectionString'),
 		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
-		IOEither.map(logConnectionStringInDev),
+		IOEither.chainIOK(logConnectionStringInDev),
 		IOEither.map(({ connectionString }) => connectionString)
 	);
 };

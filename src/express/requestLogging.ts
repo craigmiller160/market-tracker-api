@@ -9,12 +9,12 @@ export const setupRequestLogging: ReaderT<ExpressDependencies, void> = (
 	dependencies.expressApp.use((req, res, next) => {
 		const queryString = qs.stringify(req.query);
 		const fullQueryString = queryString.length > 0 ? `?${queryString}` : '';
-		logger.debug(`${req.method} ${req.path}${fullQueryString}`);
+		logger.debug(`${req.method} ${req.path}${fullQueryString}`)();
 		next();
 		res.on('finish', () => {
 			logger.info(
 				`${req.method} ${req.path}${fullQueryString} - ${res.statusCode}`
-			);
+			)();
 		});
 	});
 };

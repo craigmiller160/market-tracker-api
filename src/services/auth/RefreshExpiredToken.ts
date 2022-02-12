@@ -88,10 +88,11 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 
 export const refreshExpiredToken = (
 	token: string | null
-): ReaderTaskTryT<ExpressDependencies, string> => {
-	logger.debug('Attempting to refresh expired token');
-	return pipe(
-		getRefreshToken(token),
+): ReaderTaskTryT<ExpressDependencies, string> =>
+	pipe(
+		logger.debug('Attempting to refresh expired token'),
+		ReaderTaskEither.rightIO,
+		ReaderTaskEither.chain(() => getRefreshToken(token)),
 		ReaderTaskEither.bindTo('tokenAndId'),
 		ReaderTaskEither.bind(
 			'refreshBody',
@@ -111,4 +112,3 @@ export const refreshExpiredToken = (
 			ReaderTaskEither.fromIOEither(createTokenCookie(accessToken))
 		)
 	);
-};

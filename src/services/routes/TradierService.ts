@@ -13,7 +13,7 @@ import { TaskTry } from '@craigmiller160/ts-functions';
 import qs from 'qs';
 import { match, when } from 'ts-pattern';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { logAndReturn, logger } from '../../logger';
+import { logger } from '../../logger';
 import { Error } from 'mongoose';
 import { AxiosError } from 'axios';
 import { TradierError } from '../../error/TradierError';
@@ -44,19 +44,25 @@ const sendTradierRequest = (
 		.otherwise(identity);
 	const realUri = uri.replace(/^\/tradier/, '');
 	const fullTradierRequestUrl = `${baseUrl}${realUri}${queryString}`;
-	logger.debug(`Sending request to Tradier: ${fullTradierRequestUrl}`);
 	return pipe(
-		TaskTry.tryCatch(() =>
-			restClient.get(fullTradierRequestUrl, {
-				headers: {
-					Accept: 'application/json',
-					Authorization: `Bearer ${apiKey}`
-				}
-			})
+		logger.debug(`Sending request to Tradier: ${fullTradierRequestUrl}`),
+		TaskEither.rightIO,
+		TaskEither.chain(() =>
+			TaskTry.tryCatch(() =>
+				restClient.get(fullTradierRequestUrl, {
+					headers: {
+						Accept: 'application/json',
+						Authorization: `Bearer ${apiKey}`
+					}
+				})
+			)
 		),
 		TaskEither.map((_) => _.data),
-		TaskEither.map(
-			logAndReturn('verbose', 'Tradier request completed', true)
+		TaskEither.chainIOK((data) =>
+			pipe(
+				logger.verboseWithJson('Tradier request completed', data),
+				IO.map(() => data)
+			)
 		)
 	);
 };
