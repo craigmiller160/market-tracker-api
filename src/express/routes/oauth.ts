@@ -51,3 +51,19 @@ export const createOAuthRoutes: RouteCreator = pipe(
 	Reader.bind('secure', () => Reader.asks(({ secure }) => secure)),
 	Reader.map(configureRoutes)
 );
+
+export const createOAuthRoutes2: RouteCreator = pipe(
+	newRouter('/oauth'),
+	Reader.bindTo('router'),
+	Reader.bind('routes', () =>
+		Reader.sequenceArray([
+			Reader.of(oAuthService.getAuthUser),
+			Reader.of(ioRouteToRoute(oAuthService.getAuthCodeLogin)), // TODO deal with this here, and the others later? not good
+			oAuthService.authCodeAuthentication,
+			oAuthService.logoutAndClearAuth
+		])
+	),
+	Reader.map(() => {
+		// Nothing
+	})
+);
