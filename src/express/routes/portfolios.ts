@@ -5,6 +5,7 @@ import { pipe } from 'fp-ts/function';
 import * as portfolioController from '../controllers/portfolios';
 import { Route } from '../Route';
 import { newRouter } from './routeUtils';
+import { secure2 } from '../auth/secure2';
 
 interface RouterAndRoutes {
 	readonly router: Router;
@@ -12,12 +13,13 @@ interface RouterAndRoutes {
 	readonly savePortfoliosForUser: Route;
 }
 
+// TODO refactor/clean this up
 const configureRoutes = ({
 	router,
 	getPortfoliosForUser,
 	savePortfoliosForUser
 }: RouterAndRoutes): Router => {
-	router.get('/', getPortfoliosForUser);
+	router.get('/', secure2, getPortfoliosForUser);
 	router.post('/', savePortfoliosForUser);
 	return router;
 };
