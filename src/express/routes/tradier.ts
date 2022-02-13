@@ -1,24 +1,24 @@
-import * as tradierController from '../controllers/tradier';
-import { RouteCreator2 } from './RouteCreator';
+import * as tradierService from '../../services/routes/TradierService';
+import { RouteCreator } from './RouteCreator';
 import { pipe } from 'fp-ts/function';
-import { newRouter } from './routeUtils';
+import { newSecureRouter } from './routeUtils';
 import * as Reader from 'fp-ts/Reader';
 import { Router } from 'express';
-import { Route } from '../Route';
+import { TaskRoute, taskRouteToRoute } from '../Route';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly queryTradier: Route;
+	readonly queryTradier: TaskRoute<void>;
 }
 
 const configureRoutes = ({ router, queryTradier }: RouterAndRoutes): Router => {
-	router.get(/^(.*)$/, queryTradier);
+	router.get(/^(.*)$/, taskRouteToRoute(queryTradier));
 	return router;
 };
 
-export const createTradierRoutes: RouteCreator2 = pipe(
-	newRouter('/tradier'),
+export const createTradierRoutes: RouteCreator = pipe(
+	newSecureRouter('/tradier'),
 	Reader.bindTo('router'),
-	Reader.bind('queryTradier', () => tradierController.queryTradier),
+	Reader.bind('queryTradier', () => Reader.of(tradierService.queryTradier)),
 	Reader.map(configureRoutes)
 );
