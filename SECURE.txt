@@ -1,0 +1,4 @@
+1) Secure is always a reader that returns a route
+2) The authenticate piece is returned, so the route it returns is just propagated.
+3) The hard part: flip the order of the route functions themselves. Dependencies come first, then route arguments.
+4) For tasks... check if the provided function returns another function, then call it.
