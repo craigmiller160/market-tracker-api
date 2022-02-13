@@ -1,4 +1,4 @@
-import { RouteCreator2 } from '../../src/express/routes/RouteCreator';
+import { RouteCreator } from '../../src/express/routes/RouteCreator';
 import { Request } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import {
@@ -6,7 +6,7 @@ import {
 	MarketTrackerSession
 } from '../../src/function/HttpRequest';
 
-export const createSessionRoute: RouteCreator2 = (dependencies) => {
+export const createSessionRoute: RouteCreator = (dependencies) => {
 	dependencies.expressApp.get('/session', (req, res) => {
 		const session = getMarketTrackerSession(req);
 		res.json({

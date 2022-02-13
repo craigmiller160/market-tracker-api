@@ -9,7 +9,7 @@ import {
 } from '../Route';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
-import { newRouter2 } from './routeUtils';
+import { newRouter } from './routeUtils';
 import * as oAuthService from '../../services/routes/OAuthService';
 
 interface RouterAndRoutes {
@@ -37,7 +37,7 @@ const configureRoutes = ({
 };
 
 export const createOAuthRoutes: RouteCreator = pipe(
-	newRouter2('/oauth'),
+	newRouter('/oauth'),
 	Reader.bindTo('router'),
 	Reader.bind('getAuthUser', () => Reader.of(oAuthService.getAuthUser)),
 	Reader.bind('getAuthCodeLogin', () =>

@@ -35,3 +35,6 @@ export const ioRouteToRoute =
 	(ioRoute: IORoute<void>): Route =>
 	(req: Request, res: Response, next: NextFunction) =>
 		ioRoute(req, res, next)();
+
+export const emptyRoute = (req: Request, res: Response, next: NextFunction) =>
+	next();
