@@ -7,6 +7,8 @@ import { pipe } from 'fp-ts/function';
 import { match } from 'ts-pattern';
 import { AppRefreshTokenRepository } from '../../data/repo/AppRefreshTokenRepository';
 import * as mongoRefreshTokenRepo from '../../data/repo/mongo/MongoAppRefreshTokenRepository';
+import * as ReaderTask from 'fp-ts/ReaderTask';
+import { isJwtInCookie } from './jwt';
 
 // TODO use this as another middleware, as opposed to wrapping the request
 // TODO perform the refresh and set the response cookie
@@ -31,7 +33,7 @@ const getError = (
 	);
 
 // TODO finish this
-const tryToRefreshExpiredToken = () => {
+const tryToRefreshExpiredToken = (): ReaderTaskT<SecureDependencies, void> => {
 	throw new Error();
 };
 
@@ -39,18 +41,32 @@ const tryToRefreshExpiredToken = () => {
 const handleTokenError = (
 	error: Error,
 	next: NextFunction
-): ReaderTaskT<SecureDependencies, void> => {
-	match({ error, jwtIsInCookie: false, refreshAlreadyHappened: false })
-		.with(
-			{
-				error: { name: 'TokenExpiredError' },
-				jwtIsInCookie: true,
-				refreshAlreadyHappened: false
-			},
-			() => tryToRefreshExpiredToken()
+): ReaderTaskT<SecureDependencies, void> =>
+	pipe(
+		ReaderTask.asks<
+			SecureDependencies,
+			{ hasRefreshed: boolean; req: Request }
+		>(({ hasRefreshed, req }) => ({
+			hasRefreshed,
+			req
+		})),
+		ReaderTask.chain(({ hasRefreshed, req }) =>
+			match({
+				error,
+				jwtIsInCookie: isJwtInCookie(req),
+				refreshAlreadyHappened: hasRefreshed
+			})
+				.with(
+					{
+						error: { name: 'TokenExpiredError' },
+						jwtIsInCookie: true,
+						refreshAlreadyHappened: false
+					},
+					() => tryToRefreshExpiredToken()
+				)
+				.otherwise(() => () => async () => next(error))
 		)
-		.otherwise(() => next(error));
-};
+	);
 
 // TODO how to I get the ExpressDependencies here? Specifically the refresh token repo?
 // TODO I'm going to have to connect this to the broader Reader chain to get the repo
