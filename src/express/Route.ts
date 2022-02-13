@@ -12,14 +12,14 @@ export type ReaderTaskRoute<T> = (
 	next: NextFunction
 ) => ReaderTaskT<ExpressDependencies, T>;
 
-// TODO if unused, delete. Remove generic
+// TODO Remove generic
 export type TaskRoute<T> = (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => TaskT<T>;
 
-// TODO if unused, delete. Remove generic
+// TODO Remove generic
 export type IORoute<T> = (
 	req: Request,
 	res: Response,
@@ -30,3 +30,8 @@ export const taskRouteToRoute =
 	(taskRoute: TaskRoute<void>): Route =>
 	(req: Request, res: Response, next: NextFunction) =>
 		taskRoute(req, res, next)();
+
+export const ioRouteToRoute =
+	(ioRoute: IORoute<void>): Route =>
+	(req: Request, res: Response, next: NextFunction) =>
+		ioRoute(req, res, next)();

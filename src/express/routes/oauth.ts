@@ -1,10 +1,11 @@
-import { RouteCreator2 } from './RouteCreator';
+import { RouteCreator, RouteCreator2 } from './RouteCreator';
 import { Router } from 'express';
 import * as oAuthController from '../controllers/oauth';
 import { Route } from '../Route';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
-import { newRouter } from './routeUtils';
+import { newRouter, newRouter2 } from './routeUtils';
+import * as oAuthService from '../../services/routes/OAuthService';
 
 interface RouterAndRoutes {
 	readonly router: Router;
@@ -22,17 +23,19 @@ const configureRoutes = ({
 	logout
 }: RouterAndRoutes): Router => {
 	router.get('/user', getAuthUser);
-	router.post('/authcode/login', getAuthCodeLogin);
-	router.get('/authcode/code', authCodeAuthentication);
+	router.post('/authcode/login', getAuthCodeLogin); // TODO insecure
+	router.get('/authcode/code', authCodeAuthentication); // TODO insecure
 	router.get('/logout', logout);
 	return router;
 };
 
-export const createOAuthRoutes: RouteCreator2 = pipe(
-	newRouter('/oauth'),
+export const createOAuthRoutes: RouteCreator = pipe(
+	newRouter2('/oauth'),
 	Reader.bindTo('router'),
-	Reader.bind('getAuthUser', () => oAuthController.getAuthUser),
-	Reader.bind('getAuthCodeLogin', () => oAuthController.getAuthCodeLogin),
+	Reader.bind('getAuthUser', () => Reader.of(oAuthService.getAuthUser)),
+	Reader.bind('getAuthCodeLogin', () =>
+		Reader.of(oAuthService.getAuthCodeLogin)
+	),
 	Reader.bind(
 		'authCodeAuthentication',
 		() => oAuthController.authCodeAuthentication
