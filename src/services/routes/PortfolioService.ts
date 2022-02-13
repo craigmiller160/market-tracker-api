@@ -13,8 +13,7 @@ import { TaskRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 import { PortfolioRepository } from '../../data/repo/PortfolioRepository';
 
-// TODO rename this
-export const getPortfoliosByUser2: ReaderT<
+export const getPortfoliosByUser: ReaderT<
 	ExpressRouteDependencies,
 	TaskRoute<void>
 > = pipe(
@@ -34,22 +33,6 @@ export const getPortfoliosByUser2: ReaderT<
 			}
 	)
 );
-
-export const getPortfoliosByUser =
-	(
-		req: Request,
-		res: Response,
-		next: NextFunction
-	): ReaderTaskT<ExpressDependencies, unknown> =>
-	({ portfolioRepository }) => {
-		const token = req.user as AccessToken;
-		return pipe(
-			portfolioRepository.findPortfoliosForUser(token.userId),
-			TaskEither.fold(errorTask(next), (_) => async () => {
-				res.json(_);
-			})
-		);
-	};
 
 export const savePortfoliosByUser =
 	(
