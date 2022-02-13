@@ -1,6 +1,6 @@
 {
   "name": "@craigmiller160/market-tracker-api",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "publishConfig": {
     "registry": "https://craigmiller160.ddns.net:30003/repository/npm-private/"
   },
