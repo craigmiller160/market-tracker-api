@@ -2,14 +2,14 @@ import { RouteCreator } from './RouteCreator';
 import { Router } from 'express';
 import { pipe } from 'fp-ts/function';
 import * as Reader from 'fp-ts/Reader';
-import * as watchlistController from '../controllers/watchlists';
-import { Route } from '../Route';
-import { newRouter } from './routeUtils';
+import * as watchlistService from '../../services/routes/WatchlistService';
+import { TaskRoute, taskRouteToRoute } from '../Route';
+import { newSecureRouter } from './routeUtils';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly getWatchlistsForUser: Route;
-	readonly saveWatchlistsForUser: Route;
+	readonly getWatchlistsForUser: TaskRoute;
+	readonly saveWatchlistsForUser: TaskRoute;
 }
 
 const configureRoutes = ({
@@ -17,21 +17,21 @@ const configureRoutes = ({
 	getWatchlistsForUser,
 	saveWatchlistsForUser
 }: RouterAndRoutes): Router => {
-	router.get('/', getWatchlistsForUser);
-	router.post('/', saveWatchlistsForUser);
+	router.get('/', taskRouteToRoute(getWatchlistsForUser));
+	router.post('/', taskRouteToRoute(saveWatchlistsForUser));
 	return router;
 };
 
 export const createWatchlistRoutes: RouteCreator = pipe(
-	newRouter('/watchlists'),
+	newSecureRouter('/watchlists'),
 	Reader.bindTo('router'),
 	Reader.bind(
 		'getWatchlistsForUser',
-		() => watchlistController.getWatchlistsForUser
+		() => watchlistService.getWatchlistsByUser
 	),
 	Reader.bind(
 		'saveWatchlistsForUser',
-		() => watchlistController.saveWatchlistsForUser
+		() => watchlistService.saveWatchlistsForUser
 	),
 	Reader.map(configureRoutes)
 );

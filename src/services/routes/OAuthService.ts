@@ -5,13 +5,18 @@ import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
-import { IOT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import { IOT, ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
 import { errorReaderTask } from '../../function/Route';
-import { ExpressDependencies } from '../../express/ExpressDependencies';
+import {
+	ExpressDependencies,
+	ExpressRouteDependencies
+} from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import * as IOEither from 'fp-ts/IOEither';
+import { TaskRoute } from '../../express/Route';
+import * as Reader from 'fp-ts/Reader';
 
 export const getAuthUser = (req: Request, res: Response): void => {
 	const token = req.user as AccessToken;
@@ -44,39 +49,39 @@ export const getAuthCodeLogin = (
 		)
 	);
 
-export const authCodeAuthentication = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-): ReaderTaskT<ExpressDependencies, void> =>
-	pipe(
-		authenticateWithAuthCode(req),
-		ReaderTaskEither.fold(
-			errorReaderTask(next),
-			(authCodeSuccess) => () => async () => {
-				res.setHeader('Set-Cookie', authCodeSuccess.cookie);
-				res.setHeader('Location', authCodeSuccess.postAuthRedirect);
-				res.status(302);
-				res.end();
-			}
-		)
-	);
-
-export const logoutAndClearAuth = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-): ReaderTaskT<ExpressDependencies, void> =>
-	pipe(
-		logout(req),
-		ReaderTaskEither.fold(
-			errorReaderTask(next),
-			(cookie): ReaderTaskT<ExpressDependencies, void> =>
-				() =>
-				async () => {
-					res.setHeader('Set-Cookie', cookie);
-					res.status(204);
+export const authCodeAuthentication: ReaderT<
+	ExpressRouteDependencies,
+	TaskRoute
+> = Reader.asks(
+	(deps) => (req: Request, res: Response, next: NextFunction) =>
+		pipe(
+			authenticateWithAuthCode(req),
+			ReaderTaskEither.fold(
+				errorReaderTask(next),
+				(authCodeSuccess) => () => async () => {
+					res.setHeader('Set-Cookie', authCodeSuccess.cookie);
+					res.setHeader('Location', authCodeSuccess.postAuthRedirect);
+					res.status(302);
 					res.end();
 				}
-		)
+			)
+		)(deps)
+);
+
+export const logoutAndClearAuth: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	Reader.asks(
+		(deps) => (req: Request, res: Response, next: NextFunction) =>
+			pipe(
+				logout(req),
+				ReaderTaskEither.fold(
+					errorReaderTask(next),
+					(cookie): ReaderTaskT<ExpressDependencies, void> =>
+						() =>
+						async () => {
+							res.setHeader('Set-Cookie', cookie);
+							res.status(204);
+							res.end();
+						}
+				)
+			)(deps)
 	);

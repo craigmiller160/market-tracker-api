@@ -17,6 +17,7 @@ import {
 	portfolioRepository,
 	watchlistRepository
 } from '../../src/data/repo';
+import { createSecure } from '../../src/express/auth/secure2';
 
 export interface FullTestServer {
 	readonly keyPair: TokenKeyPair;
@@ -73,7 +74,11 @@ export const createFullTestServer = (): Promise<FullTestServer> => {
 				appRefreshTokenRepository,
 				tokenKey: {
 					key: ''
-				}
+				},
+				secure2: createSecure({
+					appRefreshTokenRepository,
+					hasRefreshed: false
+				})
 			});
 			return fullTestServer;
 		}),

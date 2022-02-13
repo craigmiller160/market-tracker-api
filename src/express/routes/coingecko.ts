@@ -1,27 +1,29 @@
 import { Router } from 'express';
-import { Route } from '../Route';
+import { TaskRoute, taskRouteToRoute } from '../Route';
 import { RouteCreator } from './RouteCreator';
 import { pipe } from 'fp-ts/function';
-import { newRouter } from './routeUtils';
+import { newSecureRouter } from './routeUtils';
 import * as Reader from 'fp-ts/Reader';
-import * as coinGeckoController from '../controllers/coingecko';
+import * as coinGeckoService from '../../services/routes/CoinGeckoService';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly queryCoinGecko: Route;
+	readonly queryCoinGecko: TaskRoute;
 }
 
 const configureRoutes = ({
 	router,
 	queryCoinGecko
 }: RouterAndRoutes): Router => {
-	router.get(/^(.*)$/, queryCoinGecko);
+	router.get(/^(.*)$/, taskRouteToRoute(queryCoinGecko));
 	return router;
 };
 
 export const createCoinGeckoRoutes: RouteCreator = pipe(
-	newRouter('/coingecko'),
+	newSecureRouter('/coingecko'),
 	Reader.bindTo('router'),
-	Reader.bind('queryCoinGecko', () => coinGeckoController.queryCoinGecko),
+	Reader.bind('queryCoinGecko', () =>
+		Reader.of(coinGeckoService.queryCoinGecko)
+	),
 	Reader.map(configureRoutes)
 );

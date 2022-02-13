@@ -15,7 +15,11 @@ import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
-import { ExpressDependencies } from '../../express/ExpressDependencies';
+import { AppRefreshTokenRepository } from '../../data/repo/AppRefreshTokenRepository';
+
+interface RefreshDependencies {
+	readonly appRefreshTokenRepository: AppRefreshTokenRepository;
+}
 
 interface RefreshBody {
 	readonly grant_type: 'refresh_token';
@@ -33,7 +37,7 @@ const decodeToken = (token: string): TryT<AccessToken> =>
 const getTokenId = (token: AccessToken): string => token.jti;
 
 const findRefreshTokenById =
-	(tokenId: string): ReaderTaskTryT<ExpressDependencies, AppRefreshToken> =>
+	(tokenId: string): ReaderTaskTryT<RefreshDependencies, AppRefreshToken> =>
 	({ appRefreshTokenRepository }) =>
 		pipe(
 			appRefreshTokenRepository.findByTokenId(tokenId),
@@ -55,7 +59,7 @@ const handleRefreshToken =
 	(
 		existingTokenId: string,
 		tokenResponse: TokenResponse
-	): ReaderTaskTryT<ExpressDependencies, unknown> =>
+	): ReaderTaskTryT<RefreshDependencies, unknown> =>
 	({ appRefreshTokenRepository }) => {
 		const refreshToken: AppRefreshToken = {
 			tokenId: tokenResponse.tokenId,
@@ -69,7 +73,7 @@ const handleRefreshToken =
 
 const getRefreshToken: (
 	token: string | null
-) => ReaderTaskTryT<ExpressDependencies, RefreshTokenAndId> = flow(
+) => ReaderTaskTryT<RefreshDependencies, RefreshTokenAndId> = flow(
 	Option.fromNullable,
 	Either.fromOption(() => new UnauthorizedError('No token to refresh')),
 	Either.chain(decodeToken),
@@ -88,11 +92,14 @@ const getRefreshBody = (refreshToken: string): RefreshBody => ({
 
 export const refreshExpiredToken = (
 	token: string | null
-): ReaderTaskTryT<ExpressDependencies, string> =>
+): ReaderTaskTryT<RefreshDependencies, string> =>
 	pipe(
-		logger.debug('Attempting to refresh expired token'),
+		logger.debug('Attempting to retrieve refresh token'),
 		ReaderTaskEither.rightIO,
 		ReaderTaskEither.chain(() => getRefreshToken(token)),
+		ReaderTaskEither.chainFirstIOK(() =>
+			logger.debug('Refresh token found, attempting refresh')
+		),
 		ReaderTaskEither.bindTo('tokenAndId'),
 		ReaderTaskEither.bind(
 			'refreshBody',
