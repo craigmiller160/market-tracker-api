@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { IOT, ReaderTaskT, TaskT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from './ExpressDependencies';
 
+// TODO rename to RouteMiddleware or something
 export type Route = (req: Request, res: Response, next: NextFunction) => void;
 
 // TODO if unused, delete. Remove generic

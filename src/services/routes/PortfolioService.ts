@@ -7,16 +7,10 @@ import {
 	ExpressDependencies,
 	ExpressRouteDependencies
 } from '../../express/ExpressDependencies';
-import {
-	ReaderT,
-	ReaderTaskT,
-	TaskT
-} from '@craigmiller160/ts-functions/types';
+import { ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { errorTask } from '../../function/Route';
-import { Route, TaskRoute } from '../../express/Route';
-import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
+import { TaskRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
-import * as ReaderTask from 'fp-ts/ReaderTask';
 import { PortfolioRepository } from '../../data/repo/PortfolioRepository';
 
 // TODO rename this
