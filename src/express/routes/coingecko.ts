@@ -8,7 +8,7 @@ import * as coinGeckoService from '../../services/routes/CoinGeckoService';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly queryCoinGecko: TaskRoute<void>;
+	readonly queryCoinGecko: TaskRoute;
 }
 
 const configureRoutes = ({

@@ -8,8 +8,8 @@ import { RouteCreator } from './RouteCreator';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly getPortfoliosForUser: TaskRoute<void>;
-	readonly savePortfoliosForUser: TaskRoute<void>;
+	readonly getPortfoliosForUser: TaskRoute;
+	readonly savePortfoliosForUser: TaskRoute;
 }
 
 const configureRoutes = ({

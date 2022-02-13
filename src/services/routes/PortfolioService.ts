@@ -9,30 +9,28 @@ import { TaskRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 import { PortfolioRepository } from '../../data/repo/PortfolioRepository';
 
-export const getPortfoliosByUser: ReaderT<
-	ExpressRouteDependencies,
-	TaskRoute<void>
-> = pipe(
-	Reader.asks<ExpressRouteDependencies, PortfolioRepository>(
-		({ portfolioRepository }) => portfolioRepository
-	),
-	Reader.map(
-		(portfolioRepository) =>
-			(req: Request, res: Response, next: NextFunction) => {
-				const token = req.user as AccessToken;
-				return pipe(
-					portfolioRepository.findPortfoliosForUser(token.userId),
-					TaskEither.fold(errorTask(next), (_) => async () => {
-						res.json(_);
-					})
-				);
-			}
-	)
-);
+export const getPortfoliosByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	pipe(
+		Reader.asks<ExpressRouteDependencies, PortfolioRepository>(
+			({ portfolioRepository }) => portfolioRepository
+		),
+		Reader.map(
+			(portfolioRepository) =>
+				(req: Request, res: Response, next: NextFunction) => {
+					const token = req.user as AccessToken;
+					return pipe(
+						portfolioRepository.findPortfoliosForUser(token.userId),
+						TaskEither.fold(errorTask(next), (_) => async () => {
+							res.json(_);
+						})
+					);
+				}
+		)
+	);
 
 export const savePortfoliosForUser: ReaderT<
 	ExpressRouteDependencies,
-	TaskRoute<void>
+	TaskRoute
 > = pipe(
 	Reader.asks<ExpressRouteDependencies, PortfolioRepository>(
 		({ portfolioRepository }) => portfolioRepository

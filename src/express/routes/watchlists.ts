@@ -8,8 +8,8 @@ import { newSecureRouter } from './routeUtils';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly getWatchlistsForUser: TaskRoute<void>;
-	readonly saveWatchlistsForUser: TaskRoute<void>;
+	readonly getWatchlistsForUser: TaskRoute;
+	readonly saveWatchlistsForUser: TaskRoute;
 }
 
 const configureRoutes = ({

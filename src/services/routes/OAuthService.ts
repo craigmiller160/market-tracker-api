@@ -51,7 +51,7 @@ export const getAuthCodeLogin = (
 
 export const authCodeAuthentication: ReaderT<
 	ExpressRouteDependencies,
-	TaskRoute<void>
+	TaskRoute
 > = Reader.asks(
 	(deps) => (req: Request, res: Response, next: NextFunction) =>
 		pipe(
@@ -68,22 +68,20 @@ export const authCodeAuthentication: ReaderT<
 		)(deps)
 );
 
-export const logoutAndClearAuth: ReaderT<
-	ExpressRouteDependencies,
-	TaskRoute<void>
-> = Reader.asks(
-	(deps) => (req: Request, res: Response, next: NextFunction) =>
-		pipe(
-			logout(req),
-			ReaderTaskEither.fold(
-				errorReaderTask(next),
-				(cookie): ReaderTaskT<ExpressDependencies, void> =>
-					() =>
-					async () => {
-						res.setHeader('Set-Cookie', cookie);
-						res.status(204);
-						res.end();
-					}
-			)
-		)(deps)
-);
+export const logoutAndClearAuth: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	Reader.asks(
+		(deps) => (req: Request, res: Response, next: NextFunction) =>
+			pipe(
+				logout(req),
+				ReaderTaskEither.fold(
+					errorReaderTask(next),
+					(cookie): ReaderTaskT<ExpressDependencies, void> =>
+						() =>
+						async () => {
+							res.setHeader('Set-Cookie', cookie);
+							res.status(204);
+							res.end();
+						}
+				)
+			)(deps)
+	);

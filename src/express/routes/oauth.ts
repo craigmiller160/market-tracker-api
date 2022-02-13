@@ -15,9 +15,9 @@ import * as oAuthService from '../../services/routes/OAuthService';
 interface RouterAndRoutes {
 	readonly router: Router;
 	readonly getAuthUser: Route;
-	readonly getAuthCodeLogin: IORoute<void>;
-	readonly authCodeAuthentication: TaskRoute<void>;
-	readonly logout: TaskRoute<void>;
+	readonly getAuthCodeLogin: IORoute;
+	readonly authCodeAuthentication: TaskRoute;
+	readonly logout: TaskRoute;
 	readonly secure: Route;
 }
 

@@ -8,7 +8,7 @@ import { TaskRoute, taskRouteToRoute } from '../Route';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly queryTradier: TaskRoute<void>;
+	readonly queryTradier: TaskRoute;
 }
 
 const configureRoutes = ({ router, queryTradier }: RouterAndRoutes): Router => {

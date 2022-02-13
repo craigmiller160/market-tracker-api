@@ -1,37 +1,29 @@
 import { NextFunction, Request, Response } from 'express';
-import { IOT, ReaderTaskT, TaskT } from '@craigmiller160/ts-functions/types';
-import { ExpressDependencies } from './ExpressDependencies';
+import { IOT, TaskT } from '@craigmiller160/ts-functions/types';
 
 export type Route = (req: Request, res: Response, next: NextFunction) => void;
 
-// TODO if unused, delete. Remove generic
-export type ReaderTaskRoute<T> = (
+// TODO Remove generic
+export type TaskRoute = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-) => ReaderTaskT<ExpressDependencies, T>;
+) => TaskT<void>;
 
 // TODO Remove generic
-export type TaskRoute<T> = (
+export type IORoute = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-) => TaskT<T>;
-
-// TODO Remove generic
-export type IORoute<T> = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => IOT<T>;
+) => IOT<void>;
 
 export const taskRouteToRoute =
-	(taskRoute: TaskRoute<void>): Route =>
+	(taskRoute: TaskRoute): Route =>
 	(req: Request, res: Response, next: NextFunction) =>
 		taskRoute(req, res, next)();
 
 export const ioRouteToRoute =
-	(ioRoute: IORoute<void>): Route =>
+	(ioRoute: IORoute): Route =>
 	(req: Request, res: Response, next: NextFunction) =>
 		ioRoute(req, res, next)();
 
