@@ -1,5 +1,5 @@
 import * as tradierController from '../controllers/tradier';
-import { RouteCreator } from './RouteCreator';
+import { RouteCreator2 } from './RouteCreator';
 import { pipe } from 'fp-ts/function';
 import { newRouter } from './routeUtils';
 import * as Reader from 'fp-ts/Reader';
@@ -16,7 +16,7 @@ const configureRoutes = ({ router, queryTradier }: RouterAndRoutes): Router => {
 	return router;
 };
 
-export const createTradierRoutes: RouteCreator = pipe(
+export const createTradierRoutes: RouteCreator2 = pipe(
 	newRouter('/tradier'),
 	Reader.bindTo('router'),
 	Reader.bind('queryTradier', () => tradierController.queryTradier),

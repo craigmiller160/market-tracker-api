@@ -1,4 +1,4 @@
-import { RouteCreator } from './RouteCreator';
+import { RouteCreator2 } from './RouteCreator';
 import { Router } from 'express';
 import * as oAuthController from '../controllers/oauth';
 import { Route } from '../Route';
@@ -28,7 +28,7 @@ const configureRoutes = ({
 	return router;
 };
 
-export const createOAuthRoutes: RouteCreator = pipe(
+export const createOAuthRoutes: RouteCreator2 = pipe(
 	newRouter('/oauth'),
 	Reader.bindTo('router'),
 	Reader.bind('getAuthUser', () => oAuthController.getAuthUser),

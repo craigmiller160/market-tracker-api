@@ -1,4 +1,4 @@
-import { RouteCreator } from './RouteCreator';
+import { RouteCreator2 } from './RouteCreator';
 import { Router } from 'express';
 import { pipe } from 'fp-ts/function';
 import * as Reader from 'fp-ts/Reader';
@@ -22,7 +22,7 @@ const configureRoutes = ({
 	return router;
 };
 
-export const createWatchlistRoutes: RouteCreator = pipe(
+export const createWatchlistRoutes: RouteCreator2 = pipe(
 	newRouter('/watchlists'),
 	Reader.bindTo('router'),
 	Reader.bind(
