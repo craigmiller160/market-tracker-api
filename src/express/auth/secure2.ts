@@ -1,5 +1,17 @@
 import { Route } from '../Route';
 import passport from 'passport';
+import { Request, Response, NextFunction } from 'express';
 
-export const secure2 = (): Route =>
-	passport.authenticate('jwt', { session: false });
+export const secure2 = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) =>
+	passport.authenticate(
+		'jwt',
+		{ session: false },
+		(error, user, tokenError) => {
+			console.log(error, user, tokenError);
+			next(tokenError);
+		}
+	)(req, res, next);

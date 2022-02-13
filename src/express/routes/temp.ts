@@ -14,7 +14,7 @@ interface RouterAndRoutes {
 }
 
 const configureRoutes = ({ router, hello }: RouterAndRoutes): Router => {
-	router.get('/hello', secure2(), hello);
+	router.get('/hello', secure2, hello);
 	return router;
 };
 
