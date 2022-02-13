@@ -38,7 +38,7 @@ export const createOAuthRoutes: RouteCreator = pipe(
 	),
 	Reader.bind(
 		'authCodeAuthentication',
-		() => oAuthController.authCodeAuthentication
+		() => oAuthService.authCodeAuthentication
 	),
 	Reader.bind('logout', () => oAuthController.logout),
 	Reader.map(configureRoutes)
