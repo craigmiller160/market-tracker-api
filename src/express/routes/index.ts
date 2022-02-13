@@ -7,6 +7,7 @@ import { createOAuthRoutes } from './oauth';
 import { createHealthcheckRoutes } from './healthcheck';
 import { createTradierRoutes } from './tradier';
 import { createCoinGeckoRoutes } from './coingecko';
+import { createTempRoutes } from './temp';
 
 export const createRoutes: ReaderT<ExpressDependencies, void> =
 	Reader.sequenceArray([
@@ -15,5 +16,6 @@ export const createRoutes: ReaderT<ExpressDependencies, void> =
 		createHealthcheckRoutes,
 		createWatchlistRoutes,
 		createTradierRoutes,
-		createCoinGeckoRoutes
+		createCoinGeckoRoutes,
+		createTempRoutes // TODO delete this
 	]);
