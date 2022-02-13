@@ -75,7 +75,7 @@ export const createFullTestServer = (): Promise<FullTestServer> => {
 				tokenKey: {
 					key: ''
 				},
-				secure2: createSecure({
+				secure: createSecure({
 					appRefreshTokenRepository,
 					hasRefreshed: false
 				})
