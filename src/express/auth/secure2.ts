@@ -2,13 +2,30 @@ import passport from 'passport';
 import { Request, Response, NextFunction } from 'express';
 import { AccessToken } from './AccessToken';
 import * as Option from 'fp-ts/Option';
-import { OptionT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import {
+	OptionT,
+	ReaderTaskT,
+	TaskTryT
+} from '@craigmiller160/ts-functions/types';
 import { pipe } from 'fp-ts/function';
 import { match } from 'ts-pattern';
 import { AppRefreshTokenRepository } from '../../data/repo/AppRefreshTokenRepository';
 import * as mongoRefreshTokenRepo from '../../data/repo/mongo/MongoAppRefreshTokenRepository';
 import * as ReaderTask from 'fp-ts/ReaderTask';
-import { isJwtInCookie } from './jwt';
+import { isJwtInCookie, jwtFromRequest } from './jwt';
+import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
+import { logger } from '../../logger';
+import { refreshExpiredToken } from '../../services/auth/RefreshExpiredToken';
+import * as Text from '@craigmiller160/ts-functions/Text';
+import * as RArray from 'fp-ts/ReadonlyArray';
+import * as TaskEither from 'fp-ts/TaskEither';
+import { UnauthorizedError } from '../../error/UnauthorizedError';
+
+interface CookieParts {
+	readonly cookie: string;
+	readonly cookieName: string;
+	readonly cookieValue: string;
+}
 
 // TODO use this as another middleware, as opposed to wrapping the request
 // TODO perform the refresh and set the response cookie
@@ -18,7 +35,7 @@ interface SecureDependencies {
 	readonly req: Request;
 	readonly res: Response;
 	readonly next: NextFunction;
-	readonly refreshTokenRepo: AppRefreshTokenRepository;
+	readonly appRefreshTokenRepository: AppRefreshTokenRepository;
 	readonly hasRefreshed: boolean;
 }
 
@@ -32,9 +49,47 @@ const getError = (
 		Option.fromNullable
 	);
 
+const splitCookie = (cookie: string): TaskTryT<CookieParts> =>
+	pipe(
+		Text.split(';')(cookie),
+		RArray.head,
+		Option.map(Text.split('=')),
+		Option.filter((_) => _.length === 2),
+		Option.map(
+			([cookieName, cookieValue]): CookieParts => ({
+				cookie,
+				cookieName,
+				cookieValue
+			})
+		),
+		TaskEither.fromOption(
+			() => new UnauthorizedError('Unable to prepare cookie')
+		)
+	);
+
 // TODO finish this
 const tryToRefreshExpiredToken = (): ReaderTaskT<SecureDependencies, void> => {
-	throw new Error();
+	return pipe(
+		logger.debug('Attempting to refresh expired token'),
+		ReaderTaskEither.rightIO,
+		ReaderTaskEither.chain(() =>
+			ReaderTaskEither.asks<SecureDependencies, Request>(({ req }) => req)
+		),
+		// TODO potential point of failure
+		ReaderTaskEither.chainW((req) =>
+			refreshExpiredToken(jwtFromRequest(req))
+		),
+		ReaderTaskEither.chainTaskEitherK(splitCookie),
+		ReaderTaskEither.chainFirstIOK(() =>
+			logger.debug('Successfully refreshed token')
+		),
+		ReaderTaskEither.fold(
+			(ex) => ReaderTask.asks(({ next }) => next(ex)),
+			() => ReaderTask.asks(({ req, res, next }) => {
+				throw new Error();
+			})
+		)
+	);
 };
 
 // TODO need to pass hasRefreshed in, plus probably req/res/next
@@ -99,7 +154,7 @@ export const secure2 = (
 							res,
 							next,
 							hasRefreshed: false,
-							refreshTokenRepo: mongoRefreshTokenRepo
+							appRefreshTokenRepository: mongoRefreshTokenRepo
 						})()
 				)
 			);
