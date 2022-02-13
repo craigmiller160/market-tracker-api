@@ -68,21 +68,22 @@ export const authCodeAuthentication: ReaderT<
 		)(deps)
 );
 
-export const logoutAndClearAuth = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-): ReaderTaskT<ExpressDependencies, void> =>
-	pipe(
-		logout(req),
-		ReaderTaskEither.fold(
-			errorReaderTask(next),
-			(cookie): ReaderTaskT<ExpressDependencies, void> =>
-				() =>
-				async () => {
-					res.setHeader('Set-Cookie', cookie);
-					res.status(204);
-					res.end();
-				}
-		)
-	);
+export const logoutAndClearAuth: ReaderT<
+	ExpressRouteDependencies,
+	TaskRoute<void>
+> = Reader.asks(
+	(deps) => (req: Request, res: Response, next: NextFunction) =>
+		pipe(
+			logout(req),
+			ReaderTaskEither.fold(
+				errorReaderTask(next),
+				(cookie): ReaderTaskT<ExpressDependencies, void> =>
+					() =>
+					async () => {
+						res.setHeader('Set-Cookie', cookie);
+						res.status(204);
+						res.end();
+					}
+			)
+		)(deps)
+);
