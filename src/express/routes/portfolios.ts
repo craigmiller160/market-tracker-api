@@ -5,35 +5,42 @@ import { pipe } from 'fp-ts/function';
 import * as portfolioController from '../controllers/portfolios';
 import { Route } from '../Route';
 import { newRouter } from './routeUtils';
-import { secure2 } from '../auth/secure2';
+import { ReaderT } from '@craigmiller160/ts-functions/types';
+import { ExpressRouteDependencies } from '../ExpressDependencies';
+
+// TODO majorly refactor and cleanup
 
 interface RouterAndRoutes {
 	readonly router: Router;
+	readonly secure2: Route;
 	readonly getPortfoliosForUser: Route;
-	readonly savePortfoliosForUser: Route;
+	// readonly savePortfoliosForUser: Route;
 }
 
 // TODO refactor/clean this up
 const configureRoutes = ({
 	router,
-	getPortfoliosForUser,
-	savePortfoliosForUser
-}: RouterAndRoutes): Router => {
+	secure2,
+	getPortfoliosForUser
+}: // savePortfoliosForUser
+RouterAndRoutes): Router => {
 	router.get('/', secure2, getPortfoliosForUser);
-	router.post('/', savePortfoliosForUser);
+	// router.post('/', savePortfoliosForUser);
 	return router;
 };
 
-export const createPortfolioRoutes: RouteCreator = pipe(
-	newRouter('/portfolios'),
-	Reader.bindTo('router'),
-	Reader.bind(
-		'getPortfoliosForUser',
-		() => portfolioController.getPortfoliosForUser
-	),
-	Reader.bind(
-		'savePortfoliosForUser',
-		() => portfolioController.savePortfoliosForUser
-	),
-	Reader.map(configureRoutes)
-);
+export const createPortfolioRoutes: ReaderT<ExpressRouteDependencies, void> =
+	pipe(
+		newRouter('/portfolios'),
+		Reader.bindTo('router'),
+		Reader.bind(
+			'getPortfoliosForUser',
+			() => portfolioController.getPortfoliosForUser
+		),
+		// Reader.bind(
+		// 	'savePortfoliosForUser',
+		// 	() => portfolioController.savePortfoliosForUser
+		// ),
+		Reader.bind('secure2', () => Reader.asks(({ secure2 }) => secure2)),
+		Reader.map(configureRoutes)
+	);
