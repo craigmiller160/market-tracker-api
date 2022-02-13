@@ -1,10 +1,9 @@
-import { RouteCreator } from './RouteCreator';
 import { Router } from 'express';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
 import * as portfolioController from '../controllers/portfolios';
 import { Route } from '../Route';
-import { newRouter, newRouter2 } from './routeUtils';
+import { newSecureRouter } from './routeUtils';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressRouteDependencies } from '../ExpressDependencies';
 
@@ -31,7 +30,7 @@ RouterAndRoutes): Router => {
 
 export const createPortfolioRoutes: ReaderT<ExpressRouteDependencies, void> =
 	pipe(
-		newRouter2('/portfolios'),
+		newSecureRouter('/portfolios'),
 		Reader.bindTo('router'),
 		Reader.bind(
 			'getPortfoliosForUser',
