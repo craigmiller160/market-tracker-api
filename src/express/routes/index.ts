@@ -10,17 +10,17 @@ import { createOAuthRoutes } from './oauth';
 import { createHealthcheckRoutes } from './healthcheck';
 import { createTradierRoutes } from './tradier';
 import { createCoinGeckoRoutes } from './coingecko';
-import { createSecure2 } from '../auth/secure2';
+import { createSecure } from '../auth/secure2';
 
 export const createRoutes: ReaderT<ExpressDependencies, void> = Reader.asks(
 	(deps) => {
-		const secure2 = createSecure2({
+		const secure = createSecure({
 			hasRefreshed: false,
 			appRefreshTokenRepository: deps.appRefreshTokenRepository
 		});
 		const routeDependencies: ExpressRouteDependencies = {
 			...deps,
-			secure2
+			secure
 		};
 		return Reader.sequenceArray([
 			createPortfolioRoutes,

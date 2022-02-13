@@ -16,8 +16,8 @@ const createNewRouter = (
 	baseUrl: string,
 	isSecure: boolean
 ): ReaderT<ExpressRouteDependencies, Router> =>
-	Reader.asks(({ expressApp, secure2 }) => {
-		const middleware = isSecure ? secure2 : emptyRoute;
+	Reader.asks(({ expressApp, secure }) => {
+		const middleware = isSecure ? secure : emptyRoute;
 		const router = Router();
 		expressApp.use(baseUrl, middleware, router);
 		return router;

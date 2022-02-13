@@ -3,14 +3,12 @@ import { IOT, TaskT } from '@craigmiller160/ts-functions/types';
 
 export type Route = (req: Request, res: Response, next: NextFunction) => void;
 
-// TODO Remove generic
 export type TaskRoute = (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => TaskT<void>;
 
-// TODO Remove generic
 export type IORoute = (
 	req: Request,
 	res: Response,

@@ -48,6 +48,6 @@ export const createOAuthRoutes: RouteCreator = pipe(
 		() => oAuthService.authCodeAuthentication
 	),
 	Reader.bind('logout', () => oAuthService.logoutAndClearAuth),
-	Reader.bind('secure', () => Reader.asks(({ secure2 }) => secure2)),
+	Reader.bind('secure', () => Reader.asks(({ secure }) => secure)),
 	Reader.map(configureRoutes)
 );

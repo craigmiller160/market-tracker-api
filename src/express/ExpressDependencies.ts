@@ -14,5 +14,5 @@ export interface ExpressDependencies {
 }
 
 export interface ExpressRouteDependencies extends ExpressDependencies {
-	readonly secure2: Route;
+	readonly secure: Route;
 }

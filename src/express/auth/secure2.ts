@@ -69,7 +69,6 @@ const splitCookie = (cookie: string): TaskTryT<CookieParts> =>
 		)
 	);
 
-// TODO finish this
 const tryToRefreshExpiredToken = (): ReaderTaskT<SecureDependencies, void> => {
 	return pipe(
 		logger.debug('Attempting to refresh expired token'),
@@ -77,7 +76,6 @@ const tryToRefreshExpiredToken = (): ReaderTaskT<SecureDependencies, void> => {
 		ReaderTaskEither.chain(() =>
 			ReaderTaskEither.asks<SecureDependencies, Request>(({ req }) => req)
 		),
-		// TODO potential point of failure
 		ReaderTaskEither.chainW((req) =>
 			refreshExpiredToken(jwtFromRequest(req))
 		),
@@ -94,7 +92,7 @@ const tryToRefreshExpiredToken = (): ReaderTaskT<SecureDependencies, void> => {
 						req.cookies[cookieParts.cookieName] =
 							cookieParts.cookieValue;
 						res.setHeader('Set-Cookie', cookieParts.cookie);
-						createSecure2({
+						createSecure({
 							appRefreshTokenRepository,
 							hasRefreshed: true
 						})(req, res, next);
@@ -134,8 +132,7 @@ const handleTokenError = (
 		)
 	);
 
-// TODO rename this
-export const createSecure2: ReaderT<CreateSecureDependencies, Route> =
+export const createSecure: ReaderT<CreateSecureDependencies, Route> =
 	({ hasRefreshed, appRefreshTokenRepository }) =>
 	(req, res, next) =>
 		passport.authenticate(
