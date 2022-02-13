@@ -4,6 +4,7 @@ import { AccessToken } from './AccessToken';
 import * as Option from 'fp-ts/Option';
 import {
 	OptionT,
+	ReaderT,
 	ReaderTaskT,
 	TaskTryT
 } from '@craigmiller160/ts-functions/types';
@@ -20,6 +21,7 @@ import * as Text from '@craigmiller160/ts-functions/Text';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
+import { Route } from '../Route';
 
 interface CookieParts {
 	readonly cookie: string;
@@ -30,6 +32,11 @@ interface CookieParts {
 // TODO use this as another middleware, as opposed to wrapping the request
 // TODO perform the refresh and set the response cookie
 // TODO call next() to propagate to the actual handler
+
+interface CreateSecureDependencies {
+	readonly appRefreshTokenRepository: AppRefreshTokenRepository;
+	readonly hasRefreshed: boolean;
+}
 
 interface SecureDependencies {
 	readonly req: Request;
@@ -127,6 +134,40 @@ const handleTokenError = (
 				.otherwise(() => () => async () => next(error))
 		)
 	);
+
+export const createSecure2: ReaderT<CreateSecureDependencies, Route> =
+	({ hasRefreshed, appRefreshTokenRepository }) =>
+	(req, res, next) =>
+		passport.authenticate(
+			'jwt',
+			{ session: false },
+			(
+				error: Error | null,
+				user: AccessToken | boolean,
+				tokenError: Error | undefined
+			) => {
+				pipe(
+					getError(error, tokenError),
+					Option.fold(
+						() => {
+							req.user = user as AccessToken;
+							next();
+						},
+						(realError) =>
+							handleTokenError(
+								realError,
+								next
+							)({
+								req,
+								res,
+								next,
+								hasRefreshed,
+								appRefreshTokenRepository
+							})()
+					)
+				);
+			}
+		)(req, res, next);
 
 // TODO how to I get the ExpressDependencies here? Specifically the refresh token repo?
 // TODO I'm going to have to connect this to the broader Reader chain to get the repo
