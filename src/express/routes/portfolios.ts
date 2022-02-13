@@ -7,22 +7,19 @@ import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressRouteDependencies } from '../ExpressDependencies';
 import * as portfolioService from '../../services/routes/PortfolioService';
 
-// TODO majorly refactor and cleanup
-
 interface RouterAndRoutes {
 	readonly router: Router;
 	readonly getPortfoliosForUser: TaskRoute<void>;
-	// readonly savePortfoliosForUser: Route;
+	readonly savePortfoliosForUser: TaskRoute<void>;
 }
 
-// TODO refactor/clean this up
 const configureRoutes = ({
 	router,
-	getPortfoliosForUser
-}: // savePortfoliosForUser
-RouterAndRoutes): Router => {
+	getPortfoliosForUser,
+	savePortfoliosForUser
+}: RouterAndRoutes): Router => {
 	router.get('/', taskRouteToRoute(getPortfoliosForUser));
-	// router.post('/', savePortfoliosForUser);
+	router.post('/', taskRouteToRoute(savePortfoliosForUser));
 	return router;
 };
 
@@ -32,11 +29,11 @@ export const createPortfolioRoutes: ReaderT<ExpressRouteDependencies, void> =
 		Reader.bindTo('router'),
 		Reader.bind(
 			'getPortfoliosForUser',
-			() => portfolioService.getPortfoliosByUser2
+			() => portfolioService.getPortfoliosByUser
 		),
-		// Reader.bind(
-		// 	'savePortfoliosForUser',
-		// 	() => portfolioController.savePortfoliosForUser
-		// ),
+		Reader.bind(
+			'savePortfoliosForUser',
+			() => portfolioService.savePortfoliosForUser
+		),
 		Reader.map(configureRoutes)
 	);

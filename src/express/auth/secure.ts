@@ -201,3 +201,5 @@ export const secureReaderTask =
 		) => fn(req, res, next)(newDeps)();
 		authenticate(req, res, next, wrappedFn, newDeps);
 	};
+
+// TODO delete this whole file
