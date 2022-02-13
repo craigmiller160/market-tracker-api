@@ -52,6 +52,7 @@ export const createOAuthRoutes: RouteCreator = pipe(
 	Reader.map(configureRoutes)
 );
 
+// TODO possible solution: apply the route conversion function at the service level
 export const createOAuthRoutes2: RouteCreator = pipe(
 	newRouter('/oauth'),
 	Reader.bindTo('router'),
