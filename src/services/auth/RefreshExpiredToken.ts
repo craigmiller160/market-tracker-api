@@ -15,7 +15,6 @@ import { logger } from '../../logger';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
 import { ReaderTaskTryT, TryT } from '@craigmiller160/ts-functions/types';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
-import { ExpressDependencies } from '../../express/ExpressDependencies';
 import { AppRefreshTokenRepository } from '../../data/repo/AppRefreshTokenRepository';
 
 interface RefreshDependencies {

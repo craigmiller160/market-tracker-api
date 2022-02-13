@@ -85,9 +85,14 @@ const tryToRefreshExpiredToken = (): ReaderTaskT<SecureDependencies, void> => {
 		),
 		ReaderTaskEither.fold(
 			(ex) => ReaderTask.asks(({ next }) => next(ex)),
-			() => ReaderTask.asks(({ req, res, next }) => {
-				throw new Error();
-			})
+			(cookieParts) =>
+				ReaderTask.asks(({ req, res, next }) => {
+					req.headers['Cookie'] = cookieParts.cookie;
+					req.cookies[cookieParts.cookieName] =
+						cookieParts.cookieValue;
+					res.setHeader('Set-Cookie', cookieParts.cookie);
+					secure2(req, res, next, true);
+				})
 		)
 	);
 };
@@ -128,7 +133,8 @@ const handleTokenError = (
 export const secure2 = (
 	req: Request,
 	res: Response,
-	next: NextFunction
+	next: NextFunction,
+	hasRefreshed = false
 ): void =>
 	passport.authenticate(
 		'jwt',
@@ -153,7 +159,7 @@ export const secure2 = (
 							req,
 							res,
 							next,
-							hasRefreshed: false,
+							hasRefreshed,
 							appRefreshTokenRepository: mongoRefreshTokenRepo
 						})()
 				)
