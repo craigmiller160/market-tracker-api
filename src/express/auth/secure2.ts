@@ -11,7 +11,7 @@ export const secure2 = (
 		'jwt',
 		{ session: false },
 		(error, user, tokenError) => {
-			console.log(error, user, tokenError);
+			console.log('URL', req.originalUrl);
 			next(tokenError);
 		}
 	)(req, res, next);
