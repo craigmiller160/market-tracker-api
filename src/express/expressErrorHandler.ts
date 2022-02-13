@@ -63,7 +63,7 @@ export const expressErrorHandler = (
 	res: Response,
 	next: NextFunction
 ): void => {
-	logger.errorWithStack('Error while processing request', err);
+	logger.errorWithStack('Error while processing request', err)();
 
 	const status = getErrorStatus(err);
 	const errorResponse = createErrorResponse(err, req, status);
