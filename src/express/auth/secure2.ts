@@ -4,6 +4,8 @@ import { AccessToken } from './AccessToken';
 import * as Option from 'fp-ts/Option';
 import { OptionT } from '@craigmiller160/ts-functions/types';
 import { pipe } from 'fp-ts/function';
+import { match } from 'ts-pattern';
+import { isJwtInCookie } from './jwt';
 
 // TODO use this as another middleware, as opposed to wrapping the request
 // TODO perform the refresh and set the response cookie
@@ -19,7 +21,24 @@ const getError = (
 		Option.fromNullable
 	);
 
-const handleTokenError = (error: Error, next: NextFunction) => {};
+// TODO finish this
+const tryToRefreshExpiredToken = () => {
+	throw new Error();
+};
+
+// TODO need to pass hasRefreshed in, plus probably req/res/next
+const handleTokenError = (error: Error, next: NextFunction) => {
+	match({ error, jwtIsInCookie: false, refreshAlreadyHappened: false })
+		.with(
+			{
+				error: { name: 'TokenExpiredError' },
+				jwtIsInCookie: true,
+				refreshAlreadyHappened: false
+			},
+			() => tryToRefreshExpiredToken()
+		)
+		.otherwise(() => next(error));
+};
 
 export const secure2 = (
 	req: Request,
