@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
 import * as portfolioController from '../controllers/portfolios';
-import { Route, TaskRoute } from '../Route';
+import { Route, TaskRoute, taskRouteToRoute } from '../Route';
 import { newSecureRouter } from './routeUtils';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressRouteDependencies } from '../ExpressDependencies';
@@ -22,7 +22,7 @@ const configureRoutes = ({
 	getPortfoliosForUser
 }: // savePortfoliosForUser
 RouterAndRoutes): Router => {
-	router.get('/', (req, res, next) => getPortfoliosForUser(req, res, next)());
+	router.get('/', taskRouteToRoute(getPortfoliosForUser));
 	// router.post('/', savePortfoliosForUser);
 	return router;
 };

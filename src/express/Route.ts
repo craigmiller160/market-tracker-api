@@ -4,20 +4,28 @@ import { ExpressDependencies } from './ExpressDependencies';
 
 export type Route = (req: Request, res: Response, next: NextFunction) => void;
 
+// TODO if unused, delete. Remove generic
 export type ReaderTaskRoute<T> = (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => ReaderTaskT<ExpressDependencies, T>;
 
+// TODO if unused, delete. Remove generic
 export type TaskRoute<T> = (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => TaskT<T>;
 
+// TODO if unused, delete. Remove generic
 export type IORoute<T> = (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => IOT<T>;
+
+export const taskRouteToRoute =
+	(taskRoute: TaskRoute<void>): Route =>
+	(req: Request, res: Response, next: NextFunction) =>
+		taskRoute(req, res, next)();
