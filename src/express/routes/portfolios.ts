@@ -11,7 +11,6 @@ import { ExpressRouteDependencies } from '../ExpressDependencies';
 
 interface RouterAndRoutes {
 	readonly router: Router;
-	readonly secure2: Route;
 	readonly getPortfoliosForUser: Route;
 	// readonly savePortfoliosForUser: Route;
 }
@@ -19,11 +18,10 @@ interface RouterAndRoutes {
 // TODO refactor/clean this up
 const configureRoutes = ({
 	router,
-	secure2,
 	getPortfoliosForUser
 }: // savePortfoliosForUser
 RouterAndRoutes): Router => {
-	router.get('/', secure2, getPortfoliosForUser);
+	router.get('/', getPortfoliosForUser);
 	// router.post('/', savePortfoliosForUser);
 	return router;
 };
@@ -40,6 +38,5 @@ export const createPortfolioRoutes: ReaderT<ExpressRouteDependencies, void> =
 		// 	'savePortfoliosForUser',
 		// 	() => portfolioController.savePortfoliosForUser
 		// ),
-		Reader.bind('secure2', () => Reader.asks(({ secure2 }) => secure2)),
 		Reader.map(configureRoutes)
 	);
