@@ -7,7 +7,6 @@ import {
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
-import { stopExpressServer } from './expressServer';
 import { createKeyPair, TokenKeyPair } from './keyPair';
 import { TokenKey } from '../../src/services/auth/TokenKey';
 import { AccessToken } from '../../src/express/auth/AccessToken';
@@ -89,7 +88,6 @@ export const stopFullTestServer = (
 	delete process.env.CLIENT_NAME;
 	return pipe(
 		stopMongoTestServer(fullTestServer.mongoServer),
-		TE.chain(() => stopExpressServer(fullTestServer.expressServer.server)),
 		TaskTry.getOrThrow
 	)();
 };
