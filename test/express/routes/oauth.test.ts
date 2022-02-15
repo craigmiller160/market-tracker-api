@@ -277,7 +277,7 @@ describe('oauth routes', () => {
 				.expect(500);
 
 			const count = await AppRefreshTokenModel.count().exec();
-			expect(count).toEqual(1);
+			expect(count).toEqual(0);
 		});
 
 		it('invalid state for authentication', async () => {
