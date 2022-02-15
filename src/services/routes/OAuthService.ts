@@ -16,6 +16,7 @@ import {
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import * as IOEither from 'fp-ts/IOEither';
 import {
+	IORoute,
 	ioRouteToRoute,
 	Route,
 	TaskRoute,
@@ -23,7 +24,7 @@ import {
 } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 
-export const getAuthUser = (req: Request, res: Response): void => {
+export const getAuthUser: Route = (req, res) => {
 	const token = req.user as AccessToken;
 	res.send({
 		sub: token.sub,
@@ -36,22 +37,25 @@ export const getAuthUser = (req: Request, res: Response): void => {
 	});
 };
 
-export const getAuthCodeLogin: Route = pipe(
-	(req: Request, res: Response, next: NextFunction) =>
-		pipe(
-			prepareAuthCodeLogin(req),
-			IOEither.fold(
-				(ex) => () => next(ex),
-				(url) => () => {
-					const response: AuthCodeLoginResponse = {
-						url
-					};
-					res.json(response);
-				}
-			)
-		),
-	ioRouteToRoute
-);
+const doGetAuthCodeLogin: IORoute = (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) =>
+	pipe(
+		prepareAuthCodeLogin(req),
+		IOEither.fold(
+			(ex) => () => next(ex),
+			(url) => () => {
+				const response: AuthCodeLoginResponse = {
+					url
+				};
+				res.json(response);
+			}
+		)
+	);
+
+export const getAuthCodeLogin: Route = pipe(doGetAuthCodeLogin, ioRouteToRoute);
 
 export const authCodeAuthentication: ReaderT<ExpressRouteDependencies, Route> =
 	pipe(
