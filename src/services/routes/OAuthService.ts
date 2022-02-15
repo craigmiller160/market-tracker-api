@@ -5,7 +5,7 @@ import {
 	AuthCodeLoginResponse,
 	prepareAuthCodeLogin
 } from '../auth/AuthCodeLogin';
-import { IOT, ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
+import { ReaderT, ReaderTaskT } from '@craigmiller160/ts-functions/types';
 import { authenticateWithAuthCode } from '../auth/AuthCodeAuthentication';
 import { logout } from '../auth/Logout';
 import { errorReaderTask } from '../../function/Route';
@@ -15,7 +15,12 @@ import {
 } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import * as IOEither from 'fp-ts/IOEither';
-import { Route, TaskRoute, taskRouteToRoute } from '../../express/Route';
+import {
+	ioRouteToRoute,
+	Route,
+	TaskRoute,
+	taskRouteToRoute
+} from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 
 export const getAuthUser = (req: Request, res: Response): void => {
@@ -31,23 +36,22 @@ export const getAuthUser = (req: Request, res: Response): void => {
 	});
 };
 
-export const getAuthCodeLogin = (
-	req: Request,
-	res: Response,
-	next: NextFunction
-): IOT<void> =>
-	pipe(
-		prepareAuthCodeLogin(req),
-		IOEither.fold(
-			(ex) => () => next(ex),
-			(url) => () => {
-				const response: AuthCodeLoginResponse = {
-					url
-				};
-				res.json(response);
-			}
-		)
-	);
+export const getAuthCodeLogin: Route = pipe(
+	(req: Request, res: Response, next: NextFunction) =>
+		pipe(
+			prepareAuthCodeLogin(req),
+			IOEither.fold(
+				(ex) => () => next(ex),
+				(url) => () => {
+					const response: AuthCodeLoginResponse = {
+						url
+					};
+					res.json(response);
+				}
+			)
+		),
+	ioRouteToRoute
+);
 
 export const authCodeAuthentication: ReaderT<ExpressRouteDependencies, Route> =
 	pipe(

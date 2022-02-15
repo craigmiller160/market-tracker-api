@@ -1,6 +1,6 @@
 import { RouteCreator } from './RouteCreator';
 import { Router } from 'express';
-import { ioRouteToRoute, Route } from '../Route';
+import { Route } from '../Route';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
 import { newRouter } from './routeUtils';
@@ -26,15 +26,13 @@ const configureRoutes = ({
 	return router;
 };
 
-// TODO possible solution: apply the route conversion function at the service level
 export const createOAuthRoutes: RouteCreator = pipe(
 	newRouter('/oauth'),
 	Reader.bindTo('router'),
 	Reader.bind('routes', () =>
 		Reader.sequenceArray([
 			Reader.of(oAuthService.getAuthUser),
-			// TODO move this down a level
-			Reader.of(ioRouteToRoute(oAuthService.getAuthCodeLogin)),
+			Reader.of(oAuthService.getAuthCodeLogin),
 			oAuthService.authCodeAuthentication,
 			oAuthService.logoutAndClearAuth
 		])
