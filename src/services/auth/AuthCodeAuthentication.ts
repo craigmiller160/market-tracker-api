@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { getMarketTrackerSession } from '../../function/HttpRequest';
 import * as Option from 'fp-ts/Option';
 import * as Either from 'fp-ts/Either';
-import { flow, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import { TokenResponse } from '../../types/TokenResponse';
 import * as Try from '@craigmiller160/ts-functions/Try';
 import { createTokenCookie } from './Cookie';
@@ -12,11 +12,13 @@ import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { sendTokenRequest } from './AuthServerRequest';
 import { getRequiredValues } from '../../function/Values';
 import { AppRefreshToken } from '../../data/modelTypes/AppRefreshToken';
+import * as TaskEither from 'fp-ts/TaskEither';
 import {
 	IOT,
 	IOTryT,
 	OptionT,
 	ReaderTaskTryT,
+	TaskTryT,
 	TryT
 } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../../express/ExpressDependencies';
@@ -26,6 +28,7 @@ import * as IO from 'fp-ts/IO';
 import * as IOEither from 'fp-ts/IOEither';
 
 export interface AuthCodeSuccess {
+	readonly tokenResponse: TokenResponse;
 	readonly cookie: string;
 	readonly postAuthRedirect: string;
 }
@@ -169,25 +172,33 @@ const createAuthCodeBody = (
 	);
 };
 
-export const authenticateWithAuthCode = (
+const performAuthCodeAuthentication = (
 	req: Request
-): ReaderTaskTryT<ExpressDependencies, AuthCodeSuccess> =>
+): TaskTryT<AuthCodeSuccess> =>
 	pipe(
 		getAndValidateCodeOriginAndState(req),
 		IOEither.fromEither,
 		IOEither.chain(({ origin, code }) => createAuthCodeBody(origin, code)),
-		ReaderTaskEither.fromIOEither,
-		ReaderTaskEither.chain(
-			flow(sendTokenRequest, ReaderTaskEither.fromTaskEither)
-		),
-		ReaderTaskEither.chainFirst(handleRefreshToken),
-		ReaderTaskEither.chain((_) =>
-			ReaderTaskEither.fromIOEither(createTokenCookie(_.accessToken))
-		),
-		ReaderTaskEither.bindTo('cookie'),
-		ReaderTaskEither.bind('postAuthRedirect', () =>
-			ReaderTaskEither.fromIOEither(
-				Process.envLookupE('POST_AUTH_REDIRECT')
+		TaskEither.fromIOEither,
+		TaskEither.chain(sendTokenRequest),
+		TaskEither.bindTo('tokenResponse'),
+		TaskEither.bind('cookie', ({ tokenResponse }) =>
+			TaskEither.fromIOEither(
+				createTokenCookie(tokenResponse.accessToken)
 			)
+		),
+		TaskEither.bind('postAuthRedirect', () =>
+			TaskEither.fromIOEither(Process.envLookupE('POST_AUTH_REDIRECT'))
+		)
+	);
+
+export const authenticateWithAuthCode = (
+	req: Request
+): ReaderTaskTryT<ExpressDependencies, AuthCodeSuccess> =>
+	pipe(
+		performAuthCodeAuthentication(req),
+		ReaderTaskEither.fromTaskEither,
+		ReaderTaskEither.chainFirst(({ tokenResponse }) =>
+			handleRefreshToken(tokenResponse)
 		)
 	);
