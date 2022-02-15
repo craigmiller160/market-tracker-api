@@ -1,6 +1,6 @@
 import { RouteCreator } from './RouteCreator';
 import { Router } from 'express';
-import { Route } from '../Route';
+import { ioRouteToRoute, Route } from '../Route';
 import * as Reader from 'fp-ts/Reader';
 import { pipe } from 'fp-ts/function';
 import { newRouter } from './routeUtils';
@@ -33,7 +33,8 @@ export const createOAuthRoutes: RouteCreator = pipe(
 	Reader.bind('routes', () =>
 		Reader.sequenceArray([
 			Reader.of(oAuthService.getAuthUser),
-			Reader.of(oAuthService.getAuthCodeLogin),
+			// TODO move this down a level
+			Reader.of(ioRouteToRoute(oAuthService.getAuthCodeLogin)),
 			oAuthService.authCodeAuthentication,
 			oAuthService.logoutAndClearAuth
 		])
