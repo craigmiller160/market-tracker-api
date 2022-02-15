@@ -15,7 +15,7 @@ import {
 } from '../../express/ExpressDependencies';
 import * as ReaderTaskEither from 'fp-ts/ReaderTaskEither';
 import * as IOEither from 'fp-ts/IOEither';
-import { TaskRoute } from '../../express/Route';
+import { Route, TaskRoute, taskRouteToRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 
 export const getAuthUser = (req: Request, res: Response): void => {
@@ -49,39 +49,46 @@ export const getAuthCodeLogin = (
 		)
 	);
 
-export const authCodeAuthentication: ReaderT<
-	ExpressRouteDependencies,
-	TaskRoute
-> = Reader.asks(
-	(deps) => (req: Request, res: Response, next: NextFunction) =>
-		pipe(
-			authenticateWithAuthCode(req),
-			ReaderTaskEither.fold(
-				errorReaderTask(next),
-				(authCodeSuccess) => () => async () => {
-					res.setHeader('Set-Cookie', authCodeSuccess.cookie);
-					res.setHeader('Location', authCodeSuccess.postAuthRedirect);
-					res.status(302);
-					res.end();
-				}
-			)
-		)(deps)
-);
-
-export const logoutAndClearAuth: ReaderT<ExpressRouteDependencies, TaskRoute> =
-	Reader.asks(
-		(deps) => (req: Request, res: Response, next: NextFunction) =>
-			pipe(
-				logout(req),
-				ReaderTaskEither.fold(
-					errorReaderTask(next),
-					(cookie): ReaderTaskT<ExpressDependencies, void> =>
-						() =>
-						async () => {
-							res.setHeader('Set-Cookie', cookie);
-							res.status(204);
+export const authCodeAuthentication: ReaderT<ExpressRouteDependencies, Route> =
+	pipe(
+		Reader.asks<ExpressRouteDependencies, TaskRoute>(
+			(deps) => (req: Request, res: Response, next: NextFunction) =>
+				pipe(
+					authenticateWithAuthCode(req),
+					ReaderTaskEither.fold(
+						errorReaderTask(next),
+						(authCodeSuccess) => () => async () => {
+							res.setHeader('Set-Cookie', authCodeSuccess.cookie);
+							res.setHeader(
+								'Location',
+								authCodeSuccess.postAuthRedirect
+							);
+							res.status(302);
 							res.end();
 						}
-				)
-			)(deps)
+					)
+				)(deps)
+		),
+		Reader.map(taskRouteToRoute)
+	);
+
+export const logoutAndClearAuth: ReaderT<ExpressRouteDependencies, Route> =
+	pipe(
+		Reader.asks<ExpressRouteDependencies, TaskRoute>(
+			(deps) => (req: Request, res: Response, next: NextFunction) =>
+				pipe(
+					logout(req),
+					ReaderTaskEither.fold(
+						errorReaderTask(next),
+						(cookie): ReaderTaskT<ExpressDependencies, void> =>
+							() =>
+							async () => {
+								res.setHeader('Set-Cookie', cookie);
+								res.status(204);
+								res.end();
+							}
+					)
+				)(deps)
+		),
+		Reader.map(taskRouteToRoute)
 	);
