@@ -57,6 +57,23 @@ const doGetAuthCodeLogin: IORoute = (
 
 export const getAuthCodeLogin: Route = pipe(doGetAuthCodeLogin, ioRouteToRoute);
 
+export interface RequestDependencies {
+	readonly req: Request;
+	readonly res: Response;
+	readonly next: NextFunction;
+}
+
+export type AuthCodeAuthDependencies = ExpressRouteDependencies &
+	RequestDependencies;
+
+const temp: ReaderT<ExpressRouteDependencies, any> = () => {
+	pipe(
+		Reader.asks<ExpressRouteDependencies, AuthCodeAuthDependencies>((deps) => {
+
+		})
+	);
+};
+
 export const authCodeAuthentication: ReaderT<ExpressRouteDependencies, Route> =
 	pipe(
 		Reader.asks<ExpressRouteDependencies, TaskRoute>(
