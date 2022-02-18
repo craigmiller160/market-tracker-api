@@ -8,6 +8,7 @@ import { loadTokenKey } from './services/auth/TokenKey';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import * as Task from 'fp-ts/Task';
 import * as IO from 'fp-ts/IO';
+import { constVoid } from 'fp-ts/function';
 
 pipe(
 	logger.info('Starting application'),
@@ -19,9 +20,9 @@ pipe(
 		(ex) =>
 			pipe(
 				logger.errorWithStack('Error starting application', ex),
-				IO.chain(Process.exit(1)),
+				IO.chain(() => Process.exit(1)),
 				Task.fromIO
 			),
-		() => async () => ''
+		() => Task.of(constVoid())
 	)
 )();
