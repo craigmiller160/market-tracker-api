@@ -3,7 +3,7 @@ import { IORoute, Route } from './Route';
 import { ExpressDependencies } from './ExpressDependencies';
 
 export const ioRouteToReaderRoute =
-	<T>(fn: IORoute<T>): ReaderT<ExpressDependencies, Route> =>
+	(fn: IORoute): ReaderT<ExpressDependencies, Route> =>
 	() =>
 	(req, res, next) =>
 		fn(req, res, next)();
