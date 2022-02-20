@@ -65,7 +65,7 @@ const executeTokenRestCall = (
 				IO.map(
 					() =>
 						new UnauthorizedError(
-							'Error uathenticating with AuthServer'
+							'Error authenticating with AuthServer'
 						)
 				)
 			)()
