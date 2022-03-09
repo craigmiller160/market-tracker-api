@@ -20,7 +20,7 @@
     "validate": "yarn lint && yarn test"
   },
   "lint-staged": {
-    "*.{ts,tsx}": "yarn lint"
+    "*.{ts,tsx}": "eslint --fix --max-warnings=0"
   },
   "resolutions": {
     "@babel/code-frame": "^7.16.0",
