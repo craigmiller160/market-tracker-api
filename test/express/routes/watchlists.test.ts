@@ -122,6 +122,16 @@ describe('watchlists route', () => {
 		});
 	});
 
+	describe('createWatchlist', () => {
+		it('successful auth', async () => {
+			throw new Error();
+		});
+
+		it('failed auth', () => {
+			throw new Error();
+		});
+	});
+
 	describe('saveWatchlists', () => {
 		const newWatchlists: Watchlist[] = [
 			{
