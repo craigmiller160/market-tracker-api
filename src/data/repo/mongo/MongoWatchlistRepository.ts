@@ -1,6 +1,7 @@
 import {
 	CreateWatchlistForUser,
 	FindWatchlistsForUser,
+	GetAllNamesForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
 import { logger } from '../../../logger';
@@ -14,6 +15,7 @@ import { pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
+import { WatchlistNameAndId } from '../../modelTypes/Watchlist';
 
 export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	pipe(
@@ -71,3 +73,18 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 		)
 	);
 };
+
+export const getAllNamesForUser: GetAllNamesForUser = (userId) =>
+	pipe(
+		TaskTry.tryCatch(() =>
+			WatchlistModel.find({ userId }).select('watchlistName').exec()
+		),
+		TaskEither.map(
+			RArray.map(
+				(value): WatchlistNameAndId => ({
+					id: value._id,
+					watchlistName: value.watchlistName
+				})
+			)
+		)
+	);

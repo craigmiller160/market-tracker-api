@@ -10,6 +10,24 @@ import * as Reader from 'fp-ts/Reader';
 import { WatchlistRepository } from '../../data/repo/WatchlistRepository';
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
 
+export const getAllNames: ReaderT<ExpressRouteDependencies, TaskRoute> = pipe(
+	Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
+		({ watchlistRepository }) => watchlistRepository
+	),
+	Reader.map(
+		(watchlistRepository) =>
+			(req: Request, res: Response, next: NextFunction) => {
+				const token = req.user as AccessToken;
+				return pipe(
+					watchlistRepository.getAllNamesForUser(token.userId),
+					TaskEither.fold(errorTask(next), (_) => async () => {
+						res.json(_);
+					})
+				);
+			}
+	)
+);
+
 export const createNewWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	pipe(
 		Reader.asks<ExpressRouteDependencies, WatchlistRepository>(

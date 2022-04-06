@@ -1,5 +1,9 @@
 import { TaskTryT } from '@craigmiller160/ts-functions/types';
-import { Watchlist, WatchlistInput } from '../modelTypes/Watchlist';
+import {
+	Watchlist,
+	WatchlistInput,
+	WatchlistNameAndId
+} from '../modelTypes/Watchlist';
 
 export type FindWatchlistsForUser = (
 	userId: number
@@ -15,8 +19,13 @@ export type CreateWatchlistForUser = (
 	watchlist: WatchlistInput
 ) => TaskTryT<Watchlist>;
 
+export type GetAllNamesForUser = (
+	userId: number
+) => TaskTryT<ReadonlyArray<WatchlistNameAndId>>;
+
 export interface WatchlistRepository {
 	readonly findWatchlistsForUser: FindWatchlistsForUser;
 	readonly saveWatchlistsForUser: SaveWatchlistsForUser;
 	readonly createWatchlistForUser: CreateWatchlistForUser;
+	readonly getAllNamesForUser: GetAllNamesForUser;
 }

@@ -103,6 +103,34 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('getAllNames', () => {
+		it('successfully gets names', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			const res = await request(fullTestServer.expressServer.server)
+				.get('/watchlists/names')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			expect(res.body).toEqual([
+				{
+					id: expect.any(String),
+					watchlistName: user1InitWatchlists[0].watchlistName
+				},
+				{
+					id: expect.any(String),
+					watchlistName: user1InitWatchlists[1].watchlistName
+				}
+			]);
+		});
+
+		it('failed auth', async () => {
+			await request(fullTestServer.expressServer.server)
+				.get('/watchlists/names')
+				.timeout(2000)
+				.expect(401);
+		});
+	});
+
 	describe('getWatchlists', () => {
 		it('successful auth', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
