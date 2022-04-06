@@ -113,11 +113,11 @@ describe('watchlists route', () => {
 				.expect(200);
 			expect(res.body).toEqual([
 				{
-					id: '',
+					id: expect.any(String),
 					watchlistName: user1InitWatchlists[0].watchlistName
 				},
 				{
-					id: '',
+					id: expect.any(String),
 					watchlistName: user1InitWatchlists[1].watchlistName
 				}
 			]);
