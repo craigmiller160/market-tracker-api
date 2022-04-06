@@ -11,3 +11,8 @@ export interface WatchlistInput {
 export interface Watchlist extends WatchlistInput {
 	readonly userId: number;
 }
+
+export interface WatchlistNameAndId {
+	readonly id: string;
+	readonly name: string;
+}

@@ -6,7 +6,7 @@ import {
 import { WatchlistRepository } from './WatchlistRepository';
 import {
 	createWatchlistForUser,
-	findWatchlistsForUser,
+	findWatchlistsForUser, getAllNamesForUser,
 	saveWatchlistsForUser
 } from './mongo/MongoWatchlistRepository';
 import { AppRefreshTokenRepository } from './AppRefreshTokenRepository';
@@ -24,7 +24,8 @@ export const portfolioRepository: PortfolioRepository = {
 export const watchlistRepository: WatchlistRepository = {
 	findWatchlistsForUser,
 	saveWatchlistsForUser,
-	createWatchlistForUser
+	createWatchlistForUser,
+	getAllNamesForUser
 };
 
 export const appRefreshTokenRepository: AppRefreshTokenRepository = {

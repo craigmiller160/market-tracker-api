@@ -1,6 +1,6 @@
 import {
 	CreateWatchlistForUser,
-	FindWatchlistsForUser,
+	FindWatchlistsForUser, GetAllNamesForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
 import { logger } from '../../../logger';
@@ -70,4 +70,8 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 			)
 		)
 	);
+};
+
+export const getAllNamesForUser: GetAllNamesForUser = (userId) => {
+	throw new Error();
 };
