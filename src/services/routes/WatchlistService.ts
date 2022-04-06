@@ -8,6 +8,29 @@ import { errorTask } from '../../function/Route';
 import { TaskRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 import { WatchlistRepository } from '../../data/repo/WatchlistRepository';
+import { WatchlistInput } from '../../data/modelTypes/Watchlist';
+
+export const createNewWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	pipe(
+		Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
+			({ watchlistRepository }) => watchlistRepository
+		),
+		Reader.map(
+			(watchlistRepository) =>
+				(req: Request, res: Response, next: NextFunction) => {
+					const token = req.user as AccessToken;
+					return pipe(
+						watchlistRepository.createWatchlistForUser(
+							token.userId,
+							req.body as WatchlistInput
+						),
+						TaskEither.fold(errorTask(next), (_) => async () => {
+							res.json(_);
+						})
+					);
+				}
+		)
+	);
 
 export const getWatchlistsByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	pipe(
