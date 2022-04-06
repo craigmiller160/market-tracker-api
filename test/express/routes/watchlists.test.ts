@@ -10,7 +10,10 @@ import {
 	stopFullTestServer
 } from '../../testutils/fullTestServer';
 import { removeId } from '../../testutils/functions';
-import { Watchlist } from '../../../src/data/modelTypes/Watchlist';
+import {
+	Watchlist,
+	WatchlistInput
+} from '../../../src/data/modelTypes/Watchlist';
 
 const formatWatchlists = (watchlists: Watchlist[]): Watchlist[] =>
 	watchlists.map((watchlist) => {
@@ -104,7 +107,7 @@ describe('watchlists route', () => {
 		it('successful auth', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			const res = await request(fullTestServer.expressServer.server)
-				.get('/watchlists')
+				.get('/watchlists/all')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
@@ -116,8 +119,59 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.get('/watchlists')
+				.get('/watchlists/all')
 				.timeout(2000)
+				.expect(401);
+		});
+	});
+
+	describe('createWatchlist', () => {
+		const watchlistInput: WatchlistInput = {
+			watchlistName: 'Hello',
+			stocks: [],
+			cryptos: []
+		};
+
+		it('successfully creates watchlist', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			const res = await request(fullTestServer.expressServer.server)
+				.post('/watchlists')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.set('Content-Type', 'application/json')
+				.send(watchlistInput)
+				.expect(200);
+			expect(res.body).toEqual(
+				expect.objectContaining({
+					userId: 1,
+					watchlistName: 'Hello',
+					stocks: [],
+					cryptos: []
+				})
+			);
+		});
+
+		it('rejects watchlist with duplicate name', async () => {
+			const badInput: WatchlistInput = {
+				...watchlistInput,
+				watchlistName: 'One'
+			};
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.set('Content-Type', 'application/json')
+				.send(badInput)
+				.expect(400);
+		});
+
+		it('failed auth', async () => {
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists')
+				.timeout(2000)
+				.set('Content-Type', 'application/json')
+				.send(watchlistInput)
 				.expect(401);
 		});
 	});
@@ -136,10 +190,34 @@ describe('watchlists route', () => {
 			}
 		];
 
-		it('successful auth', async () => {
+		it('rejects watchlists with duplicate names', async () => {
+			const newNewWatchlists: ReadonlyArray<Watchlist> = [
+				...newWatchlists,
+				{
+					userId: 1,
+					watchlistName: 'Ten',
+					stocks: [
+						{
+							symbol: 'atv'
+						}
+					],
+					cryptos: []
+				}
+			];
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/all')
+				.timeout(2000)
+				.set('Authorization', `Bearer ${token}`)
+				.set('Content-Type', 'application/json')
+				.send(newNewWatchlists)
+				.expect(400);
+		});
+
+		it('successfully saves watchlists', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			const res = await request(fullTestServer.expressServer.server)
-				.post('/watchlists')
+				.post('/watchlists/all')
 				.timeout(2000)
 				.set('Authorization', `Bearer ${token}`)
 				.set('Content-Type', 'application/json')
@@ -167,7 +245,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists')
+				.post('/watchlists/all')
 				.timeout(2000)
 				.set('Content-Type', 'application/json')
 				.send(newWatchlists)

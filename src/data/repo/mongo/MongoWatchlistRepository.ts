@@ -1,4 +1,5 @@
 import {
+	CreateWatchlistForUser,
 	FindWatchlistsForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
@@ -27,6 +28,17 @@ const replaceWatchlistsForUser = async (
 ): Promise<void> => {
 	await WatchlistModel.deleteMany({ userId }).exec();
 	await WatchlistModel.insertMany(watchlistModels);
+};
+
+export const createWatchlistForUser: CreateWatchlistForUser = (
+	userId,
+	watchlist
+) => {
+	const watchlistModel = new WatchlistModel({
+		...watchlist,
+		userId
+	});
+	return TaskTry.tryCatch(() => watchlistModel.save());
 };
 
 export const saveWatchlistsForUser: SaveWatchlistsForUser = (

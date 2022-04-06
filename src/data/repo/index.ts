@@ -5,6 +5,7 @@ import {
 } from './mongo/MongoPortfolioRepository';
 import { WatchlistRepository } from './WatchlistRepository';
 import {
+	createWatchlistForUser,
 	findWatchlistsForUser,
 	saveWatchlistsForUser
 } from './mongo/MongoWatchlistRepository';
@@ -22,7 +23,8 @@ export const portfolioRepository: PortfolioRepository = {
 
 export const watchlistRepository: WatchlistRepository = {
 	findWatchlistsForUser,
-	saveWatchlistsForUser
+	saveWatchlistsForUser,
+	createWatchlistForUser
 };
 
 export const appRefreshTokenRepository: AppRefreshTokenRepository = {
