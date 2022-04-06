@@ -14,5 +14,5 @@ export interface Watchlist extends WatchlistInput {
 
 export interface WatchlistNameAndId {
 	readonly id: string;
-	readonly name: string;
+	readonly watchlistName: string;
 }

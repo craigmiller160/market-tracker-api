@@ -105,11 +105,29 @@ describe('watchlists route', () => {
 
 	describe('getAllNames', () => {
 		it('successfully gets names', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			const res = await request(fullTestServer.expressServer.server)
+				.get('/watchlists/names')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			expect(res.body).toEqual([
+				{
+					id: '',
+					watchlistName: user1InitWatchlists[0].watchlistName
+				},
+				{
+					id: '',
+					watchlistName: user1InitWatchlists[1].watchlistName
+				}
+			]);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.get('/watchlists/names')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
