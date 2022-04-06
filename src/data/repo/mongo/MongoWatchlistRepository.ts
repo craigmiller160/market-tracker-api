@@ -79,6 +79,7 @@ export const getAllNamesForUser: GetAllNamesForUser = (userId) => {
 			WatchlistModel.find({ userId }).select('name').exec()
 		),
 		TaskEither.map((values) => {
+			// TODO map array
 			return values;
 		})
 	);
