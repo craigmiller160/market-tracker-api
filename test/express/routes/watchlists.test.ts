@@ -107,7 +107,7 @@ describe('watchlists route', () => {
 		it('successful auth', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			const res = await request(fullTestServer.expressServer.server)
-				.get('/watchlists')
+				.get('/watchlists/all')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
@@ -119,7 +119,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.get('/watchlists')
+				.get('/watchlists/all')
 				.timeout(2000)
 				.expect(401);
 		});
@@ -143,7 +143,7 @@ describe('watchlists route', () => {
 				.expect(200);
 			expect(res.body).toEqual(
 				expect.objectContaining({
-					userId: 0,
+					userId: 1,
 					watchlistName: 'Hello',
 					stocks: [],
 					cryptos: []
@@ -163,7 +163,7 @@ describe('watchlists route', () => {
 				.timeout(2000)
 				.set('Content-Type', 'application/json')
 				.send(badInput)
-				.expect(200);
+				.expect(400);
 		});
 
 		it('failed auth', async () => {

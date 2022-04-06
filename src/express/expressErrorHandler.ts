@@ -22,6 +22,7 @@ const UNAUTHORIZED_ERROR_NAMES = [
 	'TokenExpiredError',
 	'UnauthorizedError'
 ];
+const MONGO_ERROR_NAMES = ['MongoServerError', 'MongoBulkWriteError'];
 
 const isUnauthorizedError: P.Predicate<Error> = pipe(
 	(_: Error) => UNAUTHORIZED_ERROR_NAMES.includes(_.name),
@@ -29,7 +30,7 @@ const isUnauthorizedError: P.Predicate<Error> = pipe(
 );
 
 const isMongoConstraintError: P.Predicate<Error> = pipe(
-	(_: Error) => _.name === 'MongoBulkWriteError',
+	(_: Error) => MONGO_ERROR_NAMES.includes(_.name),
 	P.and((_) => _.message.includes('duplicate key error'))
 );
 
