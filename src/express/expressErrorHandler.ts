@@ -28,14 +28,21 @@ const isUnauthorizedError: P.Predicate<Error> = pipe(
 	P.or((_) => NO_AUTH_TOKEN_REGEX.test(_.message))
 );
 
+const isMongoConstraintError: P.Predicate<Error> = pipe(
+	(_: Error) => _.name === 'MongoBulkWriteError',
+	P.and((_) => _.message.includes('duplicate key error'))
+);
+
 const getErrorStatus = (err: Error): number =>
 	match(err)
 		.with(when(isUnauthorizedError), () => 401)
+		.with(when(isMongoConstraintError), () => 400)
 		.otherwise(() => 500);
 
 const getErrorMessage = (err: Error): string =>
 	match(err)
 		.with(when(isUnauthorizedError), () => 'Unauthorized')
+		.with(when(isMongoConstraintError), () => 'Bad Request')
 		.with({ name: 'MissingValuesError' }, () => 'Missing values')
 		.otherwise((_) => _.message);
 
