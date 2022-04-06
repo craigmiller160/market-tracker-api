@@ -73,5 +73,12 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 };
 
 export const getAllNamesForUser: GetAllNamesForUser = (userId) => {
+	pipe(
+		TaskTry.tryCatch(() => WatchlistModel.find().select('name').exec()),
+		TaskEither.map((values) => {
+			return values;
+		})
+	)
+
 	throw new Error();
 };
