@@ -195,7 +195,7 @@ describe('watchlists route', () => {
 				...newWatchlists,
 				{
 					userId: 1,
-					watchlistName: 'One',
+					watchlistName: 'Ten',
 					stocks: [
 						{
 							symbol: 'atv'

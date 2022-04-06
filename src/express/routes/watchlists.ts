@@ -17,8 +17,8 @@ const configureRoutes = ({
 	getWatchlistsForUser,
 	saveWatchlistsForUser
 }: RouterAndRoutes): Router => {
-	router.get('/', taskRouteToRoute(getWatchlistsForUser));
-	router.post('/', taskRouteToRoute(saveWatchlistsForUser));
+	router.get('/all', taskRouteToRoute(getWatchlistsForUser));
+	router.post('/all', taskRouteToRoute(saveWatchlistsForUser));
 	return router;
 };
 
