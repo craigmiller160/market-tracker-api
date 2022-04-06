@@ -8,7 +8,8 @@ const watchlistSchema = new Schema<Watchlist>({
 	},
 	watchlistName: {
 		type: String,
-		required: true
+		required: true,
+		unique: true
 	},
 	stocks: [
 		{
