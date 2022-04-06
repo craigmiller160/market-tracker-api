@@ -15,6 +15,7 @@ import { pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
+import { WatchlistNameAndId } from '../../modelTypes/Watchlist';
 
 export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	pipe(
@@ -73,16 +74,17 @@ export const saveWatchlistsForUser: SaveWatchlistsForUser = (
 	);
 };
 
-export const getAllNamesForUser: GetAllNamesForUser = (userId) => {
+export const getAllNamesForUser: GetAllNamesForUser = (userId) =>
 	pipe(
 		TaskTry.tryCatch(() =>
-			WatchlistModel.find({ userId }).select('name').exec()
+			WatchlistModel.find({ userId }).select('watchlistName').exec()
 		),
-		TaskEither.map((values) => {
-			// TODO map array
-			return values;
-		})
+		TaskEither.map(
+			RArray.map(
+				(value): WatchlistNameAndId => ({
+					id: value._id,
+					watchlistName: value.watchlistName
+				})
+			)
+		)
 	);
-
-	throw new Error();
-};
