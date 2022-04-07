@@ -103,6 +103,26 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('addStockToWatchlist', () => {
+		it('successfully adds stock', async () => {
+			throw new Error();
+		});
+
+		it('failed auth', async () => {
+			throw new Error();
+		});
+	});
+
+	describe('addCryptoToWatchlist', () => {
+		it('successfully adds crypto', async () => {
+			throw new Error();
+		});
+
+		it('failed auth', async () => {
+			throw new Error();
+		});
+	});
+
 	describe('getAllNames', () => {
 		it('successfully gets names', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
