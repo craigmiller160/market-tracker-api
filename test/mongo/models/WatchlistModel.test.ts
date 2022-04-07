@@ -42,5 +42,16 @@ describe('WatchlistModel', () => {
 			__v: 1,
 			stocks: [{ _id: expect.anything(), symbol: 'ABC' }]
 		});
+
+		existing2.cryptos.push({ symbol: 'DEF' });
+		try {
+			await existing2.save();
+		} catch (ex) {
+			const error = ex as Error;
+			expect(error.name).toEqual('VersionError');
+			expect(error.message).toContain('No matching document found');
+			return;
+		}
+		fail('Should have thrown exception');
 	});
 });
