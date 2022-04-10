@@ -16,7 +16,7 @@ import { BadRequestError } from '../../error/BadRequestError';
 
 interface AddInvestmentParams {
 	readonly watchlistName: string;
-	readonly investmentType: InvestmentType;
+	readonly type: InvestmentType;
 	readonly symbol: string;
 }
 
@@ -29,7 +29,7 @@ export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 			watchlistRepository.addInvestmentForUser(
 				token.userId,
 				params.watchlistName,
-				params.investmentType,
+				params.type,
 				params.symbol
 			),
 			TaskEither.chainOptionK(

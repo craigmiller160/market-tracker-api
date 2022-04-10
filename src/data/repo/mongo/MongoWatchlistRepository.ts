@@ -101,7 +101,7 @@ export const addInvestmentForUser: AddInvestmentForUser = (
 	pipe(
 		TaskTry.tryCatch(() =>
 			WatchlistModel.updateOne(
-				{ watchlistName },
+				{ watchlistName, userId },
 				{
 					$push: match(type)
 						.with('stock', () => ({

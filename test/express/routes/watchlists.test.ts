@@ -154,7 +154,7 @@ describe('watchlists route', () => {
 			expect(watchlist?.cryptos).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
-						symbol: 'ABC'
+						symbol: 'NEW'
 					})
 				])
 			);
