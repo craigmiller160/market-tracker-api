@@ -1,7 +1,7 @@
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressRouteDependencies } from '../../express/ExpressDependencies';
 import { AccessToken } from '../../express/auth/AccessToken';
-import { pipe } from 'fp-ts/function';
+import { identity, pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { NextFunction, Request, Response } from 'express';
 import { errorTask } from '../../function/Route';
@@ -12,6 +12,7 @@ import {
 	WatchlistRepository
 } from '../../data/repo/WatchlistRepository';
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
+import { BadRequestError } from '../../error/BadRequestError';
 
 interface AddInvestmentParams {
 	readonly watchlistName: string;
@@ -31,6 +32,12 @@ export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 				params.investmentType,
 				params.symbol
 			),
+			TaskEither.chainOptionK(
+				(): Error =>
+					new BadRequestError(
+						`No watchlist for name: ${params.watchlistName}`
+					)
+			)(identity),
 			TaskEither.fold(errorTask(next), (_) => async () => {
 				res.json(_);
 			})
