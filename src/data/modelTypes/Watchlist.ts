@@ -1,18 +1,18 @@
 export interface WatchlistItem {
-	readonly symbol: string;
+	symbol: string;
 }
 
 export interface WatchlistInput {
-	readonly watchlistName: string;
-	readonly stocks: ReadonlyArray<WatchlistItem>;
-	readonly cryptos: ReadonlyArray<WatchlistItem>;
+	watchlistName: string;
+	stocks: WatchlistItem[];
+	cryptos: WatchlistItem[];
 }
 
 export interface Watchlist extends WatchlistInput {
-	readonly userId: number;
+	userId: number;
 }
 
 export interface WatchlistNameAndId {
-	readonly id: string;
-	readonly watchlistName: string;
+	id: string;
+	watchlistName: string;
 }
