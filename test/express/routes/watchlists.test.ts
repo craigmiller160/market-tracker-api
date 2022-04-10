@@ -103,6 +103,34 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('removeStockFromWatchlist', () => {
+		it('successfully removes stock', async () => {
+			throw new Error();
+		});
+
+		it('watchlist does not exist for removing stock', async () => {
+			throw new Error();
+		});
+
+		it('failed auth', async () => {
+			throw new Error();
+		});
+	});
+
+	describe('removeCryptoFromWatchlist', () => {
+		it('successfully removes crypto', async () => {
+			throw new Error();
+		});
+
+		it('watchlist does not exist for removing crypto', async () => {
+			throw new Error();
+		});
+
+		it('failed auth', async () => {
+			throw new Error();
+		});
+	});
+
 	describe('addStockToWatchlist', () => {
 		it('successfully adds stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
