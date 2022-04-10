@@ -140,15 +140,36 @@ describe('watchlists route', () => {
 
 	describe('addCryptoToWatchlist', () => {
 		it('successfully adds crypto', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/One/crypto/ABC')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlist = await WatchlistModel.findOne({
+				watchlistName: 'One'
+			}).exec();
+			expect(watchlist?.cryptos).toContain(
+				expect.objectContaining({
+					symbol: 'ABC'
+				})
+			);
 		});
 
 		it('watchlist does not exist for adding crypto', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/asdf/crypto/ABC')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/One/crypto/ABC')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
