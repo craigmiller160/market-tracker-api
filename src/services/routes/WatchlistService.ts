@@ -34,6 +34,12 @@ export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 				token.userId,
 				params.watchlistName
 			),
+			TaskEither.chainOptionK(
+				(): Error =>
+					new BadRequestError(
+						`No watchlist for name: ${params.watchlistName}`
+					)
+			)(identity),
 			TaskEither.fold(errorTask(next), () => async () => {
 				res.end();
 			})

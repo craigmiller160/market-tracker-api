@@ -14,7 +14,7 @@ import {
 	WatchlistModelInstanceType,
 	watchlistToModel
 } from '../../../mongo/models/WatchlistModel';
-import { constVoid, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
@@ -163,5 +163,10 @@ export const removeWatchlistForUser: RemoveWatchlistForUser = (
 				userId
 			}).exec()
 		),
-		TaskEither.map(constVoid)
+		TaskEither.map((result) => {
+			if (result.deletedCount > 0) {
+				return Option.of(result.deletedCount);
+			}
+			return Option.none;
+		})
 	);
