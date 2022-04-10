@@ -103,11 +103,77 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('removeStockFromWatchlist', () => {
+		it('successfully removes stock', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/stock/ABC')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlist = await WatchlistModel.findOne({
+				watchlistName: 'One'
+			}).exec();
+			expect(watchlist?.stocks).toEqual([
+				expect.objectContaining({
+					symbol: 'DEF'
+				})
+			]);
+		});
+
+		it('watchlist does not exist for removing stock', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/asdf/stock/ABC')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
+		});
+
+		it('failed auth', async () => {
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/stock/ABC')
+				.timeout(2000)
+				.expect(401);
+		});
+	});
+
+	describe('removeCryptoFromWatchlist', () => {
+		it('successfully removes crypto', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/crypto/GHI')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlist = await WatchlistModel.findOne({
+				watchlistName: 'One'
+			}).exec();
+			expect(watchlist?.cryptos).toEqual([]);
+		});
+
+		it('watchlist does not exist for removing crypto', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/asdf/crypto/GHI')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
+		});
+
+		it('failed auth', async () => {
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/crypto/GHI')
+				.timeout(2000)
+				.expect(401);
+		});
+	});
+
 	describe('addStockToWatchlist', () => {
 		it('successfully adds stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/stock/NEW')
+				.put('/watchlists/One/stock/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
@@ -126,7 +192,7 @@ describe('watchlists route', () => {
 		it('watchlist does not exist for adding stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/asdf/stock/NEW')
+				.put('/watchlists/asdf/stock/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(400);
@@ -134,7 +200,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/stock/NEW')
+				.put('/watchlists/One/stock/NEW')
 				.timeout(2000)
 				.expect(401);
 		});
@@ -144,7 +210,7 @@ describe('watchlists route', () => {
 		it('successfully adds crypto', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/crypto/NEW')
+				.put('/watchlists/One/crypto/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
@@ -163,7 +229,7 @@ describe('watchlists route', () => {
 		it('watchlist does not exist for adding crypto', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/asdf/crypto/NEW')
+				.put('/watchlists/asdf/crypto/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(400);
@@ -171,7 +237,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/crypto/NEW')
+				.put('/watchlists/One/crypto/NEW')
 				.timeout(2000)
 				.expect(401);
 		});

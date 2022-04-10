@@ -32,10 +32,18 @@ export type AddInvestmentForUser = (
 	symbol: string
 ) => TaskTryT<OptionT<Watchlist>>;
 
+export type RemoveInvestmentForUser = (
+	userId: number,
+	watchlistName: string,
+	type: InvestmentType,
+	symbol: string
+) => TaskTryT<OptionT<Watchlist>>;
+
 export interface WatchlistRepository {
 	readonly findWatchlistsForUser: FindWatchlistsForUser;
 	readonly saveWatchlistsForUser: SaveWatchlistsForUser;
 	readonly createWatchlistForUser: CreateWatchlistForUser;
 	readonly getAllNamesForUser: GetAllNamesForUser;
 	readonly addInvestmentForUser: AddInvestmentForUser;
+	readonly removeInvestmentForUser: RemoveInvestmentForUser;
 }

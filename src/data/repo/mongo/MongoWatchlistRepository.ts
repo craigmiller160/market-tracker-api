@@ -3,6 +3,7 @@ import {
 	CreateWatchlistForUser,
 	FindWatchlistsForUser,
 	GetAllNamesForUser,
+	RemoveInvestmentForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
 import { logger } from '../../../logger';
@@ -97,24 +98,55 @@ export const addInvestmentForUser: AddInvestmentForUser = (
 	watchlistName,
 	type,
 	symbol
-) =>
-	pipe(
+) => {
+	const filter = {
+		watchlistName,
+		userId
+	};
+	return pipe(
 		TaskTry.tryCatch(() =>
-			WatchlistModel.updateOne(
-				{ watchlistName, userId },
-				{
-					$push: match(type)
-						.with('stock', () => ({
-							stocks: [{ symbol }]
-						}))
-						.otherwise(() => ({
-							cryptos: [{ symbol }]
-						}))
-				}
-			).exec()
+			WatchlistModel.updateOne(filter, {
+				$push: match(type)
+					.with('stock', () => ({
+						stocks: [{ symbol }]
+					}))
+					.otherwise(() => ({
+						cryptos: [{ symbol }]
+					}))
+			}).exec()
 		),
-		TaskTry.chainTryCatch(() =>
-			WatchlistModel.findOne({ watchlistName, userId }).exec()
-		),
+		TaskTry.chainTryCatch(() => WatchlistModel.findOne(filter).exec()),
 		TaskEither.map(Option.fromNullable)
 	);
+};
+
+export const removeInvestmentForUser: RemoveInvestmentForUser = (
+	userId,
+	watchlistName,
+	type,
+	symbol
+) => {
+	const filter = {
+		watchlistName,
+		userId
+	};
+	return pipe(
+		TaskTry.tryCatch(() =>
+			WatchlistModel.updateOne(filter, {
+				$pull: match(type)
+					.with('stock', () => ({
+						stocks: {
+							symbol
+						}
+					}))
+					.otherwise(() => ({
+						cryptos: {
+							symbol
+						}
+					}))
+			}).exec()
+		),
+		TaskTry.chainTryCatch(() => WatchlistModel.findOne(filter).exec()),
+		TaskEither.map(Option.fromNullable)
+	);
+};
