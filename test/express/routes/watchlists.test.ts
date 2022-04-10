@@ -107,7 +107,7 @@ describe('watchlists route', () => {
 		it('successfully removes stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.delete('/watchlists/One/stock/NEW')
+				.delete('/watchlists/One/stock/ABC')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
@@ -115,18 +115,16 @@ describe('watchlists route', () => {
 				watchlistName: 'One'
 			}).exec();
 			expect(watchlist?.stocks).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						symbol: 'NEW'
-					})
-				])
+				expect.objectContaining({
+					symbol: 'DEF'
+				})
 			);
 		});
 
 		it('watchlist does not exist for removing stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.delete('/watchlists/asdf/stock/NEW')
+				.delete('/watchlists/asdf/stock/ABC')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(400);
@@ -134,7 +132,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.delete('/watchlists/One/stock/NEW')
+				.delete('/watchlists/One/stock/ABC')
 				.timeout(2000)
 				.expect(401);
 		});
@@ -144,26 +142,20 @@ describe('watchlists route', () => {
 		it('successfully removes crypto', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.delete('/watchlists/One/crypto/NEW')
+				.delete('/watchlists/One/crypto/GHI')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
 			const watchlist = await WatchlistModel.findOne({
 				watchlistName: 'One'
 			}).exec();
-			expect(watchlist?.stocks).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						symbol: 'NEW'
-					})
-				])
-			);
+			expect(watchlist?.cryptos).toEqual([]);
 		});
 
 		it('watchlist does not exist for removing crypto', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.delete('/watchlists/asdf/crypto/NEW')
+				.delete('/watchlists/asdf/crypto/GHI')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(400);
@@ -171,7 +163,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.delete('/watchlists/One/crypto/NEW')
+				.delete('/watchlists/One/crypto/GHI')
 				.timeout(2000)
 				.expect(401);
 		});
