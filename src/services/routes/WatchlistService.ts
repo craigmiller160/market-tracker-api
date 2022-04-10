@@ -7,11 +7,34 @@ import { NextFunction, Request, Response } from 'express';
 import { errorTask } from '../../function/Route';
 import { TaskRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
-import { WatchlistRepository } from '../../data/repo/WatchlistRepository';
+import {
+	InvestmentType,
+	WatchlistRepository
+} from '../../data/repo/WatchlistRepository';
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
 
+interface AddInvestmentParams {
+	readonly watchlistName: string;
+	readonly investmentType: InvestmentType;
+	readonly symbol: string;
+}
+
 export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
-	pipe();
+	({ watchlistRepository }) =>
+	(req: Request<AddInvestmentParams>, res: Response, next: NextFunction) => {
+		const token = req.user as AccessToken;
+		pipe(
+			watchlistRepository.addInvestmentForUser(
+				token.userId,
+				req.params.watchlistName,
+				req.params.investmentType,
+				req.params.symbol
+			),
+			TaskEither.fold(errorTask(next), (_) => async () => {
+				res.json(_);
+			})
+		);
+	};
 
 export const getAllNames: ReaderT<ExpressRouteDependencies, TaskRoute> = pipe(
 	Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
