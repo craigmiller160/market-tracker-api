@@ -14,7 +14,7 @@ import {
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
 import { BadRequestError } from '../../error/BadRequestError';
 
-interface AddInvestmentParams {
+interface ModifyInvestmentParams {
 	readonly watchlistName: string;
 	readonly type: InvestmentType;
 	readonly symbol: string;
@@ -24,9 +24,33 @@ export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
 		const token = req.user as AccessToken;
-		const params = req.params as unknown as AddInvestmentParams;
+		const params = req.params as unknown as ModifyInvestmentParams;
 		return pipe(
 			watchlistRepository.addInvestmentForUser(
+				token.userId,
+				params.watchlistName,
+				params.type,
+				params.symbol
+			),
+			TaskEither.chainOptionK(
+				(): Error =>
+					new BadRequestError(
+						`No watchlist for name: ${params.watchlistName}`
+					)
+			)(identity),
+			TaskEither.fold(errorTask(next), (_) => async () => {
+				res.json(_);
+			})
+		);
+	};
+
+export const removeInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	({ watchlistRepository }) =>
+	(req: Request, res: Response, next: NextFunction) => {
+		const token = req.user as AccessToken;
+		const params = req.params as unknown as ModifyInvestmentParams;
+		return pipe(
+			watchlistRepository.removeInvestmentForUser(
 				token.userId,
 				params.watchlistName,
 				params.type,
