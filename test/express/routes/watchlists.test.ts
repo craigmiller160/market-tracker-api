@@ -105,15 +105,36 @@ describe('watchlists route', () => {
 
 	describe('addStockToWatchlist', () => {
 		it('successfully adds stock', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/One/stock/ABC')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlist = await WatchlistModel.findOne({
+				watchlistName: 'One'
+			}).exec();
+			expect(watchlist?.stocks).toContain(
+				expect.objectContaining({
+					symbol: 'ABC'
+				})
+			);
 		});
 
 		it('watchlist does not exist for adding stock', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/asdf/stock/ABC')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.post('/watchlists/One/stock/ABC')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
