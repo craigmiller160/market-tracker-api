@@ -108,6 +108,10 @@ describe('watchlists route', () => {
 			throw new Error();
 		});
 
+		it('watchlist does not exist for adding stock', async () => {
+			throw new Error();
+		});
+
 		it('failed auth', async () => {
 			throw new Error();
 		});
@@ -115,6 +119,10 @@ describe('watchlists route', () => {
 
 	describe('addCryptoToWatchlist', () => {
 		it('successfully adds crypto', async () => {
+			throw new Error();
+		});
+
+		it('watchlist does not exist for adding crypto', async () => {
 			throw new Error();
 		});
 
