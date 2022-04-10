@@ -114,7 +114,7 @@ export const addInvestmentForUser: AddInvestmentForUser = (
 			).exec()
 		),
 		TaskTry.chainTryCatch(() =>
-			WatchlistModel.findOne({ watchlistName }).exec()
+			WatchlistModel.findOne({ watchlistName, userId }).exec()
 		),
 		TaskEither.map(Option.fromNullable)
 	);
