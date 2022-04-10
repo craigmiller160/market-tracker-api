@@ -105,15 +105,32 @@ describe('watchlists route', () => {
 
 	describe('removeWatchlist', () => {
 		it('removes watchlist', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlists = await WatchlistModel.find({
+				userId: 1
+			}).exec();
+			expect(watchlists).toHaveLength(1);
 		});
 
 		it('no watchlist with the name exists to remove', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/asdf')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
