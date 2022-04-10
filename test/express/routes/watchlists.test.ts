@@ -114,11 +114,11 @@ describe('watchlists route', () => {
 			const watchlist = await WatchlistModel.findOne({
 				watchlistName: 'One'
 			}).exec();
-			expect(watchlist?.stocks).toEqual(
+			expect(watchlist?.stocks).toEqual([
 				expect.objectContaining({
 					symbol: 'DEF'
 				})
-			);
+			]);
 		});
 
 		it('watchlist does not exist for removing stock', async () => {
