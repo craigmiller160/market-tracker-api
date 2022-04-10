@@ -12,6 +12,7 @@ interface RouterAndRoutes {
 	readonly saveWatchlistsForUser: TaskRoute;
 	readonly createWatchlistForUser: TaskRoute;
 	readonly getAllNamesForUser: TaskRoute;
+	readonly addInvestmentForUser: TaskRoute;
 }
 
 const configureRoutes = ({
@@ -19,12 +20,17 @@ const configureRoutes = ({
 	getWatchlistsForUser,
 	saveWatchlistsForUser,
 	createWatchlistForUser,
-	getAllNamesForUser
+	getAllNamesForUser,
+	addInvestmentForUser
 }: RouterAndRoutes): Router => {
 	router.get('/all', taskRouteToRoute(getWatchlistsForUser));
 	router.post('/all', taskRouteToRoute(saveWatchlistsForUser));
 	router.post('/', taskRouteToRoute(createWatchlistForUser));
 	router.get('/names', taskRouteToRoute(getAllNamesForUser));
+	router.post(
+		'/:watchlistName/:type/:symbol',
+		taskRouteToRoute(addInvestmentForUser)
+	);
 	return router;
 };
 
@@ -44,5 +50,6 @@ export const createWatchlistRoutes: RouteCreator = pipe(
 		() => watchlistService.createNewWatchlist
 	),
 	Reader.bind('getAllNamesForUser', () => watchlistService.getAllNames),
+	Reader.bind('addInvestmentForUser', () => watchlistService.addInvestment),
 	Reader.map(configureRoutes)
 );
