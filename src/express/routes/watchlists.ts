@@ -27,7 +27,7 @@ const configureRoutes = ({
 	router.post('/all', taskRouteToRoute(saveWatchlistsForUser));
 	router.post('/', taskRouteToRoute(createWatchlistForUser));
 	router.get('/names', taskRouteToRoute(getAllNamesForUser));
-	router.post(
+	router.put(
 		'/:watchlistName/:type/:symbol',
 		taskRouteToRoute(addInvestmentForUser)
 	);
