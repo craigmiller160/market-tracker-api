@@ -105,29 +105,75 @@ describe('watchlists route', () => {
 
 	describe('removeStockFromWatchlist', () => {
 		it('successfully removes stock', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/stock/NEW')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlist = await WatchlistModel.findOne({
+				watchlistName: 'One'
+			}).exec();
+			expect(watchlist?.stocks).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						symbol: 'NEW'
+					})
+				])
+			);
 		});
 
 		it('watchlist does not exist for removing stock', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/asdf/stock/NEW')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/stock/NEW')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
 	describe('removeCryptoFromWatchlist', () => {
 		it('successfully removes crypto', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/crypto/NEW')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlist = await WatchlistModel.findOne({
+				watchlistName: 'One'
+			}).exec();
+			expect(watchlist?.stocks).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						symbol: 'NEW'
+					})
+				])
+			);
 		});
 
 		it('watchlist does not exist for removing crypto', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/asdf/crypto/NEW')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One/crypto/NEW')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
