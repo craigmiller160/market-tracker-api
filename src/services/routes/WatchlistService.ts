@@ -21,14 +21,15 @@ interface AddInvestmentParams {
 
 export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
-	(req: Request<AddInvestmentParams>, res: Response, next: NextFunction) => {
+	(req: Request, res: Response, next: NextFunction) => {
 		const token = req.user as AccessToken;
-		pipe(
+		const params = req.params as unknown as AddInvestmentParams;
+		return pipe(
 			watchlistRepository.addInvestmentForUser(
 				token.userId,
-				req.params.watchlistName,
-				req.params.investmentType,
-				req.params.symbol
+				params.watchlistName,
+				params.investmentType,
+				params.symbol
 			),
 			TaskEither.fold(errorTask(next), (_) => async () => {
 				res.json(_);
