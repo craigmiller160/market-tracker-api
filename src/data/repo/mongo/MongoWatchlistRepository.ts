@@ -1,4 +1,5 @@
 import {
+	AddInvestmentForUser,
 	CreateWatchlistForUser,
 	FindWatchlistsForUser,
 	GetAllNamesForUser,
@@ -16,6 +17,8 @@ import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
 import { WatchlistNameAndId } from '../../modelTypes/Watchlist';
+import { match } from 'ts-pattern';
+import * as Option from 'fp-ts/Option';
 
 export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	pipe(
@@ -87,4 +90,31 @@ export const getAllNamesForUser: GetAllNamesForUser = (userId) =>
 				})
 			)
 		)
+	);
+
+export const addInvestmentForUser: AddInvestmentForUser = (
+	userId,
+	watchlistName,
+	type,
+	symbol
+) =>
+	pipe(
+		TaskTry.tryCatch(() =>
+			WatchlistModel.updateOne(
+				{ watchlistName },
+				{
+					$push: match(type)
+						.with('stock', () => ({
+							stocks: [{ symbol }]
+						}))
+						.otherwise(() => ({
+							cryptos: [{ symbol }]
+						}))
+				}
+			).exec()
+		),
+		TaskTry.chainTryCatch(() =>
+			WatchlistModel.findOne({ watchlistName }).exec()
+		),
+		TaskEither.map(Option.fromNullable)
 	);

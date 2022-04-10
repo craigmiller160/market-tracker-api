@@ -10,6 +10,9 @@ import * as Reader from 'fp-ts/Reader';
 import { WatchlistRepository } from '../../data/repo/WatchlistRepository';
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
 
+export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	pipe();
+
 export const getAllNames: ReaderT<ExpressRouteDependencies, TaskRoute> = pipe(
 	Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
 		({ watchlistRepository }) => watchlistRepository
