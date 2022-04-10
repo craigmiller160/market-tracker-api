@@ -107,24 +107,26 @@ describe('watchlists route', () => {
 		it('successfully adds stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/stock/ABC')
+				.post('/watchlists/One/stock/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
 			const watchlist = await WatchlistModel.findOne({
 				watchlistName: 'One'
 			}).exec();
-			expect(watchlist?.stocks).toContain(
-				expect.objectContaining({
-					symbol: 'ABC'
-				})
+			expect(watchlist?.stocks).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						symbol: 'NEW'
+					})
+				])
 			);
 		});
 
 		it('watchlist does not exist for adding stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/asdf/stock/ABC')
+				.post('/watchlists/asdf/stock/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(400);
@@ -132,7 +134,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/stock/ABC')
+				.post('/watchlists/One/stock/NEW')
 				.timeout(2000)
 				.expect(401);
 		});
@@ -142,24 +144,26 @@ describe('watchlists route', () => {
 		it('successfully adds crypto', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/crypto/ABC')
+				.post('/watchlists/One/crypto/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(200);
 			const watchlist = await WatchlistModel.findOne({
 				watchlistName: 'One'
 			}).exec();
-			expect(watchlist?.cryptos).toContain(
-				expect.objectContaining({
-					symbol: 'ABC'
-				})
+			expect(watchlist?.cryptos).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						symbol: 'ABC'
+					})
+				])
 			);
 		});
 
 		it('watchlist does not exist for adding crypto', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/asdf/crypto/ABC')
+				.post('/watchlists/asdf/crypto/NEW')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
 				.expect(400);
@@ -167,7 +171,7 @@ describe('watchlists route', () => {
 
 		it('failed auth', async () => {
 			await request(fullTestServer.expressServer.server)
-				.post('/watchlists/One/crypto/ABC')
+				.post('/watchlists/One/crypto/NEW')
 				.timeout(2000)
 				.expect(401);
 		});
