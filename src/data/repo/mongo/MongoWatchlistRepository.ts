@@ -4,6 +4,7 @@ import {
 	FindWatchlistsForUser,
 	GetAllNamesForUser,
 	RemoveInvestmentForUser,
+	RemoveWatchlistForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
 import { logger } from '../../../logger';
@@ -150,3 +151,22 @@ export const removeInvestmentForUser: RemoveInvestmentForUser = (
 		TaskEither.map(Option.fromNullable)
 	);
 };
+
+export const removeWatchlistForUser: RemoveWatchlistForUser = (
+	userId,
+	watchlistName
+) =>
+	pipe(
+		TaskTry.tryCatch(() =>
+			WatchlistModel.deleteOne({
+				watchlistName,
+				userId
+			}).exec()
+		),
+		TaskEither.map((result) => {
+			if (result.deletedCount > 0) {
+				return Option.of(result.deletedCount);
+			}
+			return Option.none;
+		})
+	);

@@ -20,6 +20,32 @@ interface ModifyInvestmentParams {
 	readonly symbol: string;
 }
 
+interface RemoveParams {
+	readonly watchlistName: string;
+}
+
+export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	({ watchlistRepository }) =>
+	(req: Request, res: Response, next: NextFunction) => {
+		const token = req.user as AccessToken;
+		const params = req.params as unknown as RemoveParams;
+		return pipe(
+			watchlistRepository.removeWatchlistForUser(
+				token.userId,
+				params.watchlistName
+			),
+			TaskEither.chainOptionK(
+				(): Error =>
+					new BadRequestError(
+						`No watchlist for name: ${params.watchlistName}`
+					)
+			)(identity),
+			TaskEither.fold(errorTask(next), () => async () => {
+				res.end();
+			})
+		);
+	};
+
 export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {

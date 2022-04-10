@@ -103,6 +103,37 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('removeWatchlist', () => {
+		it('removes watchlist', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(200);
+			const watchlists = await WatchlistModel.find({
+				userId: 1
+			}).exec();
+			expect(watchlists).toHaveLength(1);
+		});
+
+		it('no watchlist with the name exists to remove', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/asdf')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
+		});
+
+		it('failed auth', async () => {
+			await request(fullTestServer.expressServer.server)
+				.delete('/watchlists/One')
+				.timeout(2000)
+				.expect(401);
+		});
+	});
+
 	describe('removeStockFromWatchlist', () => {
 		it('successfully removes stock', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
