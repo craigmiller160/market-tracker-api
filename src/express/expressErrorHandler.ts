@@ -8,6 +8,7 @@ import { pipe } from 'fp-ts/function';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import * as Reader from 'fp-ts/Reader';
 import { ExpressDependencies } from './ExpressDependencies';
+import { Error } from 'mongoose';
 
 interface ErrorResponse {
 	readonly timestamp: string;
@@ -34,10 +35,15 @@ const isMongoConstraintError: P.Predicate<Error> = pipe(
 	P.and((_) => _.message.includes('duplicate key error'))
 );
 
+const isBadRequestError: P.Predicate<Error> = pipe(
+	(_: Error) => _.name === 'BadRequestError',
+	P.or(isMongoConstraintError)
+);
+
 const getErrorStatus = (err: Error): number =>
 	match(err)
 		.with(when(isUnauthorizedError), () => 401)
-		.with(when(isMongoConstraintError), () => 400)
+		.with(when(isBadRequestError), () => 400)
 		.otherwise(() => 500);
 
 const getErrorMessage = (err: Error): string =>
