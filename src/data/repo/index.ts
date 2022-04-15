@@ -11,6 +11,7 @@ import {
 	getAllNamesForUser,
 	removeInvestmentForUser,
 	removeWatchlistForUser,
+	renameWatchlistForUser,
 	saveWatchlistsForUser
 } from './mongo/MongoWatchlistRepository';
 import { AppRefreshTokenRepository } from './AppRefreshTokenRepository';
@@ -32,7 +33,8 @@ export const watchlistRepository: WatchlistRepository = {
 	getAllNamesForUser,
 	addInvestmentForUser,
 	removeInvestmentForUser,
-	removeWatchlistForUser
+	removeWatchlistForUser,
+	renameWatchlistForUser
 };
 
 export const appRefreshTokenRepository: AppRefreshTokenRepository = {
