@@ -5,6 +5,7 @@ import {
 	GetAllNamesForUser,
 	RemoveInvestmentForUser,
 	RemoveWatchlistForUser,
+	RenameWatchlistForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
 import { logger } from '../../../logger';
@@ -14,7 +15,7 @@ import {
 	WatchlistModelInstanceType,
 	watchlistToModel
 } from '../../../mongo/models/WatchlistModel';
-import { pipe } from 'fp-ts/function';
+import { constVoid, pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
@@ -169,4 +170,25 @@ export const removeWatchlistForUser: RemoveWatchlistForUser = (
 			}
 			return Option.none;
 		})
+	);
+
+export const renameWatchlistForUser: RenameWatchlistForUser = (
+	userId,
+	oldWatchlistName,
+	newWatchlistName
+) =>
+	pipe(
+		TaskTry.tryCatch(() =>
+			WatchlistModel.updateOne(
+				{
+					watchlistName: oldWatchlistName
+				},
+				{
+					$set: {
+						watchlistName: newWatchlistName
+					}
+				}
+			).exec()
+		),
+		TaskEither.map(constVoid)
 	);
