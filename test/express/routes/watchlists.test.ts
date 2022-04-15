@@ -105,7 +105,22 @@ describe('watchlists route', () => {
 
 	describe('renameWatchlist', () => {
 		it('successfully renames watchlist', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.put('/watchlists/One/rename/FooBar')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(204);
+
+			const oldNameCount = await WatchlistModel.count({
+				watchlistName: 'One'
+			}).exec();
+			expect(oldNameCount).toEqual(0);
+
+			const newNameCount = await WatchlistModel.count({
+				watchlistName: 'FooBar'
+			}).exec();
+			expect(newNameCount).toEqual(1);
 		});
 
 		it('no match for watchlist', async () => {
