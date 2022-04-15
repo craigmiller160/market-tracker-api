@@ -24,6 +24,11 @@ interface RemoveParams {
 	readonly watchlistName: string;
 }
 
+interface RenameParams {
+	readonly oldWatchlistName: string;
+	readonly newWatchlistName: string;
+}
+
 export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
@@ -42,6 +47,23 @@ export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 			)(identity),
 			TaskEither.fold(errorTask(next), () => async () => {
 				res.end();
+			})
+		);
+	};
+
+export const renameWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
+	({ watchlistRepository }) =>
+	(req: Request, res: Response, next: NextFunction) => {
+		const token = req.user as AccessToken;
+		const params = req.params as unknown as RenameParams;
+		return pipe(
+			watchlistRepository.renameWatchlistForUser(
+				token.userId,
+				params.oldWatchlistName,
+				params.newWatchlistName
+			),
+			TaskEither.fold(errorTask(next), () => async () => {
+				res.status(204).end();
 			})
 		);
 	};

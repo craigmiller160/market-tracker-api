@@ -5,6 +5,7 @@ import {
 	GetAllNamesForUser,
 	RemoveInvestmentForUser,
 	RemoveWatchlistForUser,
+	RenameWatchlistForUser,
 	SaveWatchlistsForUser
 } from '../WatchlistRepository';
 import { logger } from '../../../logger';
@@ -14,13 +15,14 @@ import {
 	WatchlistModelInstanceType,
 	watchlistToModel
 } from '../../../mongo/models/WatchlistModel';
-import { pipe } from 'fp-ts/function';
+import { constVoid, pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
 import { WatchlistNameAndId } from '../../modelTypes/Watchlist';
 import { match } from 'ts-pattern';
 import * as Option from 'fp-ts/Option';
+import { BadRequestError } from '../../../error/BadRequestError';
 
 export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	pipe(
@@ -169,4 +171,35 @@ export const removeWatchlistForUser: RemoveWatchlistForUser = (
 			}
 			return Option.none;
 		})
+	);
+
+export const renameWatchlistForUser: RenameWatchlistForUser = (
+	userId,
+	oldWatchlistName,
+	newWatchlistName
+) =>
+	pipe(
+		TaskTry.tryCatch(() =>
+			WatchlistModel.updateOne(
+				{
+					watchlistName: oldWatchlistName
+				},
+				{
+					$set: {
+						watchlistName: newWatchlistName
+					}
+				}
+			).exec()
+		),
+		TaskEither.chain((updateResult) =>
+			match(updateResult)
+				.with({ modifiedCount: 1 }, () => TaskEither.right(constVoid()))
+				.otherwise(() =>
+					TaskEither.left<Error>(
+						new BadRequestError(
+							`No match found for watchlist ${oldWatchlistName}`
+						)
+					)
+				)
+		)
 	);

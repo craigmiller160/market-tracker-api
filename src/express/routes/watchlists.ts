@@ -15,6 +15,7 @@ interface RouterAndRoutes {
 	readonly addInvestmentForUser: TaskRoute;
 	readonly removeInvestmentForUser: TaskRoute;
 	readonly removeWatchlistForUser: TaskRoute;
+	readonly renameWatchlistForUser: TaskRoute;
 }
 
 const configureRoutes = ({
@@ -25,12 +26,17 @@ const configureRoutes = ({
 	getAllNamesForUser,
 	addInvestmentForUser,
 	removeInvestmentForUser,
-	removeWatchlistForUser
+	removeWatchlistForUser,
+	renameWatchlistForUser
 }: RouterAndRoutes): Router => {
 	router.get('/all', taskRouteToRoute(getWatchlistsForUser));
 	router.post('/all', taskRouteToRoute(saveWatchlistsForUser));
 	router.post('/', taskRouteToRoute(createWatchlistForUser));
 	router.get('/names', taskRouteToRoute(getAllNamesForUser));
+	router.put(
+		'/:oldWatchlistName/rename/:newWatchlistName',
+		taskRouteToRoute(renameWatchlistForUser)
+	);
 	router.put(
 		'/:watchlistName/:type/:symbol',
 		taskRouteToRoute(addInvestmentForUser)
@@ -67,6 +73,10 @@ export const createWatchlistRoutes: RouteCreator = pipe(
 	Reader.bind(
 		'removeWatchlistForUser',
 		() => watchlistService.removeWatchlist
+	),
+	Reader.bind(
+		'renameWatchlistForUser',
+		() => watchlistService.renameWatchlist
 	),
 	Reader.map(configureRoutes)
 );

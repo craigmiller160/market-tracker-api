@@ -103,6 +103,43 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('renameWatchlist', () => {
+		it('successfully renames watchlist', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.put('/watchlists/One/rename/FooBar')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(204);
+
+			const oldNameCount = await WatchlistModel.count({
+				watchlistName: 'One'
+			}).exec();
+			expect(oldNameCount).toEqual(0);
+
+			const newNameCount = await WatchlistModel.count({
+				watchlistName: 'FooBar'
+			}).exec();
+			expect(newNameCount).toEqual(1);
+		});
+
+		it('no match for watchlist', async () => {
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.put('/watchlists/asdf/rename/FooBar')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
+		});
+
+		it('failed auth', async () => {
+			await request(fullTestServer.expressServer.server)
+				.put('/watchlists/One/rename/FooBar')
+				.timeout(2000)
+				.expect(401);
+		});
+	});
+
 	describe('removeWatchlist', () => {
 		it('removes watchlist', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
