@@ -34,6 +34,10 @@ const configureRoutes = ({
 	router.post('/', taskRouteToRoute(createWatchlistForUser));
 	router.get('/names', taskRouteToRoute(getAllNamesForUser));
 	router.put(
+		'/:oldWatchlistName/rename/:newWatchlistName',
+		taskRouteToRoute(renameWatchlistForUser)
+	);
+	router.put(
 		'/:watchlistName/:type/:symbol',
 		taskRouteToRoute(addInvestmentForUser)
 	);
@@ -42,10 +46,6 @@ const configureRoutes = ({
 		taskRouteToRoute(removeInvestmentForUser)
 	);
 	router.delete('/:watchlistName', taskRouteToRoute(removeWatchlistForUser));
-	router.put(
-		'/:oldWatchlistName/rename/:newWatchlistName',
-		taskRouteToRoute(renameWatchlistForUser)
-	);
 	return router;
 };
 
