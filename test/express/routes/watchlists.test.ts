@@ -109,11 +109,19 @@ describe('watchlists route', () => {
 		});
 
 		it('no match for watchlist', async () => {
-			throw new Error();
+			const token = createAccessToken(fullTestServer.keyPair.privateKey);
+			await request(fullTestServer.expressServer.server)
+				.put('/watchlists/asdf/rename/FooBar')
+				.set('Authorization', `Bearer ${token}`)
+				.timeout(2000)
+				.expect(400);
 		});
 
 		it('failed auth', async () => {
-			throw new Error();
+			await request(fullTestServer.expressServer.server)
+				.put('/watchlists/One/rename/FooBar')
+				.timeout(2000)
+				.expect(401);
 		});
 	});
 
