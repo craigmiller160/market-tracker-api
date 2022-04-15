@@ -22,6 +22,7 @@ import { closeSessionAfterTransaction } from '../../../mongo/Session';
 import { WatchlistNameAndId } from '../../modelTypes/Watchlist';
 import { match } from 'ts-pattern';
 import * as Option from 'fp-ts/Option';
+import { BadRequestError } from '../../../error/BadRequestError';
 
 export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	pipe(
@@ -190,5 +191,15 @@ export const renameWatchlistForUser: RenameWatchlistForUser = (
 				}
 			).exec()
 		),
-		TaskEither.map(constVoid)
+		TaskEither.chain((updateResult) =>
+			match(updateResult)
+				.with({ modifiedCount: 1 }, () => TaskEither.right(constVoid()))
+				.otherwise(() =>
+					TaskEither.left<Error>(
+						new BadRequestError(
+							`No match found for watchlist ${oldWatchlistName}`
+						)
+					)
+				)
+		)
 	);
