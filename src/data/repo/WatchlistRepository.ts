@@ -44,6 +44,12 @@ export type RemoveWatchlistForUser = (
 	watchlistName: string
 ) => TaskTryT<OptionT<unknown>>;
 
+export type RenameWatchlistForUser = (
+	userId: number,
+	oldWatchlistName: string,
+	newWatchlistName: string
+) => TaskTryT<void>;
+
 export interface WatchlistRepository {
 	readonly findWatchlistsForUser: FindWatchlistsForUser;
 	readonly saveWatchlistsForUser: SaveWatchlistsForUser;
@@ -52,4 +58,5 @@ export interface WatchlistRepository {
 	readonly addInvestmentForUser: AddInvestmentForUser;
 	readonly removeInvestmentForUser: RemoveInvestmentForUser;
 	readonly removeWatchlistForUser: RemoveWatchlistForUser;
+	readonly renameWatchlistForUser: RenameWatchlistForUser;
 }
