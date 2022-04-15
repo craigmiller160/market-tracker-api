@@ -103,6 +103,20 @@ describe('watchlists route', () => {
 		await WatchlistModel.deleteMany().exec();
 	});
 
+	describe('renameWatchlist', () => {
+		it('successfully renames watchlist', async () => {
+			throw new Error();
+		});
+
+		it('no match for watchlist', async () => {
+			throw new Error();
+		});
+
+		it('failed auth', async () => {
+			throw new Error();
+		});
+	});
+
 	describe('removeWatchlist', () => {
 		it('removes watchlist', async () => {
 			const token = createAccessToken(fullTestServer.keyPair.privateKey);
