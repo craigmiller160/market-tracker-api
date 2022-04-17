@@ -1,9 +1,5 @@
 import { OptionT, TaskTryT } from '@craigmiller160/ts-functions/types';
-import {
-	Watchlist,
-	WatchlistInput,
-	WatchlistNameAndId
-} from '../modelTypes/Watchlist';
+import { Watchlist, WatchlistInput } from '../modelTypes/Watchlist';
 
 export type FindWatchlistsForUser = (
 	userId: number
@@ -21,7 +17,7 @@ export type CreateWatchlistForUser = (
 
 export type GetAllNamesForUser = (
 	userId: number
-) => TaskTryT<ReadonlyArray<WatchlistNameAndId>>;
+) => TaskTryT<ReadonlyArray<string>>;
 
 export type InvestmentType = 'stock' | 'crypto';
 

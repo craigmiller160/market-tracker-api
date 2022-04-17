@@ -320,14 +320,8 @@ describe('watchlists route', () => {
 				.timeout(2000)
 				.expect(200);
 			expect(res.body).toEqual([
-				{
-					id: expect.any(String),
-					watchlistName: user1InitWatchlists[0].watchlistName
-				},
-				{
-					id: expect.any(String),
-					watchlistName: user1InitWatchlists[1].watchlistName
-				}
+				user1InitWatchlists[0].watchlistName,
+				user1InitWatchlists[1].watchlistName
 			]);
 		});
 

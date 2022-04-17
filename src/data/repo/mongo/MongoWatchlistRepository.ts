@@ -19,7 +19,6 @@ import { constVoid, pipe } from 'fp-ts/function';
 import * as RArray from 'fp-ts/ReadonlyArray';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { closeSessionAfterTransaction } from '../../../mongo/Session';
-import { WatchlistNameAndId } from '../../modelTypes/Watchlist';
 import { match } from 'ts-pattern';
 import * as Option from 'fp-ts/Option';
 import { BadRequestError } from '../../../error/BadRequestError';
@@ -86,14 +85,7 @@ export const getAllNamesForUser: GetAllNamesForUser = (userId) =>
 		TaskTry.tryCatch(() =>
 			WatchlistModel.find({ userId }).select('watchlistName').exec()
 		),
-		TaskEither.map(
-			RArray.map(
-				(value): WatchlistNameAndId => ({
-					id: value._id,
-					watchlistName: value.watchlistName
-				})
-			)
-		)
+		TaskEither.map(RArray.map((value): string => value.watchlistName))
 	);
 
 export const addInvestmentForUser: AddInvestmentForUser = (
