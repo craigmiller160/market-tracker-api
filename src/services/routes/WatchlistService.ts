@@ -46,7 +46,7 @@ export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 					)
 			)(identity),
 			TaskEither.fold(errorTask(next), () => async () => {
-				res.end();
+				res.status(204).end();
 			})
 		);
 	};

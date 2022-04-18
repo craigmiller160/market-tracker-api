@@ -147,7 +147,7 @@ describe('watchlists route', () => {
 				.delete('/watchlists/One')
 				.set('Authorization', `Bearer ${token}`)
 				.timeout(2000)
-				.expect(200);
+				.expect(204);
 			const watchlists = await WatchlistModel.find({
 				userId: 1
 			}).exec();
