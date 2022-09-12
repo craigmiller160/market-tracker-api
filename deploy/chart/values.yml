@@ -1,0 +1,31 @@
+app-deployment:
+  appName: auth-management-service
+  deployment:
+    image: nexus-docker-craigmiller160.ddns.net/auth-management-service:latest
+    configMaps:
+      - auth-management-service-configmap
+    ports:
+      - 8443
+    secrets:
+      - envVariable: spring.datasource.username
+        secretName: postgres-root-account
+        secretKey: username
+      - envVariable: spring.datasource.password
+        secretName: postgres-root-account
+        secretKey: password
+      - envVariable: oauth2.client-key
+        secretName: auth-management-service-oauth2-keys
+        secretKey: clientKey
+      - envVariable: oauth2.client-secret
+        secretName: auth-management-service-oauth2-keys
+        secretKey: clientSecret
+    livenessProbe:
+      httpGet:
+        path: /actuator/health
+        port: 8443
+        scheme: HTTPS
+  service:
+    enable: true
+    type: ClusterIP
+    ports:
+      - containerPort: 8443

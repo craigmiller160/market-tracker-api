@@ -1,0 +1,9 @@
+apiVersion: v2
+name: auth-management-service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+dependencies:
+  - name: app-deployment
+    version: 0.2.0
+    repository: https://nexus-craigmiller160.ddns.net/repository/helm-private
