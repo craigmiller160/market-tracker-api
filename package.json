@@ -71,7 +71,7 @@
     "io-ts": "^2.2.16",
     "jsonwebtoken": "^8.5.1",
     "jwk-to-pem": "^2.0.5",
-    "mongoose": "^6.1.4",
+    "mongoose": "^6.4.6",
     "nanoid": "^3.1.32",
     "nocache": "^3.0.1",
     "passport": "^0.5.2",
