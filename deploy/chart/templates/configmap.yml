@@ -4,16 +4,12 @@ metadata:
   name: market-tracker-api-config
 data:
   NODE_ENV: production
-  # TODO move to secret
-  MONGO_USER: mongo_root
   MONGO_HOSTNAME: mongodb
   MONGO_AUTH_DB: admin
   MONGO_PORT: "27017"
   MONGO_DB: market_tracker_prod
   EXPRESS_PORT: "8080"
   AUTH_SERVER_HOST: https://sso-oauth2-server:8443
-  # TODO move to secret
-  CLIENT_KEY: 47655159-645a-4c53-9a9c-28bbc1bacd5c
   CLIENT_NAME: market-tracker-api
   AUTH_CODE_REDIRECT_URI: "/market-tracker/api/oauth/authcode/code"
   AUTH_LOGIN_BASE_URI: "/market-tracker/oauth2"

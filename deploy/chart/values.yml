@@ -1,31 +1,31 @@
 app-deployment:
-  appName: auth-management-service
+  appName: market-tracker-api
   deployment:
-    image: nexus-docker-craigmiller160.ddns.net/auth-management-service:latest
+    image: nexus-docker-craigmiller160.ddns.net/market-tracker-api:latest
     configMaps:
-      - auth-management-service-configmap
+      - market-tracker-api-config
     ports:
-      - 8443
+      - 8080
     secrets:
-      - envVariable: spring.datasource.username
-        secretName: postgres-root-account
+      - envVariable: MONGO_USER
+        secretName: mongodb-root-account
         secretKey: username
-      - envVariable: spring.datasource.password
-        secretName: postgres-root-account
+      - envVariable: MONGO_PASSWORD
+        secretName: mongodb-root-account
         secretKey: password
-      - envVariable: oauth2.client-key
-        secretName: auth-management-service-oauth2-keys
+      - envVariable: CLIENT_KEY
+        secretName: market-tracker-api-oauth2-keys
         secretKey: clientKey
-      - envVariable: oauth2.client-secret
-        secretName: auth-management-service-oauth2-keys
+      - envVariable: CLIENT_SECRET
+        secretName: market-tracker-api-oauth2-keys
         secretKey: clientSecret
     livenessProbe:
       httpGet:
-        path: /actuator/health
-        port: 8443
+        path: /healthcheck
+        port: 8080
         scheme: HTTPS
   service:
     enable: true
     type: ClusterIP
     ports:
-      - containerPort: 8443
+      - containerPort: 8080
