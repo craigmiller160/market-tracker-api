@@ -2,7 +2,7 @@
   "name": "@craigmiller160/market-tracker-api",
   "version": "1.3.0-beta",
   "publishConfig": {
-    "registry": "https://craigmiller160.ddns.net:30003/repository/npm-private/"
+    "registry": "https://mexus-craigmiller160.ddns.net/repository/npm-private/"
   },
   "author": "craigmiller160",
   "files": [
