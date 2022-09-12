@@ -20,7 +20,7 @@ app-deployment:
         secretName: market-tracker-api-oauth2-keys
         secretKey: clientSecret
       - envVariable: TRADIER_API_KEY
-        secretName: tradier-api-key
+        secretName: market-tracker-tradier-api-key
         secretKey: apiKey
     livenessProbe:
       httpGet:
