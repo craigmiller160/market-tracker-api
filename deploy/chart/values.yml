@@ -19,6 +19,9 @@ app-deployment:
       - envVariable: CLIENT_SECRET
         secretName: market-tracker-api-oauth2-keys
         secretKey: clientSecret
+      - envVariable: TRADIER_API_KEY
+        secretName: tradier-api-key
+        secretKey: apiKey
     livenessProbe:
       httpGet:
         path: /healthcheck
