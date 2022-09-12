@@ -10,3 +10,4 @@ coverage
 build
 .env.private
 logs/
+deploy/chart/charts
