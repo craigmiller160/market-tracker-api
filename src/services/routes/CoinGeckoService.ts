@@ -3,7 +3,7 @@ import { IOTryT, TaskT, TaskTryT } from '@craigmiller160/ts-functions/types';
 import { getRequiredValues } from '../../function/Values';
 import { pipe, identity, flow } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
-import { match, when } from 'ts-pattern';
+import { match } from 'ts-pattern';
 import qs from 'qs';
 import { logger } from '../../logger';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
@@ -39,7 +39,7 @@ const sendCryptoGeckoRequest = (
 	query: object
 ): TaskTryT<object> => {
 	const queryString = match(qs.stringify(query))
-		.with(when(isNotEmpty), (_) => `?${_}`)
+		.when(isNotEmpty, (_) => `?${_}`)
 		.otherwise(identity);
 	const realUri = uri.replace(/^\/cryptogecko/, '');
 	const fullCoinGeckoUrl = `${baseUrl}${realUri}${queryString}`;
@@ -83,8 +83,8 @@ const handleCryptoGeckoError =
 	(next: NextFunction) =>
 	(ex: Error): TaskT<void> => {
 		const handledError = match(ex)
-			.with(
-				when(isAxiosError),
+			.when(
+				isAxiosError,
 				(_) => new CryptoGeckoError(buildCryptoGeckoErrorMessage(_))
 			)
 			.otherwise(identity);

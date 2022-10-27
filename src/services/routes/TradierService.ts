@@ -11,7 +11,7 @@ import {
 } from '@craigmiller160/ts-functions/types';
 import { TaskTry } from '@craigmiller160/ts-functions';
 import qs from 'qs';
-import { match, when } from 'ts-pattern';
+import { match } from 'ts-pattern';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { logger } from '../../logger';
 import { Error } from 'mongoose';
@@ -40,7 +40,7 @@ const sendTradierRequest = (
 	query: object
 ): TaskTryT<object | Array<object>> => {
 	const queryString = match(qs.stringify(query))
-		.with(when(isNotEmpty), (_) => `?${_}`)
+		.when(isNotEmpty, (_) => `?${_}`)
 		.otherwise(identity);
 	const realUri = uri.replace(/^\/tradier/, '');
 	const fullTradierRequestUrl = `${baseUrl}${realUri}${queryString}`;
@@ -91,8 +91,8 @@ const handleTradierError =
 	(next: NextFunction) =>
 	(ex: Error): TaskT<void> => {
 		const handledError = match(ex)
-			.with(
-				when(isAxiosError),
+			.when(
+				isAxiosError,
 				(_) => new TradierError(buildTradierErrorMessage(_))
 			)
 			.otherwise(identity);
