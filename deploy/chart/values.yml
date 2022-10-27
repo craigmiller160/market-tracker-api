@@ -1,34 +1,28 @@
 app-deployment:
   appName: market-tracker-api
-  deployment:
-    image: nexus-docker-craigmiller160.ddns.net/market-tracker-api:latest
-    configMaps:
-      - market-tracker-api-config
-    ports:
-      - 8080
-    secrets:
-      - envVariable: MONGO_USER
-        secretName: mongodb-root-account
-        secretKey: username
-      - envVariable: MONGO_PASSWORD
-        secretName: mongodb-root-account
-        secretKey: password
-      - envVariable: CLIENT_KEY
-        secretName: market-tracker-api-oauth2-keys
-        secretKey: clientKey
-      - envVariable: CLIENT_SECRET
-        secretName: market-tracker-api-oauth2-keys
-        secretKey: clientSecret
-      - envVariable: TRADIER_API_KEY
-        secretName: market-tracker-tradier-api-key
-        secretKey: apiKey
-    livenessProbe:
-      httpGet:
-        path: /healthcheck
-        port: 8080
-        scheme: HTTPS
-  service:
-    enable: true
-    type: ClusterIP
-    ports:
-      - containerPort: 8080
+  image: nexus-docker-craigmiller160.ddns.net/market-tracker-api:latest
+  configMaps:
+    - market-tracker-api-config
+  ports:
+    - containerPort: 8080
+  secrets:
+    - envVariable: MONGO_USER
+      secretName: mongodb-root-account
+      secretKey: username
+    - envVariable: MONGO_PASSWORD
+      secretName: mongodb-root-account
+      secretKey: password
+    - envVariable: CLIENT_KEY
+      secretName: market-tracker-api-oauth2-keys
+      secretKey: clientKey
+    - envVariable: CLIENT_SECRET
+      secretName: market-tracker-api-oauth2-keys
+      secretKey: clientSecret
+    - envVariable: TRADIER_API_KEY
+      secretName: market-tracker-tradier-api-key
+      secretKey: apiKey
+  livenessProbe:
+    httpGet:
+      path: /healthcheck
+      port: 8080
+      scheme: HTTPS
