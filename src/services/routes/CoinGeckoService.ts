@@ -42,12 +42,12 @@ const sendCryptoGeckoRequest = (
 		.with(when(isNotEmpty), (_) => `?${_}`)
 		.otherwise(identity);
 	const realUri = uri.replace(/^\/cryptogecko/, '');
-	const fullCryptoGeckoUrl = `${baseUrl}${realUri}${queryString}`;
+	const fullCoinGeckoUrl = `${baseUrl}${realUri}${queryString}`;
 	return pipe(
-		logger.debug(`Sending request to CryptoGecko: ${fullCryptoGeckoUrl}`),
+		logger.debug(`Sending request to CoinGecko: ${fullCoinGeckoUrl}`),
 		TaskEither.rightIO,
 		TaskEither.chain(() =>
-			TaskTry.tryCatch(() => restClient.get(fullCryptoGeckoUrl))
+			TaskTry.tryCatch(() => restClient.get(fullCoinGeckoUrl))
 		),
 		TaskEither.map((_) => _.data),
 		TaskEither.chainIOK((data) =>
