@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { logger } from '../logger';
 import qs from 'qs';
 import { format } from 'date-fns';
-import { match, when } from 'ts-pattern';
+import { match } from 'ts-pattern';
 import * as P from 'fp-ts/Predicate';
 import { pipe } from 'fp-ts/function';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
@@ -42,14 +42,14 @@ const isBadRequestError: P.Predicate<Error> = pipe(
 
 const getErrorStatus = (err: Error): number =>
 	match(err)
-		.with(when(isUnauthorizedError), () => 401)
-		.with(when(isBadRequestError), () => 400)
+		.when(isUnauthorizedError, () => 401)
+		.when(isBadRequestError, () => 400)
 		.otherwise(() => 500);
 
 const getErrorMessage = (err: Error): string =>
 	match(err)
-		.with(when(isUnauthorizedError), () => 'Unauthorized')
-		.with(when(isMongoConstraintError), () => 'Bad Request')
+		.when(isUnauthorizedError, () => 'Unauthorized')
+		.when(isMongoConstraintError, () => 'Bad Request')
 		.with({ name: 'MissingValuesError' }, () => 'Missing values')
 		.otherwise((_) => _.message);
 

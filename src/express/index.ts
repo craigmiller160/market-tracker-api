@@ -24,7 +24,7 @@ import { createPassportValidation } from './auth/passport';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { nanoid } from 'nanoid';
-import { __, match } from 'ts-pattern';
+import { match } from 'ts-pattern';
 import { ExpressDependencies } from './ExpressDependencies';
 import {
 	appRefreshTokenRepository,
@@ -37,7 +37,7 @@ import * as IOEither from 'fp-ts/IOEither';
 
 const safeParseInt = (text: string): OptionT<number> =>
 	match(parseInt(text))
-		.with(__.NaN, () => Option.none)
+		.with(NaN, () => Option.none)
 		.otherwise((_) => Option.some(_));
 
 const expressListen = (
