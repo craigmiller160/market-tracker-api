@@ -1,6 +1,6 @@
 {
   "name": "@craigmiller160/market-tracker-api",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "publishConfig": {
     "registry": "https://nexus-craigmiller160.ddns.net/repository/npm-private/"
   },
@@ -27,13 +27,13 @@
     "@babel/helper-validator-identifier": "^7.15.7"
   },
   "devDependencies": {
-    "@craigmiller160/config-merge": "^1.0.0",
-    "@craigmiller160/eslint-config-js": "1.0.0",
-    "@craigmiller160/eslint-config-prettier": "1.0.0",
-    "@craigmiller160/eslint-config-ts": "1.0.0",
-    "@craigmiller160/jest-config": "1.0.0",
-    "@craigmiller160/jest-config-ts": "1.0.0",
-    "@craigmiller160/prettier-config": "1.0.0",
+    "@craigmiller160/config-merge": "^1.0.1",
+    "@craigmiller160/eslint-config-js": "1.0.1",
+    "@craigmiller160/eslint-config-prettier": "1.0.1",
+    "@craigmiller160/eslint-config-ts": "1.0.2",
+    "@craigmiller160/jest-config": "1.0.4",
+    "@craigmiller160/jest-config-ts": "1.0.2",
+    "@craigmiller160/prettier-config": "1.0.1",
     "@relmify/jest-fp-ts": "^1.1.1",
     "@types/cookie-parser": "^1.4.2",
     "@types/cross-spawn": "^6.0.2",
@@ -58,7 +58,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "@craigmiller160/ts-functions": "1.2.2",
+    "@craigmiller160/ts-functions": "1.4.1",
     "axios": "^0.24.0",
     "body-parser": "^1.19.1",
     "cookie-parser": "^1.4.6",
