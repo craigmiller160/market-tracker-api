@@ -77,7 +77,7 @@
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
     "qs": "^6.10.3",
-    "ts-pattern": "^3.3.4",
+    "ts-pattern": "^4.0.2",
     "winston": "^3.3.3"
   }
 }
