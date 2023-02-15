@@ -12,3 +12,4 @@ build
 logs/
 deploy/chart/charts
 *.tgz
+.terraform
