@@ -8,6 +8,8 @@ import * as Try from '@craigmiller160/ts-functions/Try';
 import { logger } from '../../logger';
 import * as Process from '@craigmiller160/ts-functions/Process';
 
+// TODO delete all of this
+
 export interface TokenKey {
 	readonly key: string;
 }
