@@ -18,26 +18,15 @@ import { getRequiredValues } from '../../function/Values';
 import * as IO from 'fp-ts/IO';
 import * as IOEither from 'fp-ts/IOEither';
 
-interface ClientKeyName {
-	readonly clientKey: string;
-	readonly clientName: string;
-}
-
-const getClientKeyAndName = (): IOTryT<ClientKeyName> => {
+const getClientId = (): IOTryT<string> => {
 	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
-		Process.envLookupO('CLIENT_KEY'),
-		Process.envLookupO('CLIENT_NAME')
+		Process.envLookupO('CLIENT_ID')
 	];
 
 	return pipe(
 		IO.sequenceArray(envArray),
 		IO.map(getRequiredValues),
-		IOEither.map(
-			([clientKey, clientName]): ClientKeyName => ({
-				clientKey,
-				clientName
-			})
-		)
+		IOEither.map(([clientId]) => clientId)
 	);
 };
 
@@ -60,7 +49,7 @@ export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 		new JwtStrategy(options, (payload: AccessToken, done) => {
 			const doValidatePayload = validatePayload(payload);
 			pipe(
-				getClientKeyAndName(),
+				getClientId(),
 				IOEither.filterOrElse<Error, ClientKeyName>(
 					doValidatePayload,
 					() =>
