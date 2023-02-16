@@ -23,15 +23,24 @@ type OpenidConfiguration = {
 const getJwkSet = (url: string): TaskTryT<JwkSet> =>
 	TaskTry.tryCatch(() => restClient.get<JwkSet>(url).then((res) => res.data));
 
-const getOpenidConfiguration = (keycloakHost: string, realm: string) => {
+const getOpenidConfiguration = (
+	keycloakHost: string,
+	realm: string
+): TaskTryT<OpenidConfiguration> =>
+	TaskTry.tryCatch(() =>
+		restClient
+			.get<OpenidConfiguration>(
+				`${keycloakHost}/realms/${realm}/.well-known/openid-configuration`
+			)
+			.then((res) => res.data)
+	);
+
+const getTokenValidationConfig = (
+	keycloakHost: string,
+	realm: string
+): TaskTryT<TokenValidationConfig> => {
 	pipe(
-		TaskTry.tryCatch(() =>
-			restClient
-				.get<OpenidConfiguration>(
-					`${keycloakHost}/realms/${realm}/.well-known/openid-configuration`
-				)
-				.then((res) => res.data)
-		),
+		getOpenidConfiguration(keycloakHost, realm),
 		TaskEither.bindTo('openidConfig'),
 		TaskEither.bind('jwkSet', ({ openidConfig }) =>
 			getJwkSet(openidConfig.jwks_uri)
