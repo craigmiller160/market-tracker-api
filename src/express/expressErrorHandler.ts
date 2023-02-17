@@ -30,6 +30,9 @@ const isUnauthorizedError: P.Predicate<Error> = pipe(
 	P.or((_) => NO_AUTH_TOKEN_REGEX.test(_.message))
 );
 
+const isAccessDeniedError: P.Predicate<Error> = (_) =>
+	_.name === 'AccessDenied';
+
 const isMongoConstraintError: P.Predicate<Error> = pipe(
 	(_: Error) => MONGO_ERROR_NAMES.includes(_.name),
 	P.and((_) => _.message.includes('duplicate key error'))
@@ -44,11 +47,13 @@ const getErrorStatus = (err: Error): number =>
 	match(err)
 		.when(isUnauthorizedError, () => 401)
 		.when(isBadRequestError, () => 400)
+		.when(isAccessDeniedError, () => 403)
 		.otherwise(() => 500);
 
 const getErrorMessage = (err: Error): string =>
 	match(err)
 		.when(isUnauthorizedError, () => 'Unauthorized')
+		.when(isAccessDeniedError, () => 'Access Denied')
 		.when(isMongoConstraintError, () => 'Bad Request')
 		.with({ name: 'MissingValuesError' }, () => 'Missing values')
 		.otherwise((_) => _.message);
