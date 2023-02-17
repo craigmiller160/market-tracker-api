@@ -3,6 +3,7 @@ import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressRouteDependencies } from '../ExpressDependencies';
 import { Router } from 'express';
 import { emptyRoute } from '../Route';
+import { keycloakSecure } from '../../keycloak/keycloakSecure';
 
 export const newRouter = (
 	baseUrl: string
@@ -16,9 +17,9 @@ const createNewRouter = (
 	baseUrl: string,
 	isSecure: boolean
 ): ReaderT<ExpressRouteDependencies, Router> =>
-	Reader.asks(({ expressApp, secure }) => {
-		const middleware = isSecure ? secure : emptyRoute;
+	Reader.asks(({ expressApp }) => {
+		const middleware = isSecure ? keycloakSecure() : [emptyRoute];
 		const router = Router();
-		expressApp.use(baseUrl, middleware, router);
+		expressApp.use(baseUrl, ...middleware, router);
 		return router;
 	});
