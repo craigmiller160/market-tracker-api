@@ -1,10 +1,12 @@
 import {
+	accessToken,
 	createFullTestServer,
 	FullTestServer,
 	stopFullTestServer
 } from '../../testutils/fullTestServer';
 import { PortfolioModel } from '../../../src/mongo/models/PortfolioModel';
 import { Portfolio } from '../../../src/data/modelTypes/Portfolio';
+import { getUserId } from '../../../src/keycloak/KeycloakToken';
 
 describe('PortfolioModel', () => {
 	let fullTestServer: FullTestServer;
@@ -22,7 +24,7 @@ describe('PortfolioModel', () => {
 
 	it('enforces optimistic locking', async () => {
 		const portfolio: Portfolio = {
-			userId: 1,
+			userId: getUserId(accessToken),
 			portfolioName: 'Hello',
 			stocks: [],
 			cryptos: []
