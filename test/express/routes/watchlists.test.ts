@@ -152,7 +152,7 @@ describe('watchlists route', () => {
 				.timeout(2000)
 				.expect(204);
 			const watchlists = await WatchlistModel.find({
-				userId: 1
+				userId: getUserId(accessToken)
 			}).exec();
 			expect(watchlists).toHaveLength(1);
 		});
@@ -376,7 +376,7 @@ describe('watchlists route', () => {
 				.expect(200);
 			expect(res.body).toEqual(
 				expect.objectContaining({
-					userId: 1,
+					userId: getUserId(accessToken),
 					watchlistName: 'Hello',
 					stocks: [],
 					cryptos: []
@@ -459,11 +459,13 @@ describe('watchlists route', () => {
 			expect(formatWatchlists(res.body)).toEqual([
 				expect.objectContaining({
 					...newWatchlists[0],
-					userId: 1
+					userId: getUserId(accessToken)
 				})
 			]);
 
-			const results = await WatchlistModel.find({ userId: 1 })
+			const results = await WatchlistModel.find({
+				userId: getUserId(accessToken)
+			})
 				.lean()
 				.exec();
 			expect(results).toHaveLength(1);
@@ -472,7 +474,7 @@ describe('watchlists route', () => {
 
 			expect(resultsWithoutIds[0]).toEqual({
 				...newWatchlists[0],
-				userId: 1
+				userId: getUserId(accessToken)
 			});
 		});
 
