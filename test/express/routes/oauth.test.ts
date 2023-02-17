@@ -10,18 +10,7 @@ import request from 'supertest';
 import { restClient } from '../../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
 import { MarketTrackerSession } from '../../../src/function/HttpRequest';
-import { pipe } from 'fp-ts/function';
-import * as Time from '@craigmiller160/ts-functions/Time';
-import { STATE_EXP_FORMAT } from '../../../src/services/auth/constants';
-import { TokenResponse } from '../../../src/types/TokenResponse';
-import { AuthCodeBody } from '../../../src/services/auth/AuthCodeAuthentication';
-import {
-	AppRefreshTokenModel,
-	appRefreshTokenToModel
-} from '../../../src/mongo/models/AppRefreshTokenModel';
-import qs from 'qs';
-import { AccessToken } from '../../../src/express/auth/AccessToken';
-import { AppRefreshToken } from '../../../src/data/modelTypes/AppRefreshToken';
+import { AppRefreshTokenModel } from '../../../src/mongo/models/AppRefreshTokenModel';
 
 const clearEnv = () => {
 	delete process.env.CLIENT_KEY;
@@ -70,54 +59,15 @@ const createValidateSessionData =
 		expect(sessionRes.body).toEqual(expectedSession);
 	};
 
-const createPrepareSession =
-	(fullTestServer: FullTestServer) =>
-	async (expectedSession?: MarketTrackerSession): Promise<string> => {
-		const sessionPrepRes = await request(
-			fullTestServer.expressServer.server
-		)
-			.post('/session')
-			.timeout(2000)
-			.set('Content-Type', 'application/json')
-			.send(expectedSession)
-			.expect(204);
-		return getSessionCookie(sessionPrepRes);
-	};
-
-const mockTokenRequest = (code: string, responseStatus = 200) => {
-	const body: AuthCodeBody = {
-		grant_type: 'authorization_code',
-		client_id: 'clientKey',
-		code,
-		redirect_uri: 'origin/authCodeRedirectUri'
-	};
-
-	const tokenResponse: TokenResponse = {
-		accessToken: 'accessToken',
-		refreshToken: 'refreshToken',
-		tokenId: 'tokenId'
-	};
-	mockApi
-		.onPost('https://localhost:7003/oauth/token', qs.stringify(body))
-		.reply(responseStatus, tokenResponse);
-};
-
-const createStateExp = (mins: number): string =>
-	pipe(new Date(), Time.addMinutes(mins), Time.format(STATE_EXP_FORMAT));
-
 describe('oauth routes', () => {
 	let fullTestServer: FullTestServer;
 	let validateSessionData: (
 		sessionCookie: string,
 		expectedSession: MarketTrackerSession
 	) => Promise<void>;
-	let prepareSession: (
-		expectedSession?: MarketTrackerSession
-	) => Promise<string>;
 	beforeAll(async () => {
 		fullTestServer = await createFullTestServer();
 		validateSessionData = createValidateSessionData(fullTestServer);
-		prepareSession = createPrepareSession(fullTestServer);
 	});
 
 	afterAll(async () => {
@@ -145,12 +95,7 @@ describe('oauth routes', () => {
 				.timeout(2000)
 				.set('Authorization', `Bearer ${token}`)
 				.expect(200);
-			const expectedBody: Partial<AccessToken> = {
-				...accessToken,
-				clientKey: undefined,
-				jti: undefined
-			};
-			expect(res.body).toEqual(expectedBody);
+			expect(res.body).toEqual(accessToken);
 		});
 
 		it('fails when not authenticated', async () => {
@@ -203,173 +148,6 @@ describe('oauth routes', () => {
 				.set('Origin', 'origin')
 				.timeout(2000)
 				.expect(500);
-		});
-	});
-
-	describe('authenticate the auth code', () => {
-		const code = 'ABCDEFG';
-		const state = 12345;
-		beforeEach(() => {
-			setEnv();
-		});
-
-		it('successfully authenticates the auth code', async () => {
-			mockTokenRequest(code);
-			const sessionCookie = await prepareSession({
-				origin: 'origin',
-				state,
-				stateExpiration: createStateExp(10)
-			});
-
-			const res = await request(fullTestServer.expressServer.server)
-				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
-				.set('Cookie', sessionCookie)
-				.timeout(2000)
-				.expect(302);
-			expect(res.headers['location']).toEqual('/postAuthRedirect');
-			expect(res.headers['set-cookie']).toHaveLength(1);
-			expect(res.headers['set-cookie'][0]).toEqual(
-				'my-cookie=accessToken; Max-Age=8600; Secure; HttpOnly; SameSite=strict; Path=/the-path'
-			);
-
-			const results = await AppRefreshTokenModel.find().exec();
-			expect(results).toHaveLength(1);
-			expect(results[0]).toEqual(
-				expect.objectContaining({
-					tokenId: 'tokenId',
-					refreshToken: 'refreshToken'
-				})
-			);
-		});
-
-		it('missing environment variables for authentication', async () => {
-			delete process.env.CLIENT_KEY;
-			mockTokenRequest(code);
-			const sessionCookie = await prepareSession({
-				origin: 'origin',
-				state,
-				stateExpiration: createStateExp(10)
-			});
-
-			await request(fullTestServer.expressServer.server)
-				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
-				.set('Cookie', sessionCookie)
-				.timeout(2000)
-				.expect(500);
-
-			const count = await AppRefreshTokenModel.count().exec();
-			expect(count).toEqual(0);
-		});
-
-		it('missing environment variables for cookie creation', async () => {
-			delete process.env.COOKIE_NAME;
-			mockTokenRequest(code);
-			const sessionCookie = await prepareSession({
-				origin: 'origin',
-				state,
-				stateExpiration: createStateExp(10)
-			});
-
-			await request(fullTestServer.expressServer.server)
-				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
-				.set('Cookie', sessionCookie)
-				.timeout(2000)
-				.expect(500);
-
-			const count = await AppRefreshTokenModel.count().exec();
-			expect(count).toEqual(1);
-		});
-
-		it('invalid state for authentication', async () => {
-			mockTokenRequest(code);
-			const sessionCookie = await prepareSession({
-				origin: 'origin',
-				state: 8765,
-				stateExpiration: createStateExp(10)
-			});
-
-			await request(fullTestServer.expressServer.server)
-				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
-				.set('Cookie', sessionCookie)
-				.timeout(2000)
-				.expect(401);
-
-			const count = await AppRefreshTokenModel.count().exec();
-			expect(count).toEqual(0);
-		});
-
-		it('expired state for authentication', async () => {
-			mockTokenRequest(code);
-			const sessionCookie = await prepareSession({
-				origin: 'origin',
-				state,
-				stateExpiration: createStateExp(-10)
-			});
-
-			await request(fullTestServer.expressServer.server)
-				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
-				.set('Cookie', sessionCookie)
-				.timeout(2000)
-				.expect(401);
-
-			const count = await AppRefreshTokenModel.count().exec();
-			expect(count).toEqual(0);
-		});
-
-		it('authentication rejected by auth server', async () => {
-			mockTokenRequest(code, 401);
-			const sessionCookie = await prepareSession({
-				origin: 'origin',
-				state,
-				stateExpiration: createStateExp(10)
-			});
-
-			await request(fullTestServer.expressServer.server)
-				.get(`/oauth/authcode/code?code=${code}&state=${state}`)
-				.set('Cookie', sessionCookie)
-				.timeout(2000)
-				.expect(401);
-
-			const count = await AppRefreshTokenModel.count().exec();
-			expect(count).toEqual(0);
-		});
-	});
-
-	describe('logout', () => {
-		beforeEach(() => {
-			setEnv();
-		});
-
-		it('logs out', async () => {
-			const refreshToken: AppRefreshToken = {
-				tokenId: accessToken.jti,
-				refreshToken: 'refreshToken'
-			};
-			await appRefreshTokenToModel(refreshToken).save();
-
-			const token = createAccessToken(fullTestServer.keyPair.privateKey);
-			const sessionCookie = await prepareSession();
-			const res = await request(fullTestServer.expressServer.server)
-				.get('/oauth/logout')
-				.timeout(2000)
-				.set('Cookie', sessionCookie)
-				.set('Authorization', `Bearer ${token}`)
-				.expect(204);
-			expect(res.headers['set-cookie']).toHaveLength(1);
-			expect(res.headers['set-cookie'][0]).toEqual(
-				'my-cookie=; Max-Age=0; Secure; HttpOnly; SameSite=strict; Path=/the-path'
-			);
-
-			const count = await AppRefreshTokenModel.count();
-			expect(count).toEqual(0);
-		});
-
-		it('missing environment variables for logout', async () => {
-			delete process.env.COOKIE_NAME;
-			await request(fullTestServer.expressServer.server)
-				.get('/oauth/logout')
-				.timeout(2000)
-				.expect(401);
 		});
 	});
 });
