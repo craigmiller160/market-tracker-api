@@ -8,8 +8,6 @@ import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TaskTry from '@craigmiller160/ts-functions/TaskTry';
 import { createKeyPair, TokenKeyPair } from './keyPair';
-import { TokenKey } from '../../src/services/auth/TokenKey';
-import { AccessToken } from '../../src/express/auth/AccessToken';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { createSessionRoute } from './sessionRoute';
 import {
@@ -17,7 +15,9 @@ import {
 	portfolioRepository,
 	watchlistRepository
 } from '../../src/data/repo';
-import { createSecure } from '../../src/express/auth/secure2';
+import { KeycloakToken } from '../../src/keycloak/KeycloakToken';
+import { nanoid } from 'nanoid';
+import { Time } from '@craigmiller160/ts-functions';
 
 export interface FullTestServer {
 	readonly keyPair: TokenKeyPair;
@@ -25,16 +25,24 @@ export interface FullTestServer {
 	readonly mongoServer: MongoTestServer;
 }
 
-export const accessToken: AccessToken = {
-	userId: 1,
-	userEmail: 'bob@gmail.com',
-	firstName: 'Bob',
-	lastName: 'Saget',
-	roles: [],
-	sub: 'bob@gmail.com',
-	clientKey: 'clientKey',
-	clientName: 'the-app',
-	jti: 'tokenId'
+export const accessToken: KeycloakToken = {
+	jti: nanoid(),
+	exp: Time.addDays(1)(new Date()).getTime() / 1000,
+	iat: new Date().getTime() / 1000,
+	realm_access: {
+		roles: []
+	},
+	resource_access: {
+		'market-tracker-api': {
+			roles: ['access']
+		}
+	},
+	email: 'craig@gmail.com',
+	given_name: 'Craig',
+	family_name: 'Miller',
+	sub: nanoid(),
+	aud: [],
+	iss: 'issuer'
 };
 
 export const createAccessToken = (
@@ -48,16 +56,15 @@ export const createAccessToken = (
 
 const createExpressServerWithKey = (
 	publicKey: string
-): TE.TaskEither<Error, ExpressServer> => {
-	const tokenKey: TokenKey = {
-		key: publicKey
-	};
-	return startExpressServer(tokenKey);
-};
+): TE.TaskEither<Error, ExpressServer> =>
+	startExpressServer({
+		issuer: 'issuer',
+		keys: {
+			abc: publicKey
+		}
+	});
 
 export const createFullTestServer = (): Promise<FullTestServer> => {
-	process.env.CLIENT_KEY = accessToken.clientKey;
-	process.env.CLIENT_NAME = accessToken.clientName;
 	return pipe(
 		createKeyPair(),
 		TE.fromEither,
@@ -71,14 +78,7 @@ export const createFullTestServer = (): Promise<FullTestServer> => {
 				expressApp: fullTestServer.expressServer.app,
 				portfolioRepository,
 				watchlistRepository,
-				appRefreshTokenRepository,
-				tokenKey: {
-					key: ''
-				},
-				secure: createSecure({
-					appRefreshTokenRepository,
-					hasRefreshed: false
-				})
+				appRefreshTokenRepository
 			});
 			return fullTestServer;
 		}),
