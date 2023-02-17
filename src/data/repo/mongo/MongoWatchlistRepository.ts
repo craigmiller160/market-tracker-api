@@ -31,7 +31,7 @@ export const findWatchlistsForUser: FindWatchlistsForUser = (userId) =>
 	);
 
 const replaceWatchlistsForUser = async (
-	userId: number,
+	userId: string,
 	watchlistModels: ReadonlyArray<WatchlistModelInstanceType>
 ): Promise<void> => {
 	await WatchlistModel.deleteMany({ userId }).exec();

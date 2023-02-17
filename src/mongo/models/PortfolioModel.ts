@@ -4,7 +4,7 @@ import { Portfolio } from '../../data/modelTypes/Portfolio';
 const portfolioSchema = new Schema<Portfolio>(
 	{
 		userId: {
-			type: Number,
+			type: String,
 			required: true
 		},
 		portfolioName: {

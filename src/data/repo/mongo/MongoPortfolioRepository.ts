@@ -22,7 +22,7 @@ export const findPortfoliosForUser: FindPortfoliosForUser = (userId) =>
 	);
 
 const replacePortfoliosForUser = async (
-	userId: number,
+	userId: string,
 	portfolioModels: ReadonlyArray<PortfolioModelInstanceType>
 ): Promise<void> => {
 	await PortfolioModel.deleteMany({ userId }).exec();

@@ -9,5 +9,5 @@ export interface WatchlistInput {
 }
 
 export interface Watchlist extends WatchlistInput {
-	userId: number;
+	userId: string;
 }

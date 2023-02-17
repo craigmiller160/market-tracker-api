@@ -4,7 +4,7 @@ export interface PortfolioItem {
 }
 
 export interface Portfolio {
-	userId: number;
+	userId: string;
 	portfolioName: string;
 	stocks: PortfolioItem[];
 	cryptos: PortfolioItem[];
