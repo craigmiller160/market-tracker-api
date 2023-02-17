@@ -1,5 +1,4 @@
 import { ReaderT } from '@craigmiller160/ts-functions/types';
-import { ExpressRouteDependencies } from '../../express/ExpressDependencies';
 import { identity, pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { NextFunction, Request, Response } from 'express';
@@ -13,6 +12,7 @@ import {
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
 import { BadRequestError } from '../../error/BadRequestError';
 import { getUserId, KeycloakToken } from '../../keycloak/KeycloakToken';
+import { ExpressDependencies } from '../../express/ExpressDependencies';
 
 interface ModifyInvestmentParams {
 	readonly watchlistName: string;
@@ -29,7 +29,7 @@ interface RenameParams {
 	readonly newWatchlistName: string;
 }
 
-export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
+export const removeWatchlist: ReaderT<ExpressDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
 		const token = req.user as KeycloakToken;
@@ -52,7 +52,7 @@ export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		);
 	};
 
-export const renameWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
+export const renameWatchlist: ReaderT<ExpressDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
 		const token = req.user as KeycloakToken;
@@ -70,7 +70,7 @@ export const renameWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		);
 	};
 
-export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
+export const addInvestment: ReaderT<ExpressDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
 		const token = req.user as KeycloakToken;
@@ -95,7 +95,7 @@ export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		);
 	};
 
-export const removeInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
+export const removeInvestment: ReaderT<ExpressDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
 		const token = req.user as KeycloakToken;
@@ -120,8 +120,8 @@ export const removeInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		);
 	};
 
-export const getAllNames: ReaderT<ExpressRouteDependencies, TaskRoute> = pipe(
-	Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
+export const getAllNames: ReaderT<ExpressDependencies, TaskRoute> = pipe(
+	Reader.asks<ExpressDependencies, WatchlistRepository>(
 		({ watchlistRepository }) => watchlistRepository
 	),
 	Reader.map(
@@ -139,32 +139,31 @@ export const getAllNames: ReaderT<ExpressRouteDependencies, TaskRoute> = pipe(
 	)
 );
 
-export const createNewWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
-	pipe(
-		Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
-			({ watchlistRepository }) => watchlistRepository
-		),
-		Reader.map(
-			(watchlistRepository) =>
-				(req: Request, res: Response, next: NextFunction) => {
-					const token = req.user as KeycloakToken;
-					const userId = getUserId(token);
-					return pipe(
-						watchlistRepository.createWatchlistForUser(
-							userId,
-							req.body as WatchlistInput
-						),
-						TaskEither.fold(errorTask(next), (_) => async () => {
-							res.json(_);
-						})
-					);
-				}
-		)
-	);
+export const createNewWatchlist: ReaderT<ExpressDependencies, TaskRoute> = pipe(
+	Reader.asks<ExpressDependencies, WatchlistRepository>(
+		({ watchlistRepository }) => watchlistRepository
+	),
+	Reader.map(
+		(watchlistRepository) =>
+			(req: Request, res: Response, next: NextFunction) => {
+				const token = req.user as KeycloakToken;
+				const userId = getUserId(token);
+				return pipe(
+					watchlistRepository.createWatchlistForUser(
+						userId,
+						req.body as WatchlistInput
+					),
+					TaskEither.fold(errorTask(next), (_) => async () => {
+						res.json(_);
+					})
+				);
+			}
+	)
+);
 
-export const getWatchlistsByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
+export const getWatchlistsByUser: ReaderT<ExpressDependencies, TaskRoute> =
 	pipe(
-		Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
+		Reader.asks<ExpressDependencies, WatchlistRepository>(
 			({ watchlistRepository }) => watchlistRepository
 		),
 		Reader.map(
@@ -182,27 +181,28 @@ export const getWatchlistsByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		)
 	);
 
-export const saveWatchlistsForUser: ReaderT<
-	ExpressRouteDependencies,
-	TaskRoute
-> = pipe(
-	Reader.asks<ExpressRouteDependencies, WatchlistRepository>(
-		({ watchlistRepository }) => watchlistRepository
-	),
-	Reader.map(
-		(watchlistRepository) =>
-			(req: Request, res: Response, next: NextFunction) => {
-				const token = req.user as KeycloakToken;
-				const userId = getUserId(token);
-				return pipe(
-					watchlistRepository.saveWatchlistsForUser(userId, req.body),
-					TaskEither.chain(() =>
-						watchlistRepository.findWatchlistsForUser(userId)
-					),
-					TaskEither.fold(errorTask(next), (_) => async () => {
-						res.json(_);
-					})
-				);
-			}
-	)
-);
+export const saveWatchlistsForUser: ReaderT<ExpressDependencies, TaskRoute> =
+	pipe(
+		Reader.asks<ExpressDependencies, WatchlistRepository>(
+			({ watchlistRepository }) => watchlistRepository
+		),
+		Reader.map(
+			(watchlistRepository) =>
+				(req: Request, res: Response, next: NextFunction) => {
+					const token = req.user as KeycloakToken;
+					const userId = getUserId(token);
+					return pipe(
+						watchlistRepository.saveWatchlistsForUser(
+							userId,
+							req.body
+						),
+						TaskEither.chain(() =>
+							watchlistRepository.findWatchlistsForUser(userId)
+						),
+						TaskEither.fold(errorTask(next), (_) => async () => {
+							res.json(_);
+						})
+					);
+				}
+		)
+	);
