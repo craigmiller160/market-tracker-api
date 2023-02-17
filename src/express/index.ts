@@ -1,10 +1,10 @@
 import * as Option from 'fp-ts/Option';
 import * as TaskEither from 'fp-ts/TaskEither';
 import {
-	TaskTryT,
+	IOT,
 	OptionT,
 	TaskT,
-	IOT
+	TaskTryT
 } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import bodyParer from 'body-parser';
@@ -18,9 +18,7 @@ import https from 'https';
 import { httpsOptions } from './tls';
 import { setupRequestLogging } from './requestLogging';
 import nocache from 'nocache';
-import { TokenKey } from '../services/auth/TokenKey';
 import passport from 'passport';
-import { createPassportValidation } from './auth/passport';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { nanoid } from 'nanoid';
@@ -34,7 +32,8 @@ import {
 import * as Reader from 'fp-ts/Reader';
 import * as IO from 'fp-ts/IO';
 import * as IOEither from 'fp-ts/IOEither';
-import {TokenValidationConfig} from '../keycloak/getTokenValidationConfig';
+import { TokenValidationConfig } from '../keycloak/getTokenValidationConfig';
+import { createPassport } from '../keycloak/createPassport';
 
 const safeParseInt = (text: string): OptionT<number> =>
 	match(parseInt(text))
@@ -79,14 +78,15 @@ export interface ExpressServer {
 	readonly app: Express;
 }
 
-const createExpressApp = (tokenKey: TokenKey): Express => {
+const createExpressApp = (
+	tokenValidationConfig: TokenValidationConfig
+): Express => {
 	const app = express();
 	const expressDependencies: ExpressDependencies = {
 		portfolioRepository,
 		watchlistRepository,
 		appRefreshTokenRepository,
-		expressApp: app,
-		tokenKey
+		expressApp: app
 	};
 	app.use(cookieParser());
 	app.use(
@@ -101,11 +101,12 @@ const createExpressApp = (tokenKey: TokenKey): Express => {
 	app.use(bodyParer.json());
 	app.use(passport.initialize());
 
+	createPassport(tokenValidationConfig);
+
 	Reader.sequenceArray([
 		setupRequestLogging,
 		createRoutes,
-		setupErrorHandler,
-		createPassportValidation
+		setupErrorHandler
 	])(expressDependencies);
 
 	return app;
@@ -127,7 +128,7 @@ export const startExpressServer = (
 ): TaskTryT<ExpressServer> =>
 	pipe(
 		logger.debug('Starting server'),
-		IO.map(() => createExpressApp(tokenKey)),
+		IO.map(() => createExpressApp(tokenValidationConfig)),
 		IOEither.rightIO,
 		IOEither.bindTo('app'),
 		IOEither.bind('port', () => IOEither.rightIO(getPort())),
