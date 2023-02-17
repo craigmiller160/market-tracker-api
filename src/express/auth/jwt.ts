@@ -6,6 +6,7 @@ import { PredicateT, OptionT } from '@craigmiller160/ts-functions/types';
 import * as Process from '@craigmiller160/ts-functions/Process';
 import * as IO from 'fp-ts/IO';
 
+// TODO delete this
 export const isJwtInCookie: PredicateT<Request> = (req) =>
 	pipe(
 		Process.envLookupO('COOKIE_NAME'),

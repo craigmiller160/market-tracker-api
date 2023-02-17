@@ -4,6 +4,7 @@ import { restClient } from '../services/RestClient';
 import { TaskTry } from '@craigmiller160/ts-functions';
 import { pipe } from 'fp-ts/function';
 import { TaskTryT } from '@craigmiller160/ts-functions/types';
+import { logger } from '../logger';
 
 export type JWKWithID = JWK & {
 	readonly kid: string;
@@ -59,8 +60,9 @@ const getKeys = (jwksUrl: string): TaskTryT<Record<string, string>> =>
 export const getTokenValidationConfig = (
 	keycloakHost: string,
 	realm: string
-): TaskTryT<TokenValidationConfig> =>
-	pipe(
+): TaskTryT<TokenValidationConfig> => {
+	logger.debug('Downloading Keycloak configuration & keys')();
+	return pipe(
 		getOpenidConfiguration(keycloakHost, realm),
 		TaskEither.bindTo('openidConfig'),
 		TaskEither.bind('keys', ({ openidConfig }) =>
@@ -73,3 +75,4 @@ export const getTokenValidationConfig = (
 			})
 		)
 	);
+};

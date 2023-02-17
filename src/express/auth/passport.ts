@@ -6,6 +6,7 @@ import { jwtFromRequest } from './jwt';
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressDependencies } from '../ExpressDependencies';
 
+// TODO delete this
 export const createPassportValidation: ReaderT<ExpressDependencies, void> = ({
 	tokenKey
 }) => {
