@@ -3,11 +3,14 @@ import * as TaskEither from 'fp-ts/TaskEither';
 import { restClient } from '../services/RestClient';
 import { TaskTry } from '@craigmiller160/ts-functions';
 import { pipe } from 'fp-ts/function';
-import { logger } from '../logger';
 import { TaskTryT } from '@craigmiller160/ts-functions/types';
 
+export type JWKWithID = JWK & {
+	readonly kid: string;
+};
+
 export type JwkSet = {
-	readonly keys: JWK[];
+	readonly keys: JWKWithID[];
 };
 
 export type TokenValidationConfig = {
@@ -35,15 +38,38 @@ const getOpenidConfiguration = (
 			.then((res) => res.data)
 	);
 
-const getTokenValidationConfig = (
+const jwtSetToKeys = (jwtSet: JwkSet): Record<string, string> =>
+	jwtSet.keys
+		.map((jwk) => {
+			const pem = jwkToPem(jwk);
+			return {
+				[jwk.kid]: pem
+			};
+		})
+		.reduce((acc, rec) => {
+			return {
+				...acc,
+				...rec
+			};
+		}, {});
+
+const getKeys = (jwksUrl: string): TaskTryT<Record<string, string>> =>
+	pipe(getJwkSet(jwksUrl), TaskEither.map(jwtSetToKeys));
+
+export const getTokenValidationConfig = (
 	keycloakHost: string,
 	realm: string
-): TaskTryT<TokenValidationConfig> => {
+): TaskTryT<TokenValidationConfig> =>
 	pipe(
 		getOpenidConfiguration(keycloakHost, realm),
 		TaskEither.bindTo('openidConfig'),
-		TaskEither.bind('jwkSet', ({ openidConfig }) =>
-			getJwkSet(openidConfig.jwks_uri)
+		TaskEither.bind('keys', ({ openidConfig }) =>
+			getKeys(openidConfig.jwks_uri)
+		),
+		TaskEither.map(
+			({ openidConfig, keys }): TokenValidationConfig => ({
+				issuer: openidConfig.issuer,
+				keys
+			})
 		)
 	);
-};
