@@ -1,3 +1,6 @@
+import * as Option from 'fp-ts/Option';
+import { pipe } from 'fp-ts/function';
+
 export type KeycloakToken = {
 	readonly exp: number;
 	readonly iat: number;
@@ -19,3 +22,15 @@ export type KeycloakToken = {
 };
 
 export const getUserId = (token: KeycloakToken): string => token.sub;
+
+export const getAllRoles = (token: KeycloakToken): ReadonlyArray<string> => {
+	const resourceRoles = pipe(
+		Option.fromNullable(process.env.CLIENT_ID),
+		Option.chain((clientId) =>
+			Option.fromNullable(token.resource_access[clientId]?.roles)
+		),
+		Option.getOrElse((): ReadonlyArray<string> => [])
+	);
+	const realmRoles = token.realm_access.roles.map((role) => `realm:${role}`);
+	return [...resourceRoles, ...realmRoles];
+};
