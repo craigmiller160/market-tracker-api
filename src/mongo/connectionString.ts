@@ -18,8 +18,11 @@ interface MongoEnv {
 	readonly db: string;
 }
 
+const TLS_SUFFIX =
+	'tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true';
+
 const createConnectionString = (env: MongoEnv): string =>
-	`mongodb://${env.user}:${env.password}@${env.hostname}:${env.port}/${env.db}?authSource=${env.adminDb}&tls=true&tlsAllowInvalidCertificates=true&tlsAllowInvalidHostnames=true`;
+	`mongodb://${env.user}:${env.password}@${env.hostname}:${env.port}/${env.db}?authSource=${env.adminDb}`;
 
 interface ConnStringAndEnv {
 	readonly connectionString: string;
@@ -67,6 +70,13 @@ const getMongoPasswordEnv = (): IOT<OptionT<string>> =>
 		)
 	);
 
+const appendTlsSuffix = (connectionString: string, nodeEnv: string): string => {
+	if ('development' === nodeEnv) {
+		return connectionString;
+	}
+	return `${connectionString}&${TLS_SUFFIX}`;
+};
+
 export const getConnectionString = (): IOTryT<string> => {
 	const envArray: ReadonlyArray<IOT<OptionT<string>>> = [
 		Process.envLookupO('MONGO_HOSTNAME'),
@@ -87,8 +97,11 @@ export const getConnectionString = (): IOTryT<string> => {
 				Either.map(createConnectionString)
 			)
 		),
-		IOEither.bindTo('connectionString'),
+		IOEither.bindTo('baseConnectionString'),
 		IOEither.bind('nodeEnv', () => Process.envLookupE('NODE_ENV')),
+		IOEither.bind('connectionString', ({ baseConnectionString, nodeEnv }) =>
+			IOEither.right(appendTlsSuffix(baseConnectionString, nodeEnv))
+		),
 		IOEither.chainIOK(logConnectionStringInDev),
 		IOEither.map(({ connectionString }) => connectionString)
 	);
