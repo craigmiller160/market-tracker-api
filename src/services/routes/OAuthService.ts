@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { AccessToken } from '../../express/auth/AccessToken';
 import { pipe } from 'fp-ts/function';
 import {
 	AuthCodeLoginResponse,

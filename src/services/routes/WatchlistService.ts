@@ -1,6 +1,5 @@
 import { ReaderT } from '@craigmiller160/ts-functions/types';
 import { ExpressRouteDependencies } from '../../express/ExpressDependencies';
-import { AccessToken } from '../../express/auth/AccessToken';
 import { identity, pipe } from 'fp-ts/function';
 import * as TaskEither from 'fp-ts/TaskEither';
 import { NextFunction, Request, Response } from 'express';
