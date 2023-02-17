@@ -11,6 +11,7 @@ export interface ExpressDependencies {
 	readonly expressApp: Express;
 }
 
+// TODO delete this
 export interface ExpressRouteDependencies extends ExpressDependencies {
-	readonly secure: Route;
+
 }
