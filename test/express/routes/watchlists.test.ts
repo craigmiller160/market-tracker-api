@@ -4,6 +4,7 @@ import {
 } from '../../../src/mongo/models/WatchlistModel';
 import request from 'supertest';
 import {
+	accessToken,
 	createAccessToken,
 	createFullTestServer,
 	FullTestServer,
@@ -14,6 +15,8 @@ import {
 	Watchlist,
 	WatchlistInput
 } from '../../../src/data/modelTypes/Watchlist';
+import { getUserId } from '../../../src/keycloak/KeycloakToken';
+import { nanoid } from 'nanoid';
 
 const formatWatchlists = (watchlists: Watchlist[]): Watchlist[] =>
 	watchlists.map((watchlist) => {
@@ -39,7 +42,7 @@ describe('watchlists route', () => {
 	beforeEach(async () => {
 		user1InitWatchlists = [
 			{
-				userId: 1,
+				userId: getUserId(accessToken),
 				watchlistName: 'One',
 				stocks: [
 					{
@@ -56,7 +59,7 @@ describe('watchlists route', () => {
 				]
 			},
 			{
-				userId: 1,
+				userId: getUserId(accessToken),
 				watchlistName: 'Two',
 				stocks: [
 					{
@@ -78,7 +81,7 @@ describe('watchlists route', () => {
 
 		const user2Watchlists: Watchlist[] = [
 			{
-				userId: 2,
+				userId: nanoid(),
 				watchlistName: 'Three',
 				stocks: [
 					{
@@ -409,7 +412,7 @@ describe('watchlists route', () => {
 	describe('saveWatchlists', () => {
 		const newWatchlists: Watchlist[] = [
 			{
-				userId: 10,
+				userId: nanoid(),
 				watchlistName: 'Ten',
 				stocks: [
 					{
@@ -424,7 +427,7 @@ describe('watchlists route', () => {
 			const newNewWatchlists: ReadonlyArray<Watchlist> = [
 				...newWatchlists,
 				{
-					userId: 1,
+					userId: getUserId(accessToken),
 					watchlistName: 'Ten',
 					stocks: [
 						{
