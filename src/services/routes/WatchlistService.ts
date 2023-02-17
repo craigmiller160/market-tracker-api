@@ -12,6 +12,7 @@ import {
 } from '../../data/repo/WatchlistRepository';
 import { WatchlistInput } from '../../data/modelTypes/Watchlist';
 import { BadRequestError } from '../../error/BadRequestError';
+import { getUserId, KeycloakToken } from '../../keycloak/KeycloakToken';
 
 interface ModifyInvestmentParams {
 	readonly watchlistName: string;
@@ -31,11 +32,12 @@ interface RenameParams {
 export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
-		const token = req.user as AccessToken;
+		const token = req.user as KeycloakToken;
+		const userId = getUserId(token);
 		const params = req.params as unknown as RemoveParams;
 		return pipe(
 			watchlistRepository.removeWatchlistForUser(
-				token.userId,
+				userId,
 				params.watchlistName
 			),
 			TaskEither.chainOptionK(
@@ -53,11 +55,12 @@ export const removeWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 export const renameWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
-		const token = req.user as AccessToken;
+		const token = req.user as KeycloakToken;
+		const userId = getUserId(token);
 		const params = req.params as unknown as RenameParams;
 		return pipe(
 			watchlistRepository.renameWatchlistForUser(
-				token.userId,
+				userId,
 				params.oldWatchlistName,
 				params.newWatchlistName
 			),
@@ -70,11 +73,12 @@ export const renameWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
-		const token = req.user as AccessToken;
+		const token = req.user as KeycloakToken;
+		const userId = getUserId(token);
 		const params = req.params as unknown as ModifyInvestmentParams;
 		return pipe(
 			watchlistRepository.addInvestmentForUser(
-				token.userId,
+				userId,
 				params.watchlistName,
 				params.type,
 				params.symbol
@@ -94,11 +98,12 @@ export const addInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 export const removeInvestment: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	({ watchlistRepository }) =>
 	(req: Request, res: Response, next: NextFunction) => {
-		const token = req.user as AccessToken;
+		const token = req.user as KeycloakToken;
+		const userId = getUserId(token);
 		const params = req.params as unknown as ModifyInvestmentParams;
 		return pipe(
 			watchlistRepository.removeInvestmentForUser(
-				token.userId,
+				userId,
 				params.watchlistName,
 				params.type,
 				params.symbol
@@ -122,9 +127,10 @@ export const getAllNames: ReaderT<ExpressRouteDependencies, TaskRoute> = pipe(
 	Reader.map(
 		(watchlistRepository) =>
 			(req: Request, res: Response, next: NextFunction) => {
-				const token = req.user as AccessToken;
+				const token = req.user as KeycloakToken;
+				const userId = getUserId(token);
 				return pipe(
-					watchlistRepository.getAllNamesForUser(token.userId),
+					watchlistRepository.getAllNamesForUser(userId),
 					TaskEither.fold(errorTask(next), (_) => async () => {
 						res.json(_);
 					})
@@ -141,10 +147,11 @@ export const createNewWatchlist: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		Reader.map(
 			(watchlistRepository) =>
 				(req: Request, res: Response, next: NextFunction) => {
-					const token = req.user as AccessToken;
+					const token = req.user as KeycloakToken;
+					const userId = getUserId(token);
 					return pipe(
 						watchlistRepository.createWatchlistForUser(
-							token.userId,
+							userId,
 							req.body as WatchlistInput
 						),
 						TaskEither.fold(errorTask(next), (_) => async () => {
@@ -163,9 +170,10 @@ export const getWatchlistsByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		Reader.map(
 			(watchlistRepository) =>
 				(req: Request, res: Response, next: NextFunction) => {
-					const token = req.user as AccessToken;
+					const token = req.user as KeycloakToken;
+					const userId = getUserId(token);
 					return pipe(
-						watchlistRepository.findWatchlistsForUser(token.userId),
+						watchlistRepository.findWatchlistsForUser(userId),
 						TaskEither.fold(errorTask(next), (_) => async () => {
 							res.json(_);
 						})
@@ -184,14 +192,12 @@ export const saveWatchlistsForUser: ReaderT<
 	Reader.map(
 		(watchlistRepository) =>
 			(req: Request, res: Response, next: NextFunction) => {
-				const token = req.user as AccessToken;
+				const token = req.user as KeycloakToken;
+				const userId = getUserId(token);
 				return pipe(
-					watchlistRepository.saveWatchlistsForUser(
-						token.userId,
-						req.body
-					),
+					watchlistRepository.saveWatchlistsForUser(userId, req.body),
 					TaskEither.chain(() =>
-						watchlistRepository.findWatchlistsForUser(token.userId)
+						watchlistRepository.findWatchlistsForUser(userId)
 					),
 					TaskEither.fold(errorTask(next), (_) => async () => {
 						res.json(_);

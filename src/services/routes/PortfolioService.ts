@@ -7,6 +7,7 @@ import { errorTask } from '../../function/Route';
 import { TaskRoute } from '../../express/Route';
 import * as Reader from 'fp-ts/Reader';
 import { PortfolioRepository } from '../../data/repo/PortfolioRepository';
+import { getUserId, KeycloakToken } from '../../keycloak/KeycloakToken';
 
 export const getPortfoliosByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
 	pipe(
@@ -16,9 +17,10 @@ export const getPortfoliosByUser: ReaderT<ExpressRouteDependencies, TaskRoute> =
 		Reader.map(
 			(portfolioRepository) =>
 				(req: Request, res: Response, next: NextFunction) => {
-					const token = req.user as AccessToken;
+					const token = req.user as KeycloakToken;
+					const userId = getUserId(token);
 					return pipe(
-						portfolioRepository.findPortfoliosForUser(token.userId),
+						portfolioRepository.findPortfoliosForUser(userId),
 						TaskEither.fold(errorTask(next), (_) => async () => {
 							res.json(_);
 						})
@@ -37,14 +39,12 @@ export const savePortfoliosForUser: ReaderT<
 	Reader.map(
 		(portfolioRepository) =>
 			(req: Request, res: Response, next: NextFunction) => {
-				const token = req.user as AccessToken;
+				const token = req.user as KeycloakToken;
+				const userId = getUserId(token);
 				return pipe(
-					portfolioRepository.savePortfoliosForUser(
-						token.userId,
-						req.body
-					),
+					portfolioRepository.savePortfoliosForUser(userId, req.body),
 					TaskEither.chain(() =>
-						portfolioRepository.findPortfoliosForUser(token.userId)
+						portfolioRepository.findPortfoliosForUser(userId)
 					),
 					TaskEither.fold(errorTask(next), (_) => async () => {
 						res.json(_);

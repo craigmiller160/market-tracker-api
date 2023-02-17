@@ -2,46 +2,46 @@ import { OptionT, TaskTryT } from '@craigmiller160/ts-functions/types';
 import { Watchlist, WatchlistInput } from '../modelTypes/Watchlist';
 
 export type FindWatchlistsForUser = (
-	userId: number
+	userId: string
 ) => TaskTryT<ReadonlyArray<Watchlist>>;
 
 export type SaveWatchlistsForUser = (
-	userId: number,
+	userId: string,
 	watchlists: ReadonlyArray<Watchlist>
 ) => TaskTryT<unknown>;
 
 export type CreateWatchlistForUser = (
-	userId: number,
+	userId: string,
 	watchlist: WatchlistInput
 ) => TaskTryT<Watchlist>;
 
 export type GetAllNamesForUser = (
-	userId: number
+	userId: string
 ) => TaskTryT<ReadonlyArray<string>>;
 
 export type InvestmentType = 'stock' | 'crypto';
 
 export type AddInvestmentForUser = (
-	userId: number,
+	userId: string,
 	watchlistName: string,
 	type: InvestmentType,
 	symbol: string
 ) => TaskTryT<OptionT<Watchlist>>;
 
 export type RemoveInvestmentForUser = (
-	userId: number,
+	userId: string,
 	watchlistName: string,
 	type: InvestmentType,
 	symbol: string
 ) => TaskTryT<OptionT<Watchlist>>;
 
 export type RemoveWatchlistForUser = (
-	userId: number,
+	userId: string,
 	watchlistName: string
 ) => TaskTryT<OptionT<unknown>>;
 
 export type RenameWatchlistForUser = (
-	userId: number,
+	userId: string,
 	oldWatchlistName: string,
 	newWatchlistName: string
 ) => TaskTryT<void>;
