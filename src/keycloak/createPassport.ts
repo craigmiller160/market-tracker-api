@@ -24,7 +24,7 @@ const jwtFromRequest: JwtFromRequestFunction = (req) =>
 
 const getHeader = (jwt: string): TryT<JwtHeader> =>
 	pipe(
-		Try.tryCatch(() => Buffer.from(jwt.split('.')[0], 'utf8').toString()),
+		Try.tryCatch(() => Buffer.from(jwt.split('.')[0], 'base64').toString()),
 		Either.chain((rawHeader: string) => Json.parseE<JwtHeader>(rawHeader))
 	);
 
