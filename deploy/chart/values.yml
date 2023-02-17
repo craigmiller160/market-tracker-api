@@ -10,7 +10,6 @@ app_deployment:
     EXPRESS_PORT: "8080"
     AUTH_SERVER_HOST: https://auth-craigmiller160.ddns.net
     REALM: apps-prod
-    CLIENT_ID: market-tracker-api
     TRADIER_BASE_URL: "https://sandbox.tradier.com/v1"
     COIN_GECKO_BASE_URL: "https://api.coingecko.com/api/v3"
   onepassworditems:
@@ -29,12 +28,12 @@ app_deployment:
     - envVariable: MONGO_PASSWORD
       secretName: market-tracker-mongodb
       secretKey: password
-    - envVariable: CLIENT_KEY
+    - envVariable: CLIENT_ID
       secretName: market-tracker-api-oauth2-keys
-      secretKey: clientKey
+      secretKey: kcClientId
     - envVariable: CLIENT_SECRET
       secretName: market-tracker-api-oauth2-keys
-      secretKey: clientSecret
+      secretKey: kcClientSecret
     - envVariable: TRADIER_API_KEY
       secretName: market-tracker-tradier-api-key
       secretKey: apiKey
