@@ -8,14 +8,9 @@ app_deployment:
     MONGO_PORT: "27017"
     MONGO_DB: market_tracker_prod
     EXPRESS_PORT: "8080"
-    AUTH_SERVER_HOST: https://sso-oauth2-server:8443
-    CLIENT_NAME: market-tracker-api
-    AUTH_CODE_REDIRECT_URI: "/market-tracker/api/oauth/authcode/code"
-    AUTH_LOGIN_BASE_URI: "/market-tracker/oauth2"
-    COOKIE_NAME: market-tracker-token
-    COOKIE_MAX_AGE_SECS: "86400"
-    COOKIE_PATH: "/market-tracker"
-    POST_AUTH_REDIRECT: "/market-tracker"
+    AUTH_SERVER_HOST: https://auth-craigmiller160.ddns.net
+    REALM: apps-prod
+    CLIENT_ID: market-tracker-api
     TRADIER_BASE_URL: "https://sandbox.tradier.com/v1"
     COIN_GECKO_BASE_URL: "https://api.coingecko.com/api/v3"
   onepassworditems:
