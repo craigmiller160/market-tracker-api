@@ -51,7 +51,8 @@ export const createAccessToken = (
 ): string =>
 	jwt.sign(accessToken, privateKey, {
 		...(options ?? {}),
-		algorithm: 'ES256'
+		algorithm: 'ES256',
+		keyid: 'abc'
 	});
 
 const createExpressServerWithKey = (
