@@ -10,6 +10,7 @@ import request from 'supertest';
 import { restClient } from '../../../src/services/RestClient';
 import MockAdapter from 'axios-mock-adapter';
 import { AppRefreshTokenModel } from '../../../src/mongo/models/AppRefreshTokenModel';
+import { getUserId } from '../../../src/keycloak/KeycloakToken';
 
 const mockApi = new MockAdapter(restClient);
 
@@ -42,7 +43,13 @@ describe('oauth routes', () => {
 				.timeout(2000)
 				.set('Authorization', `Bearer ${token}`)
 				.expect(200);
-			expect(res.body).toEqual(accessToken);
+			expect(res.body).toEqual({
+				firstName: accessToken.given_name,
+				lastName: accessToken.family_name,
+				userEmail: accessToken.email,
+				userId: getUserId(accessToken),
+				roles: ['access']
+			});
 		});
 
 		it('fails when not authenticated', async () => {
