@@ -5,6 +5,8 @@ import { TaskTry } from '@craigmiller160/ts-functions';
 import { pipe } from 'fp-ts/function';
 import { TaskTryT } from '@craigmiller160/ts-functions/types';
 import { logger } from '../logger';
+import { getRequiredValues } from '../function/Values';
+import * as Option from 'fp-ts/Option';
 
 export type JWKWithID = JWK & {
 	readonly kid: string;
@@ -57,13 +59,18 @@ const jwtSetToKeys = (jwtSet: JwkSet): Record<string, string> =>
 const getKeys = (jwksUrl: string): TaskTryT<Record<string, string>> =>
 	pipe(getJwkSet(jwksUrl), TaskEither.map(jwtSetToKeys));
 
-export const getTokenValidationConfig = (
-	keycloakHost: string,
-	realm: string
-): TaskTryT<TokenValidationConfig> => {
+export const getTokenValidationConfig = (): TaskTryT<TokenValidationConfig> => {
 	logger.debug('Downloading Keycloak configuration & keys')();
+
 	return pipe(
-		getOpenidConfiguration(keycloakHost, realm),
+		getRequiredValues([
+			Option.fromNullable(process.env.AUTH_SERVER_HOST),
+			Option.fromNullable(process.env.REALM)
+		]),
+		TaskEither.fromEither,
+		TaskEither.chain(([authServerHost, realm]) =>
+			getOpenidConfiguration(authServerHost, realm)
+		),
 		TaskEither.bindTo('openidConfig'),
 		TaskEither.bind('keys', ({ openidConfig }) =>
 			getKeys(openidConfig.jwks_uri)
