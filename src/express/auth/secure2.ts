@@ -22,6 +22,8 @@ import * as TaskEither from 'fp-ts/TaskEither';
 import { UnauthorizedError } from '../../error/UnauthorizedError';
 import { Route } from '../Route';
 
+// TODO probably delete this in the end
+
 interface CookieParts {
 	readonly cookie: string;
 	readonly cookieName: string;

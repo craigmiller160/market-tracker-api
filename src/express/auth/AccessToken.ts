@@ -1,3 +1,4 @@
+// TODO delete this
 export interface AccessToken {
 	readonly sub: string;
 	readonly clientName: string;
