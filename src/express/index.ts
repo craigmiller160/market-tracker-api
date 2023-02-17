@@ -34,6 +34,7 @@ import {
 import * as Reader from 'fp-ts/Reader';
 import * as IO from 'fp-ts/IO';
 import * as IOEither from 'fp-ts/IOEither';
+import {TokenValidationConfig} from '../keycloak/getTokenValidationConfig';
 
 const safeParseInt = (text: string): OptionT<number> =>
 	match(parseInt(text))
@@ -122,7 +123,7 @@ const getPort = (): IOT<number> =>
 	);
 
 export const startExpressServer = (
-	tokenKey: TokenKey
+	tokenValidationConfig: TokenValidationConfig
 ): TaskTryT<ExpressServer> =>
 	pipe(
 		logger.debug('Starting server'),
