@@ -66,6 +66,7 @@ const createExpressServerWithKey = (
 	});
 
 export const createFullTestServer = (): Promise<FullTestServer> => {
+	process.env.CLIENT_ID = 'market-tracker-api';
 	return pipe(
 		createKeyPair(),
 		TE.fromEither,

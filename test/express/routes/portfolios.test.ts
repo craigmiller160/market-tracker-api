@@ -4,6 +4,7 @@ import {
 	portfolioToModel
 } from '../../../src/mongo/models/PortfolioModel';
 import {
+	accessToken,
 	createAccessToken,
 	createFullTestServer,
 	FullTestServer,
@@ -11,6 +12,8 @@ import {
 } from '../../testutils/fullTestServer';
 import { removeId } from '../../testutils/functions';
 import { Portfolio } from '../../../src/data/modelTypes/Portfolio';
+import { nanoid } from 'nanoid';
+import { getUserId } from '../../../src/keycloak/KeycloakToken';
 
 const formatPortfolios = (portfolios: Portfolio[]): Portfolio[] =>
 	portfolios.map((portfolio) => {
@@ -36,7 +39,7 @@ describe('portfolios', () => {
 	beforeEach(async () => {
 		user1InitPortfolios = [
 			{
-				userId: 1,
+				userId: getUserId(accessToken),
 				portfolioName: 'One',
 				stocks: [
 					{
@@ -48,7 +51,7 @@ describe('portfolios', () => {
 				cryptos: [{ symbol: 'GHI', shares: 3 }]
 			},
 			{
-				userId: 1,
+				userId: getUserId(accessToken),
 				portfolioName: 'Two',
 				stocks: [
 					{
@@ -73,7 +76,7 @@ describe('portfolios', () => {
 
 		const user2Portfolios: Portfolio[] = [
 			{
-				userId: 2,
+				userId: nanoid(),
 				portfolioName: 'Three',
 				stocks: [
 					{
@@ -126,7 +129,7 @@ describe('portfolios', () => {
 	describe('savePortfolios', () => {
 		const newPortfolios: Portfolio[] = [
 			{
-				userId: 10,
+				userId: nanoid(),
 				portfolioName: 'Ten',
 				stocks: [
 					{
@@ -150,10 +153,12 @@ describe('portfolios', () => {
 			expect(formatPortfolios(res.body)).toEqual([
 				{
 					...newPortfolios[0],
-					userId: 1
+					userId: getUserId(accessToken)
 				}
 			]);
-			const results = await PortfolioModel.find({ userId: 1 })
+			const results = await PortfolioModel.find({
+				userId: getUserId(accessToken)
+			})
 				.lean()
 				.exec();
 			expect(results).toHaveLength(1);
@@ -162,7 +167,7 @@ describe('portfolios', () => {
 
 			expect(resultsWithoutIds[0]).toEqual({
 				...newPortfolios[0],
-				userId: 1
+				userId: getUserId(accessToken)
 			});
 		});
 
