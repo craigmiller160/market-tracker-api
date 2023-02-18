@@ -1,10 +1,12 @@
 import { Watchlist } from '../../../src/data/modelTypes/Watchlist';
 import {
+	accessToken,
 	createFullTestServer,
 	FullTestServer,
 	stopFullTestServer
 } from '../../testutils/fullTestServer';
 import { WatchlistModel } from '../../../src/mongo/models/WatchlistModel';
+import { getUserId } from '../../../src/keycloak/KeycloakToken';
 
 describe('WatchlistModel', () => {
 	let fullTestServer: FullTestServer;
@@ -25,7 +27,7 @@ describe('WatchlistModel', () => {
 			watchlistName: 'Hello',
 			stocks: [],
 			cryptos: [],
-			userId: 1
+			userId: getUserId(accessToken)
 		};
 		await new WatchlistModel(watchlist).save();
 

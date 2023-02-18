@@ -4,7 +4,7 @@ import { Watchlist } from '../../data/modelTypes/Watchlist';
 const watchlistSchema = new Schema<Watchlist>(
 	{
 		userId: {
-			type: Number,
+			type: String,
 			required: true
 		},
 		watchlistName: {

@@ -2,11 +2,11 @@ import { Portfolio } from '../modelTypes/Portfolio';
 import { TaskTryT } from '@craigmiller160/ts-functions/types';
 
 export type FindPortfoliosForUser = (
-	userId: number
+	userId: string
 ) => TaskTryT<ReadonlyArray<Portfolio>>;
 
 export type SavePortfoliosForUser = (
-	userId: number,
+	userId: string,
 	portfolios: ReadonlyArray<Portfolio>
 ) => TaskTryT<unknown>;
 

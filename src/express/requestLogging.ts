@@ -13,7 +13,7 @@ export const setupRequestLogging: ReaderT<ExpressDependencies, void> = (
 		next();
 		res.on('finish', () => {
 			logger.info(
-				`${req.method} ${req.baseUrl}${req.path}${fullQueryString} - ${res.statusCode}`
+				`${req.method} ${req.path}${fullQueryString} - ${res.statusCode}`
 			)();
 		});
 	});
