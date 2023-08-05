@@ -37,7 +37,7 @@ app_deployment:
     - envVariable: TRADIER_API_KEY
       secretName: market-tracker-tradier-api-key
       secretKey: apiKey
-  livenessProbe:
+  commonProbe:
     httpGet:
       path: /healthcheck
       port: 8080
