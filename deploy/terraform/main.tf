@@ -20,10 +20,10 @@ terraform {
 provider "keycloak" {
   client_id = local.terraform_client.client_id
   client_secret = local.terraform_client.client_secret
-  url = "https://auth-craigmiller160.ddns.net"
+  url = "https://auth.craigmiller160.us"
 }
 
 provider "onepassword" {
-  url = "https://infra-craigmiller160.ddns.net/onepassword"
+  url = "https://infra.craigmiller160.us/onepassword"
   token = var.onepassword_token
 }
