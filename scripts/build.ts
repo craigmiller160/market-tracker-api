@@ -17,4 +17,3 @@ const runCommand = (command: string): SpawnSyncReturns<Buffer> => {
 
 runCommand('rm -rf build');
 runCommand('tsc');
-runCommand('cp -R src/cert build');
