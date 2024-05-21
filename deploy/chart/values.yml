@@ -41,4 +41,4 @@ app_deployment:
     httpGet:
       path: /healthcheck
       port: 8080
-      scheme: HTTPS
+      scheme: HTTP
