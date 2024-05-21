@@ -14,8 +14,7 @@ import express, { Express } from 'express';
 import { Server } from 'http';
 import { createRoutes } from './routes';
 import { setupErrorHandler } from './expressErrorHandler';
-import https from 'https';
-import { httpsOptions } from './tls';
+import http from 'http';
 import { setupRequestLogging } from './requestLogging';
 import nocache from 'nocache';
 import passport from 'passport';
@@ -45,7 +44,7 @@ const expressListen = (
 	port: number,
 	nodeEnv: string
 ): TaskTryT<Server> => {
-	const server = https.createServer(httpsOptions, app);
+	const server = http.createServer(app);
 
 	return match(nodeEnv)
 		.with('test', () => TaskEither.right(server))
